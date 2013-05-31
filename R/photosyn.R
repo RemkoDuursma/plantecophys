@@ -97,7 +97,7 @@ Photosyn <- function(VPD=1.5,
   #! This can be vectorized, if we exclude Zero PPFD first,
   #! move whichA to somewhere else (at the end), and don't take minimum
   #! of Ac, Aj (calc both, return pmin at the end).
-  photosynF <- function(VJ,PPFD,Ca,Rd,Tleaf,vpdmin,g0,g1,gk,
+  photosynF <- function(VJ,PPFD,VPD,Ca,Rd,Tleaf,vpdmin,g0,g1,gk,
                         Vcmax,Jmax,Km,GammaStar,whichA){
     
 
@@ -171,6 +171,7 @@ Photosyn <- function(VPD=1.5,
   x <- mapply(photosynF, 
               VJ=VJ,
               PPFD=PPFD,
+              VPD=VPD,
               Ca=Ca,
               Rd=Rd,
               Tleaf=Tleaf,
