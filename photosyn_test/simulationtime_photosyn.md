@@ -1,0 +1,79 @@
+photosyn() : Comparison of simulation time
+============================================
+
+
+```r
+library(GasExchangeR)
+library(Maeswrap)
+```
+
+```
+## Loading required package: rgl
+```
+
+```
+## Loading required package: lattice
+```
+
+```
+## Loading required package: geometry
+```
+
+```
+## Loading required package: magic
+```
+
+```
+## Loading required package: abind
+```
+
+```
+## Loading required package: stringr
+```
+
+```r
+library(plyr)
+
+setwd("g:/work/projects/HFE/WTC/MAESPA_fluxmodelling")
+source("./Rfunctions/photosyn.R")
+
+h <- readhrflux("./MAESPArunfolder/hrflux.dat")
+
+simTime <- function(df) {
+    
+    t1 <- system.time(run1 <- photosyn(PAR = df$PAR, VPD = df$VPD, TLEAF = df$TAIR))
+    t2 <- system.time(run1 <- photosyn2(PPFD = df$PAR, VPD = df$VPD, Tleaf = df$TAIR))
+    t1 <- t1[[3]]
+    t2 <- t2[[3]]
+    return(c(t1, t2))
+}
+
+k <- c(0.1, 0.25, 0.5, 1:10)
+n <- nrow(h)
+N <- floor(k * n)
+
+r <- list()
+for (i in seq_along(k)) {
+    
+    # randomly selected rows
+    rows <- sample(1:n, N[i], replace = TRUE)
+    
+    r[[i]] <- simTime(h[rows, ])
+    
+}
+r <- do.call(rbind, r)
+
+plot(log10(N), log10(r[, 1]), type = "o", pch = 21, bg = "black", xlab = expression(log["10"] * 
+    (Sample ~ size)), ylab = expression(log["10"] * (Computing ~ time)), ylim = c(min(log10(r)), 
+    max(log10(r))))
+points(log10(N), log10(r[, 2]), type = "o", pch = 21, bg = "white")
+legend("topleft", c("GasExchangeR (fortran)", "photosyn2() (R)"), lty = 1, pch = 21, 
+    pt.bg = c("black", "white"))
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1.png) 
+
+```r
+
+```
+
