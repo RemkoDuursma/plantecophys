@@ -131,10 +131,18 @@ Photosyn <- function(VPD=1.5,
     C <- -(1 - Ca*GSDIVA) * GammaStar * (VJ + 2*Rd) - 
       g0*2*GammaStar*Ca
     
-    CIJ <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+    if(A == 0)
+      CIJ <- -C/B
+    else
+      CIJ <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
     
     Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
     Aj <- VJ * (CIJ-GammaStar)/(CIJ + 2*GammaStar)
+    
+    if(Aj-Rd < 10^-6){        # Below light compensation point
+      CIJ <- Ca
+      Aj <- VJ * (CIJ - GammaStar) / (CIJ + 2*GammaStar)
+    }
     
     
     Ci <- if(Ac < Aj)CIC else CIJ
