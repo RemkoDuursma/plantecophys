@@ -26,9 +26,9 @@ library(reshape)
   
     df <- makedf(ns[i])
     
-    t1 <- system.time(photosyn(PAR=df$PPFD, VPD=df$VPD, TLEAF=df$Tleaf))
-    t2 <- system.time(photosyn2(PPFD=df$PPFD, VPD=df$VPD, Tleaf=df$Tleaf))
-    t3 <- system.time(Photosyn(PPFD=df$PPFD, VPD=df$VPD, Tleaf=df$Tleaf))
+    t1 <- system.time(m1 <- photosyn(PAR=df$PPFD, VPD=df$VPD, TLEAF=df$Tleaf))
+    t2 <- system.time(m2 <- photosyn2(PPFD=df$PPFD, VPD=df$VPD, Tleaf=df$Tleaf))
+    t3 <- system.time(m3 <- Photosyn(PPFD=df$PPFD, VPD=df$VPD, Tleaf=df$Tleaf))
     v[[i]] <- c(t1[[3]], t2[[3]], t3[[3]])
   }
   
