@@ -1,5 +1,30 @@
-
-
+#' Coupled leaf gas exchange model
+#' 
+#' @export
+#' @description Farquhar-Ball-Berry (Medlyn 2011 as default), with T response.
+#' @param VPD
+#' @param Ca
+#' @param PPFD
+#' @param Tleaf
+#' @param g1
+#' @param g0
+#' @param gk
+#' @param vpdmin
+#' @param alpha
+#' @param theta
+#' @param Jmax
+#' @param Vcmax
+#' @param Rd0
+#' @param Q10
+#' @param TrefR
+#' @param Rdayfrac
+#' @param EaV
+#' @param EdVC
+#' @param delsC
+#' @param EaJ
+#' @param EdVJ
+#' @param delsJ
+#' @param whichA
 Photosyn <- function(VPD=1.5, 
                      Ca=400, 
                      PPFD=1500,
@@ -103,60 +128,82 @@ Photosyn <- function(VPD=1.5,
   J <- Jfun(PPFD, alpha, Jmax, theta)
   VJ <- J/4
   
+  # Medlyn et al. 2011 model gs/A. NOTE: 1.6 not here because we need GCO2!
+  vpduse <- VPD
+  vpduse[vpduse < vpdmin] <- vpdmin
+  GSDIVA <- (1 + g1/(vpduse^(1-gk)))/Ca
   
   #--- non-vectorized workhorse
   #! This can be vectorized, if we exclude Zero PPFD first,
   #! move whichA to somewhere else (at the end), and don't take minimum
-  #! of Ac, Aj (calc both, return pmin at the end).
-  photosynF <- function(VJ,PPFD,VPD,Ca,Rd,Tleaf,vpdmin,g0,g1,gk,
-                        Vcmax,Jmax,Km,GammaStar,whichA){
-    
-
-    # Note that if PPFD =0, GS=0 not g0, to be consistent with MAESPA.
-    #! Keep it this way as a reminder that night-time not covered by this.
-    #! This needs to be updated when we change output; annoying
-    if(PPFD == 0){
-      vec <- c(Ca,-Rd,0,0,-Rd,-Rd,Rd,VPD,Tleaf)
-      return(vec)
+    #! of Ac, Aj (calc both, return pmin at the end).
+    getCI <- function(VJ,GSDIVA,PPFD,VPD,Ca,Tleaf,vpdmin,g0,Rd,
+                          Vcmax,Jmax,Km,GammaStar){
+      
+  
+      # Note that if PPFD =0, GS=0 not g0, to be consistent with MAESPA.
+      #! Keep it this way as a reminder that night-time not covered by this.
+      #! This needs to be updated when we change output; annoying
+      if(PPFD == 0){
+        vec <- c(Ca,-Rd,0,0,-Rd,-Rd,Rd,VPD,Tleaf)
+        return(vec)
+      }
+          
+      # Taken from MAESTRA.
+      # Following calculations are used for both BB & BBL models.
+      # Solution when Rubisco activity is limiting
+      A <- g0 + GSDIVA * (Vcmax - Rd)
+      B <- (1. - Ca*GSDIVA) * (Vcmax - Rd) + g0 * 
+        (Km - Ca)- GSDIVA * (Vcmax*GammaStar + Km*Rd)
+      C <- -(1. - Ca*GSDIVA) * (Vcmax*GammaStar + Km*Rd) - g0*Km*Ca
+      
+      CIC <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+      
+      # Solution when electron transport rate is limiting
+      A <- g0 + GSDIVA * (VJ - Rd)
+      B <- (1 - Ca*GSDIVA) * (VJ - Rd) + g0 * (2.*GammaStar - Ca)- 
+        GSDIVA * (VJ*GammaStar + 2.*GammaStar*Rd)
+      C <- -(1 - Ca*GSDIVA) * GammaStar * (VJ + 2*Rd) - 
+        g0*2*GammaStar*Ca
+      
+      if(A == 0)
+        CIJ <- -C/B
+      else
+        CIJ <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+      
+      return(c(CIJ,CIC))
     }
-        
-    # full model. NOTE: 1.6 not here because we need GCO2!
-    vpduse <- VPD
-    vpduse[vpduse < vpdmin] <- vpdmin
-    GSDIVA <- (1 + g1/(vpduse^(1-gk)))/Ca
-    
-    # Taken from MAESTRA.
-    # Following calculations are used for both BB & BBL models.
-    # Solution when Rubisco activity is limiting
-    A <- g0 + GSDIVA * (Vcmax - Rd)
-    B <- (1. - Ca*GSDIVA) * (Vcmax - Rd) + g0 * 
-      (Km - Ca)- GSDIVA * (Vcmax*GammaStar + Km*Rd)
-    C <- -(1. - Ca*GSDIVA) * (Vcmax*GammaStar + Km*Rd) - g0*Km*Ca
-    
-    CIC <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
-    
-    # Solution when electron transport rate is limiting
-    A <- g0 + GSDIVA * (VJ - Rd)
-    B <- (1 - Ca*GSDIVA) * (VJ - Rd) + g0 * (2.*GammaStar - Ca)- 
-      GSDIVA * (VJ*GammaStar + 2.*GammaStar*Rd)
-    C <- -(1 - Ca*GSDIVA) * GammaStar * (VJ + 2*Rd) - 
-      g0*2*GammaStar*Ca
-    
-    if(A == 0)
-      CIJ <- -C/B
-    else
-      CIJ <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
-    
+  
+  # get Ci
+  x <- mapply(getCI, 
+              VJ=VJ,
+              GSDIVA = GSDIVA,
+              PPFD=PPFD,
+              VPD=VPD,
+              Ca=Ca,
+              Tleaf=Tleaf,
+              vpdmin=vpdmin,
+              g0=g0,
+              Rd=Rd,
+              Vcmax=Vcmax,
+              Jmax=Jmax,
+              Km=Km,
+              GammaStar=GammaStar)
+    CIJ <- x[1,]
+    CIC <- x[2,]
+  
+    # Get photosynthetic rate  
     Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
     Aj <- VJ * (CIJ-GammaStar)/(CIJ + 2*GammaStar)
     
-    if(Aj-Rd < 10^-6){        # Below light compensation point
-      CIJ <- Ca
-      Aj <- VJ * (CIJ - GammaStar) / (CIJ + 2*GammaStar)
-    }
-    
-    
-    Ci <- if(Ac < Aj)CIC else CIJ
+    # When below light-compensation points, Ci=Ca.
+    lesslcp <- Aj-Rd < 0
+    Aj[lesslcp] <- VJ * (CIJ - GammaStar) / (CIJ + 2*GammaStar)
+    CIJ[lesslcp] <- Ca
+      
+    # Ci
+    Ci <- vector("numeric",length(CIC))
+    Ci <- ifelse(Aj < Ac, CIJ, CIC)
     
     # Hyperbolic minimum.
     hmshape <- 0.9999
@@ -173,31 +220,18 @@ Photosyn <- function(VPD=1.5,
     # Transpiration rate; perfect coupling.
     E <- 1000*GS*VPD/101
     
-    vec <- c(Ci,Am,GS,E,Ac,Aj,Rd,VPD,Tleaf)
-    return(vec)
-  }
-
+    df <- data.frame( CI=Ci,
+                      ALEAF=Am,
+                      GS=GS,
+                      ELEAF=E,
+                      Ac=Ac,
+                      Aj=Aj,
+                      Rd=Rd,
+                      VPD=VPD,
+                      Tleaf=Tleaf,
+                      Ca=Ca,
+                      PPFD=PPFD)
   
-  # Do runs
-  x <- mapply(photosynF, 
-              VJ=VJ,
-              PPFD=PPFD,
-              VPD=VPD,
-              Ca=Ca,
-              Rd=Rd,
-              Tleaf=Tleaf,
-              vpdmin=vpdmin,
-              g0=g0,
-              g1=g1,
-              gk=gk,
-              Vcmax=Vcmax,
-              Jmax=Jmax,
-              Km=Km,
-              GammaStar=GammaStar,
-              whichA=whichA)
-  
-  df <- as.data.frame(t(x))
-  names(df) <- c("CI","ALEAF","GS","ELEAF","Ac","Aj","Rd","VPD","TLEAF")
 return(df)
 }
 
