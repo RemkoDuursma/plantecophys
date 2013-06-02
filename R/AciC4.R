@@ -21,7 +21,7 @@
 #' @param DAYRESP
 #' @param Q10F
 #' @param FRM
-AciC4 <- function( ci,
+AciC4 <- function(Ci,
 	PPFD=1500, 
 	tleaf = 25,
 	VPMAX25=120, 
