@@ -1,25 +1,33 @@
 
-# !! need new name, to avoid confusion with GasExchangeR::photosyn
+
 Photosyn <- function(VPD=1.5, 
-                     Ca=380, 
+                     Ca=400, 
+                     PPFD=1500,
+                     Tleaf=25,
+                     
                      g1=4,
                      g0=0, 
                      gk=0.5,
                      vpdmin=0.5,
-                     PPFD=1500, 
+                      
                      alpha=0.24, 
                      theta=0.85, 
                      Jmax=100, 
                      Vcmax=50, 
-                      
-                     Tleaf=25, 
+                       
                      Rd0 = 0.92,
                      Q10 = 1.92,
+                     TrefR = 25,
+                     Rdayfrac = 1.0,
+                     
                      EaV = 82620.87,
-                     EaJ = 39676.89,
-                     EdJ = 200000,
-                     delsJ = 641.3615,
+                     EdVC = 0,
                      delsC = 645.1013,
+                     
+                     EaJ = 39676.89,
+                     EdVJ = 200000,
+                     delsJ = 641.3615,
+                     
                      
                      whichA=c("Ah","Amin","Ac","Aj")){
 
@@ -48,15 +56,19 @@ Photosyn <- function(VPD=1.5,
   
   # Hard-wired parameters.
   Vcmaxfun <- function(Tleaf){
-    V1 <- (1+exp((delsC*(25 + 273.15)-EdJ)/(Rgas*(25 + 273.15))))
-    V2 <- (1+exp((delsC*(Tleaf+273.15)-EdJ)/(Rgas*(Tleaf+273.15))))
-    exp((Tleaf-25)*EaV/(Rgas*(Tleaf+273.15)*(25 + 273.15))) * V1/V2 
+    if(EdVC > 0){
+      V1 <- (1+exp((delsC*(25 + 273.15)-EdVC)/(Rgas*(25 + 273.15))))
+      V2 <- (1+exp((delsC*(Tleaf+273.15)-EdVC)/(Rgas*(Tleaf+273.15))))
+      f <- V1/V2
+    } else f <- 1
+    
+    exp((Tleaf-25)*EaV/(Rgas*(Tleaf+273.15)*(25 + 273.15))) * f
   }
   
   # Hard-wired parameters.
   Jmaxfun <- function(Jmax){
-    J1 <- 1+exp((298.15*delsJ-EdJ)/Rgas/298.15)
-    J2 <- 1+exp(((Tleaf+273.15)*delsJ-EdJ)/Rgas/(Tleaf+273.15))
+    J1 <- 1+exp((298.15*delsJ-EdVJ)/Rgas/298.15)
+    J2 <- 1+exp(((Tleaf+273.15)*delsJ-EdVJ)/Rgas/(Tleaf+273.15))
     exp(EaJ/Rgas*(1/298.15 - 1/(Tleaf+273.15)))*J1/J2
   }
   
@@ -75,9 +87,8 @@ Photosyn <- function(VPD=1.5,
   g0 <- g0/1.6
   
   # Leaf respiration
-  #! need dayfrac
   #! acclimation
-  Rd <- Rd0*Q10^((Tleaf-25)/10)
+  Rd <- Rdayfrac*Rd0*Q10^((Tleaf-TrefR)/10)
   
   # Km, GammaStar
   Km <- Kmfun(Tleaf)
