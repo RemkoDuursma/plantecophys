@@ -1,0 +1,20 @@
+Package: plantecophys
+Type: Package
+Title: Modelling and analysis of leaf gas exchange data
+Version: 0.0
+Date: 2013-06-03
+Author: Remko Duursma
+Maintainer: Remko Duursma <remkoduursma@gmail.com>
+Description: Coupled leaf gas exchange model, A-Ci curve simulation and
+    fitting, Cowan-Farquhar optimization, unit conversions.
+License: GPL
+LazyData: yes
+Collate:
+    'AciC4.R'
+    'FARAO.R'
+    'fitaci.R'
+    'fitBBOpti.R'
+    'photosyn.R'
+    'plot.acifit.R'
+    'print.acifit.R'
+    'RHtoVPD.R'
