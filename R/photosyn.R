@@ -1,6 +1,7 @@
-#' Coupled leaf gas exchange model
+#' @title Coupled leaf gas exchange model
 #' 
 #' @export
+#' @rdname Photosyn
 #' @description Farquhar-Ball-Berry (Medlyn 2011 as default), with T response.
 #' @param VPD Vapour pressure deficit (kPa)
 #' @param Ca Atmospheric CO2 concentration (ppm)
@@ -24,7 +25,6 @@
 #' @aliases Photosyn, Aci
 #' @details If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). 
 #' @return A dataframe.
-Aci <- function(Ci,...)Photosyn(Ci=Ci,...)
 Photosyn <- function(VPD=1.5, 
                      Ca=400, 
                      PPFD=1500,
@@ -207,8 +207,11 @@ Photosyn <- function(VPD=1.5,
     
     # When below light-compensation points, Ci=Ca.
     lesslcp <- Aj-Rd < 0
-    Aj[lesslcp] <- VJ * (CIJ - GammaStar) / (CIJ + 2*GammaStar)
-    CIJ[lesslcp] <- Ca
+    CIJ[lesslcp] <- Ca  
+    if(length(GammaStar) == 1)GammaStar <- rep(GammaStar, length(CIJ))
+    if(length(VJ) == 1)VJ <- rep(VJ, length(CIJ))
+    Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / (CIJ[lesslcp] + 2*GammaStar[lesslcp])
+    
       
     # Ci
     Ci <- vector("numeric",length(CIC))
@@ -244,6 +247,8 @@ Photosyn <- function(VPD=1.5,
 return(df)
 }
 
-
+#'@rdname Photosyn
+#'@export
+Aci <- function(Ci,...)Photosyn(Ci=Ci,...)
 
 

@@ -8,7 +8,7 @@
   RHtoVPD(RH, TdegC, Pa = 101)
 }
 \arguments{
-  \item{RH}{Relative humidity (percent)}
+  \item{RH}{Relative humidity (\%)}
 
   \item{TdegC}{Temperature (degrees C)}
 
