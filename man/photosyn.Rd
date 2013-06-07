@@ -1,0 +1,135 @@
+\name{Photosyn}
+\alias{Aci}
+\alias{Photosyn}
+\title{Coupled leaf gas exchange model}
+\usage{
+  Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25,
+    g1 = 4, g0 = 0, gk = 0.5, vpdmin = 0.5, alpha = 0.24,
+    theta = 0.85, Jmax = 100, Vcmax = 50, Rd0 = 0.92,
+    Q10 = 1.92, TrefR = 25, Rdayfrac = 1, EaV = 82620.87,
+    EdVC = 0, delsC = 645.1013, EaJ = 39676.89,
+    EdVJ = 2e+05, delsJ = 641.3615, Ci = NULL,
+    whichA = c("Ah", "Amin", "Ac", "Aj"))
+
+  Aci(Ci, ...)
+}
+\arguments{
+  \item{VPD}{Vapour pressure deficit (kPa)}
+
+  \item{Ca}{Atmospheric CO2 concentration (ppm)}
+
+  \item{PPFD}{Photosynthetic photon flux density ('PAR')
+  (mu mol m-2 s-1)}
+
+  \item{Tleaf}{Leaf temperature (degrees C)}
+
+  \item{g0,g1}{Parameters of Medlyn et al. (2011) model of
+  stomatal conductance (gs).}
+
+  \item{gk}{Optional, exponent of VPD in gs model (Duursma
+  et al. 2013)}
+
+  \item{vpdmin}{Below vpdmin, VPD=vpdmin, to avoid very
+  high gs.}
+
+  \item{alpha}{Quantum yield of electron transport (mol
+  mol-1)}
+
+  \item{theta}{Shape of light response curve.}
+
+  \item{Jmax}{Maximum rate of electron transport at 25
+  degrees C (mu mol m-2 s-1)}
+
+  \item{Vcmax}{Maximum carboxylation rate at 25 degrees C
+  (mu mol m-2 s-1)}
+
+  \item{Rd0}{Dark respiration rata at reference temperature
+  (\code{TrefR})}
+
+  \item{Q10}{Temperature sensitivity of Rd.}
+
+  \item{TrefR}{Reference temperature for Rd.}
+
+  \item{Rdayfrac}{Ratio of Rd in the light vs. in the
+  dark.}
+
+  \item{EaV,}{EdVC, delsC Vcmax temperature response
+  parameters}
+
+  \item{EaJ,}{EdVJ, delsJ Jmax temperature response
+  parameters}
+
+  \item{Ci}{Optional, intercellular CO2 concentration}
+
+  \item{whichA}{Which assimilation rate does gs respond
+  to?}
+}
+\value{
+  A dataframe.
+}
+\description{
+  Farquhar-Ball-Berry (Medlyn 2011 as default), with T
+  response.
+}
+\details{
+  The coupled photosynthesis - stomatal conductance model
+  finds the intersection between the supply of CO2 by
+  diffusion, and the demand for CO2 by photosynthesis. See
+  Farquhar and Sharkey (1982) for basic description of this
+  type of model.
+  \if{html}{\figure{supplydemand.jpg}{Supply-demand}}
+  \if{latex}{\figure{supplydemand}{Supply-demand}}
+
+  Figure 1. \code{Photosyn} calculates the operating point
+  from the intersection of the supply and demand curves,
+  here shown as the red dot.
+
+  The model of Farquhar et al. (1980) is used to estimate
+  the dependence of photosynthesis rate on Ci.
+
+  The temperature response of photosynthetic parameters,
+  including Vcmax, Jmax, Gammastar, and Km follow Medlyn et
+  al. 2002.
+
+  At the moment, only one stomatal conductance model is
+  implemented, which is a slightly more general form of the
+  model of Medlyn et al. 2011 (see Duursma et al. 2013). It
+  is given by (in notation of the parameters and output
+  variables of \code{Photosyn}),
+
+  GS = G0 + 1.6*(1 + G1/D^GK)*ALEAF/CA
+
+  where GK = 0.5 if stomata behave optimally (cf. Medlyn et
+  al. 2011).
+}
+\references{
+  Farquhar, G.D., S. Caemmerer and J.A. Berry. 1980. A
+  biochemical model of photosynthetic CO2 assimilation in
+  leaves of C3 species. Planta. 149:78-90.
+
+  Farquhar, G. D., & Sharkey, T. D. (1982). Stomatal
+  conductance and photosynthesis. Annual review of plant
+  physiology, 33(1), 317-345.
+
+  Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter,
+  P.C. Harley, M.U.F. Kirschbaum, X. Le Roux, P. Montpied,
+  J. Strassemeyer, A. Walcroft, K. Wang and D. Loustau.
+  2002. Temperature response of parameters of a
+  biochemically based model of photosynthesis. II. A review
+  of experimental data. Plant Cell and Environment.
+  25:1167-1179.
+
+  Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth,
+  I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis,
+  M. Freeman and L. Wingate. 2011. Reconciling the optimal
+  and empirical approaches to modelling stomatal
+  conductance. Global Change Biology. 17:2134-2144.
+
+  Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J.,
+  Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,
+  Near-optimal response of instantaneous transpiration
+  efficiency to vapour pressure deficit, temperature and
+  [CO2] in cotton (Gossypium hirsutum L.). Agricultural and
+  Forest Meteorology 168 : 168 - 176.
+}
+

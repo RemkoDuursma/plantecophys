@@ -9,18 +9,18 @@ fitaci <- function(dat, nlsmethod="default"){
   }
     
   acifun_wrap <- function(...){
-    r <- acifun(...)
-    r$Am
+    r <- Aci(...)
+    r$ALEAF
   }
   
-  nlsfit <- nls2(Photo ~ acifun_wrap(Ci, PAR=PAR, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+  nlsfit <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PAR, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
                 data=dat, algorithm=nlsmethod,
                 start=list(Vcmax=80, Jmax=160, Rd=1))
 
   p <- coef(nlsfit)
-  acirun <- with(dat, acifun(Ci, PAR=PAR, Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], Tleaf=Tleaf))
+  acirun <- with(dat, Aci(Ci, PPFD=PAR, Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], Tleaf=Tleaf))
   
-  dfr <- cbind(dat, acirun[,2:4])  
+#   dfr <- cbind(dat, acirun[,2:4])  
     
   l <- list()  
   l$data <- dfr

@@ -2,7 +2,23 @@
 #' 
 #' @export
 #' @rdname Photosyn
-#' @description Farquhar-Ball-Berry (Medlyn 2011 as default), with T response.
+#' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes temperature sensitivity of photosynthetic parameters, dark respiration.
+#' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply
+#' of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model.
+#'  \if{html}{\figure{supplydemand.jpg}{Supply-demand}}
+#'  \if{latex}{\figure{supplydemand}{Supply-demand}} 
+#'  
+#'  Figure 1. \code{Photosyn} calculates the operating point from the intersection of the supply and demand curves, here shown as the red dot.
+#'  
+#'  The model of Farquhar et al. (1980) is used to estimate the dependence of photosynthesis rate on Ci.
+#'  
+#'  The temperature response of photosynthetic parameters, including Vcmax, Jmax, Gammastar, and Km follow Medlyn et al. 2002. 
+#'  
+#'  At the moment, only one stomatal conductance model is implemented, which is a slightly more general form of the model of Medlyn et al. 2011 (see Duursma et al. 2013). It is given by (in notation of the parameters and output variables of \code{Photosyn}),
+#'  
+#'  GS = G0 + 1.6*(1 + G1/D^GK)*ALEAF/CA
+#'  
+#'  where GK = 0.5 if stomata behave optimally (cf. Medlyn et al. 2011).
 #' @param VPD Vapour pressure deficit (kPa)
 #' @param Ca Atmospheric CO2 concentration (ppm)
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
@@ -22,7 +38,19 @@
 #' @param EaJ, EdVJ, delsJ Jmax temperature response parameters
 #' @param Ci Optional, intercellular CO2 concentration
 #' @param whichA Which assimilation rate does gs respond to?
-#' @aliases Photosyn, Aci
+#' @references 
+#'
+#' Farquhar, G.D., S. Caemmerer and J.A. Berry. 1980. A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta. 149:78-90.
+#' 
+#' Farquhar, G. D., & Sharkey, T. D. (1982). Stomatal conductance and photosynthesis. Annual review of plant physiology, 33(1), 317-345.
+#' 
+#' Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter, P.C. Harley, M.U.F. Kirschbaum, X. Le Roux, P. Montpied, J. Strassemeyer, A. Walcroft, K. Wang and D. Loustau. 2002. Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. Plant Cell and Environment. 25:1167-1179.
+#' 
+#' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
+#' 
+#' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
+#' 
+#' @aliases Photosyn Aci
 #' @details If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). 
 #' @return A dataframe.
 Photosyn <- function(VPD=1.5, 
