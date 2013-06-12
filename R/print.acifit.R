@@ -1,19 +1,22 @@
+
+#' @S3method print acifit
+#' @rdname fitaci
 print.acifit <- function(x,...){
   
   cat("Result of fitaci.\n\n")
   
   cat("Data and predictions:\n")
-  print(x$data)
+  print(x$df)
   
   cat("\nParameters:\n")
   
-  PARS <- summary(x$nlsfit)$coefficients[,1:2]
-  print(PARS)
+  print(x$pars)
   cat("\n")
   
 }
 
-
+#' @S3method summary acifit
+#' @rdname fitaci
 summary.acifit <- function(x,...){
   
   print.acifit(x, ...)

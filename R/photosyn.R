@@ -23,6 +23,7 @@
 #' @param Ca Atmospheric CO2 concentration (ppm)
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
 #' @param Tleaf Leaf temperature (degrees C)
+#' @param Patm Atmospheric pressure (kPa)
 #' @param g0,g1 Parameters of Medlyn et al. (2011) model of stomatal conductance (gs).
 #' @param gk Optional, exponent of VPD in gs model (Duursma et al. 2013)
 #' @param vpdmin Below vpdmin, VPD=vpdmin, to avoid very high gs.
@@ -30,6 +31,7 @@
 #' @param theta Shape of light response curve.
 #' @param Jmax Maximum rate of electron transport at 25 degrees C (mu mol m-2 s-1)
 #' @param Vcmax Maximum carboxylation rate at 25 degrees C (mu mol m-2 s-1)
+#' @param Rd Dark respiration rate, optional (if not provided, calculated from Tleaf)
 #' @param Rd0 Dark respiration rata at reference temperature (\code{TrefR})
 #' @param Q10 Temperature sensitivity of Rd.
 #' @param TrefR Reference temperature for Rd.
@@ -57,6 +59,7 @@ Photosyn <- function(VPD=1.5,
                      Ca=400, 
                      PPFD=1500,
                      Tleaf=25,
+                     Patm=101,
                      
                      g1=4,
                      g0=0, 
@@ -70,6 +73,7 @@ Photosyn <- function(VPD=1.5,
                        
                      Rd0 = 0.92,
                      Q10 = 1.92,
+                     Rd=NULL,
                      TrefR = 25,
                      Rdayfrac = 1.0,
                      
@@ -137,11 +141,12 @@ Photosyn <- function(VPD=1.5,
   
   # g1 and g0 are ALWAYS IN UNITS OF H20
   # G0 must be converted (but no G1, see below)
-  g0 <- g0/1.6
+  g0 <- g0/1.57
   
   # Leaf respiration
   #! acclimation
-  Rd <- Rdayfrac*Rd0*Q10^((Tleaf-TrefR)/10)
+  if(is.null(Rd))
+    Rd <- Rdayfrac*Rd0*Q10^((Tleaf-TrefR)/10)
   
   # Km, GammaStar
   Km <- Kmfun(Tleaf)
@@ -172,11 +177,8 @@ Photosyn <- function(VPD=1.5,
                             Vcmax,Jmax,Km,GammaStar){
         
     
-        # Note that if PPFD =0, GS=0 not g0, to be consistent with MAESPA.
-        #! Keep it this way as a reminder that night-time not covered by this.
-        #! This needs to be updated when we change output; annoying
         if(PPFD == 0){
-          vec <- c(Ca,-Rd,0,0,-Rd,-Rd,Rd,VPD,Tleaf)
+          vec <- c(Ca,Ca)
           return(vec)
         }
             
@@ -220,6 +222,7 @@ Photosyn <- function(VPD=1.5,
                 Jmax=Jmax,
                 Km=Km,
                 GammaStar=GammaStar)
+      
       CIJ <- x[1,]
       CIC <- x[2,]
     } else {
@@ -235,9 +238,12 @@ Photosyn <- function(VPD=1.5,
     
     # When below light-compensation points, Ci=Ca.
     lesslcp <- Aj-Rd < 0
-    CIJ[lesslcp] <- Ca  
+    
+    if(length(Ca) == 1)Ca <- rep(Ca, length(CIJ))
     if(length(GammaStar) == 1)GammaStar <- rep(GammaStar, length(CIJ))
     if(length(VJ) == 1)VJ <- rep(VJ, length(CIJ))
+    
+    CIJ[lesslcp] <- Ca[lesslcp]
     Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / (CIJ[lesslcp] + 2*GammaStar[lesslcp])
     
       
@@ -255,10 +261,10 @@ Photosyn <- function(VPD=1.5,
     if(whichA == "Ac")GS <- g0 + GSDIVA*(Ac-Rd)
     
     # H2O
-    GS <- GS*1.6
+    GS <- GS*1.57
     
     # Transpiration rate; perfect coupling.
-    E <- 1000*GS*VPD/101
+    E <- 1000*GS*VPD/Patm
     
     df <- data.frame( Ci=Ci,
                       ALEAF=Am,

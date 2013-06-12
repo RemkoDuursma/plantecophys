@@ -4,11 +4,12 @@
 \title{Coupled leaf gas exchange model}
 \usage{
   Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25,
-    g1 = 4, g0 = 0, gk = 0.5, vpdmin = 0.5, alpha = 0.24,
-    theta = 0.85, Jmax = 100, Vcmax = 50, Rd0 = 0.92,
-    Q10 = 1.92, TrefR = 25, Rdayfrac = 1, EaV = 82620.87,
-    EdVC = 0, delsC = 645.1013, EaJ = 39676.89,
-    EdVJ = 2e+05, delsJ = 641.3615, Ci = NULL,
+    Patm = 101, g1 = 4, g0 = 0, gk = 0.5, vpdmin = 0.5,
+    alpha = 0.24, theta = 0.85, Jmax = 100, Vcmax = 50,
+    Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25,
+    Rdayfrac = 1, EaV = 82620.87, EdVC = 0,
+    delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05,
+    delsJ = 641.3615, Ci = NULL,
     whichA = c("Ah", "Amin", "Ac", "Aj"))
 
   Aci(Ci, ...)
@@ -22,6 +23,8 @@
   (mu mol m-2 s-1)}
 
   \item{Tleaf}{Leaf temperature (degrees C)}
+
+  \item{Patm}{Atmospheric pressure (kPa)}
 
   \item{g0,g1}{Parameters of Medlyn et al. (2011) model of
   stomatal conductance (gs).}
@@ -42,6 +45,9 @@
 
   \item{Vcmax}{Maximum carboxylation rate at 25 degrees C
   (mu mol m-2 s-1)}
+
+  \item{Rd}{Dark respiration rate, optional (if not
+  provided, calculated from Tleaf)}
 
   \item{Rd0}{Dark respiration rata at reference temperature
   (\code{TrefR})}
@@ -68,8 +74,11 @@
   A dataframe.
 }
 \description{
-  Farquhar-Ball-Berry (Medlyn 2011 as default), with T
-  response.
+  A coupled photosynthesis - stomatal conductance model,
+  based on the Farquhar model of photosynthesis, and a
+  Ball-Berry type model of stomatatal conductance. Includes
+  temperature sensitivity of photosynthetic parameters,
+  dark respiration.
 }
 \details{
   The coupled photosynthesis - stomatal conductance model
