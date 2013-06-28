@@ -1,11 +1,25 @@
 
-# FARquhar And Opti
-FARAO <- function(Ca=400, ...){
+#' FARquhar And Opti
+#' 
+#' @description The numerical solution of the optimal stomatal conductance model, coupled with the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation to this full numeric solution.
+#' @param Ca The CO2 concentration. 
+#' @param gbl Optional, the boundary layer conductance (mol m-2 s-1). Somewhat experimental!
+#' @param photo Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. the minimum of Vcmax and Jmax limited rates.
+#' @param C4 If TRUE, uses the C4 photosynthesis routine (\code{\link{AciC4}})
+#' @param ... All other parameters are passed to \code{\link{Aci}}
+#' @author Remko Duursma
+#' @export
+FARAO <- function(Ca=400, VPD=1, gbl=NA, photo=c("BOTH","VCMAX","JMAX"), C4=FALSE, ...){
   
-  fx <- function(Ca,...)optimize(OPTfun, interval=c(0,Ca), maximum=TRUE,Ca=ca,...)$maximum
-  optimalcis <- mapply(fx,Ca=Ca,...)
+  photo <- match.arg(photo)
   
-  res <- as.data.frame(OPTfun(Ci=optimalcis, retobjfun=FALSE, Ca=Ca, ...))
+  fx <- function(Ca,...)optimize(OPTfun, interval=c(0,Ca), 
+                                 maximum=TRUE,Ca=Ca,
+                                 ...)$maximum
+  optimalcis <- mapply(fx,Ca=Ca,gbl=gbl, photo=photo, C4=C4, VPD=VPD,...)
+  
+  res <- as.data.frame(OPTfun(Ci=optimalcis, retobjfun=FALSE, 
+                              Ca=Ca,gbl=gbl, photo=photo, C4=C4, VPD=VPD,...))
   
   return(res)
 }
@@ -29,19 +43,17 @@ OPTfun <- function(Ci,              # mu mol mol-1
 	photo <- match.arg(photo)
 	
   # Given a Ci, calculate photosynthetic rate
-  if(!C4){
-		if(photo == "BOTH")A <- Aci(Ci=ci,...)$ALEAF  # uses the hyperbolic minimum
-		if(photo == "VCMAX")A <- Aci(Ci=ci,...)$Ac    # vcmax limited rate
-		if(photo == "JMAX")A <- Aci(Ci=ci,...)$Aj     # jmax limited rate
-	}
-  if(C4){
-		if(photo == "BOTH")A <- AciC4(ci,...)$Ad  # uses the hyperbolic minimum
-		if(photo == "VCMAX")A <- AciC4(ci,...)$Ac  # vcmax/vpmax limited
-		if(photo == "JMAX")A <- AciC4(ci,...)$Aj  # jmax limited
-	}
+  if(!C4)
+		run <- Aci(Ci=Ci, VPD=VPD, ...)   # note that VPD does not do anything, just for consistency
+	else 
+		run <- AciC4(Ci, VPD=VPD, ...)
+	
+  if(photo == "BOTH")A <- run$ALEAF
+	if(photo == "VCMAX")A <- run$Ac
+	if(photo == "JMAX")A <- run$Aj
   
   # Given Ci and A, calculate gs (diffusion constraint)
-  gs <- a* A / (ca - ci)
+  gs <- a* A / (Ca - Ci)
 	
   # Boundary layer conductance (optional)
 	if(is.na(gbl))
@@ -57,5 +69,6 @@ OPTfun <- function(Ci,              # mu mol mol-1
 
 if(retobjfun)return(objfun)
 
-if(!retobjfun)return(list(A=A, gs=gs, E=E, Ci=Ci))
+if(!retobjfun)return(list( Ci=Ci, ALEAF=A, GS=gs, ELEAF=E*1000, Ac=run$Ac, Aj=run$Aj,
+                           Rd=run$Rd, VPD=VPD, Tleaf=run$Tleaf,  Ca=Ca, PPFD=run$PPFD ))
 }         

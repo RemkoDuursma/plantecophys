@@ -1,6 +1,7 @@
 export(Aci)
 export(DewtoVPD)
 export(esat)
+export(FARAO)
 export(fitaci)
 export(Photosyn)
 export(RHtoVPD)
