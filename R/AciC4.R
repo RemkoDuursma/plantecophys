@@ -2,9 +2,9 @@
 #' 
 #' @description An implementation of the A-Ci curve for C4 plants, based on von Caemmerer et al. (1999)
 #' @author Rhys Whitley
-#' @param ci
+#' @param Ci
 #' @param PPFD
-#' @param tleaf
+#' @param Tleaf
 #' @param VPMAX25
 #' @param VCMAX25
 #' @param Vpr
@@ -23,7 +23,7 @@
 #' @param FRM
 AciC4 <- function(Ci,
 	PPFD=1500, 
-	tleaf = 25,
+	Tleaf = 25,
 	VPMAX25=120, 
 	VCMAX25=60, 
 	Vpr=80,         # PEP regeneration (mu mol m-2 s-1)
@@ -43,7 +43,7 @@ AciC4 <- function(Ci,
 	)
 {
 
-	Tk <- tleaf+273.15
+	Tk <- Tleaf+273.15
 	
 	# Temperature effects on Vcmax, Vpmax and Jmax (Massad et al. 2007)
     # This function returns value between 0 and 1.
@@ -58,9 +58,9 @@ AciC4 <- function(Ci,
 	low_gammastar <- 1.93e-4
 	
 	# Michaelis-Menten coefficients for CO2 (Kc, mu mol mol-1) and O (Ko, mmol mol-1) and combined (K)
-    Kc <- 650*Q10^((tleaf-25)/10)
-    Kp <- 80*Q10^((tleaf-25)/10)
-    Ko <- 450*Q10^((tleaf-25)/10)
+    Kc <- 650*Q10^((Tleaf-25)/10)
+    Kp <- 80*Q10^((Tleaf-25)/10)
+    Ko <- 450*Q10^((Tleaf-25)/10)
     K <- Kc*(1+O2/Ko)
             
     # T effects according to Massad et al. (2007)
@@ -73,21 +73,21 @@ AciC4 <- function(Ci,
 	# Rm <- 0.5*Rd
 	
 	# Day leaf respiration, umol m-2 s-1
-    if (tleaf > TBELOW) {
-        Rd <- RD0 * exp(Q10F * (tleaf - RTEMP)) * DAYRESP
+    if (Tleaf > TBELOW) {
+        Rd <- RD0 * exp(Q10F * (Tleaf - RTEMP)) * DAYRESP
     } else {
         Rd <- 0.0
     }
 	Rm <-  FRM*Rd
 	
 	# PEP carboxylation rate
-	Vp <- pmin(ci*Vpmax/(ci+Kp),Vpr)
+	Vp <- pmin(Ci*Vpmax/(Ci+Kp),Vpr)
 	
 	# Quadratic solution for enzyme limited C4 assimilation
 	a.c <- 1 - (alpha*Kc)/(0.047*Ko)
-	b.c <- -( (Vp-Rm+gbs*ci) + (Vcmax-Rd) + gbs*K + 
+	b.c <- -( (Vp-Rm+gbs*Ci) + (Vcmax-Rd) + gbs*K + 
 			alpha*low_gammastar/0.047*( low_gammastar*Vcmax+Rd*Kc/Ko ) )
-	c.c <- (Vcmax-Rd)*(Vp-Rm+gbs*ci) - (Vcmax*gbs*low_gammastar*O2 + Rd*gbs*K)
+	c.c <- (Vcmax-Rd)*(Vp-Rm+gbs*Ci) - (Vcmax*gbs*low_gammastar*O2 + Rd*gbs*K)
 		
 	A.enzyme <- (-b.c - sqrt(b.c^2 - 4*a.c*c.c)) / (2*a.c)
 
@@ -97,9 +97,9 @@ AciC4 <- function(Ci,
 	
 	# Quadratic solution for light-limited C4 assimilation
 	a.j <- 1 - 7*low_gammastar*alpha/(3*0.047)
-	b.j <- -( (x*J/2-Rm+gbs*ci) + ((1-x)*J/3-Rd) + gbs*(7*low_gammastar*O2/3)
+	b.j <- -( (x*J/2-Rm+gbs*Ci) + ((1-x)*J/3-Rd) + gbs*(7*low_gammastar*O2/3)
 				+ alpha*low_gammastar/0.047*((1-x)*J/3+Rd) )
-	c.j <- ( (x*J/2-Rm+gbs*ci)*((1-x)*J/3-Rd) - gbs*low_gammastar*O2*((1-x)*J/3-7*Rd/3) )
+	c.j <- ( (x*J/2-Rm+gbs*Ci)*((1-x)*J/3-Rd) - gbs*low_gammastar*O2*((1-x)*J/3-7*Rd/3) )
 		
 	A.light <- (-b.j - sqrt(b.j^2 - 4*a.j*c.j)) / (2*a.j)
 
@@ -114,5 +114,5 @@ AciC4 <- function(Ci,
 	Ac <- Ac - Rd
 	Aj <- Aj - Rd
 		
-	return(list(An=An, Ac=Ac, Aj=Aj, Ad=Ad, Vp=Vp, Rd=Rd))
+	return(list(ALEAF=Ad, An=An, Ac=Ac, Aj=Aj, Vp=Vp, Rd=Rd))
 }
