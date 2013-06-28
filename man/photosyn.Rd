@@ -4,13 +4,13 @@
 \title{Coupled leaf gas exchange model}
 \usage{
   Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25,
-    Patm = 101, g1 = 4, g0 = 0, gk = 0.5, vpdmin = 0.5,
-    alpha = 0.24, theta = 0.85, Jmax = 100, Vcmax = 50,
-    Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25,
-    Rdayfrac = 1, EaV = 82620.87, EdVC = 0,
-    delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05,
-    delsJ = 641.3615, Ci = NULL,
-    whichA = c("Ah", "Amin", "Ac", "Aj"))
+    Patm = 101, gsmodel = c("BBOpti", "BBLeuning"), g1 = 4,
+    g0 = 0, gk = 0.5, vpdmin = 0.5, D0 = 5, alpha = 0.24,
+    theta = 0.85, Jmax = 100, Vcmax = 50, Rd0 = 0.92,
+    Q10 = 1.92, Rd = NULL, TrefR = 25, Rdayfrac = 1,
+    EaV = 82620.87, EdVC = 0, delsC = 645.1013,
+    EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615,
+    Ci = NULL, whichA = c("Ah", "Amin", "Ac", "Aj"))
 
   Aci(Ci, ...)
 }
@@ -26,14 +26,20 @@
 
   \item{Patm}{Atmospheric pressure (kPa)}
 
-  \item{g0,g1}{Parameters of Medlyn et al. (2011) model of
-  stomatal conductance (gs).}
+  \item{gsmodel}{One of BBOpti (Medlyn et al. 2011) or
+  BBLeuning (Leuning 1995)}
+
+  \item{g0,g1}{Parameters of Ball-Berry type stomatal
+  conductance models.}
 
   \item{gk}{Optional, exponent of VPD in gs model (Duursma
   et al. 2013)}
 
   \item{vpdmin}{Below vpdmin, VPD=vpdmin, to avoid very
   high gs.}
+
+  \item{D0}{Parameter for the BBLeuning stomatal
+  conductance model.}
 
   \item{alpha}{Quantum yield of electron transport (mol
   mol-1)}

@@ -24,9 +24,11 @@
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
 #' @param Tleaf Leaf temperature (degrees C)
 #' @param Patm Atmospheric pressure (kPa)
-#' @param g0,g1 Parameters of Medlyn et al. (2011) model of stomatal conductance (gs).
+#' @param gsmodel One of BBOpti (Medlyn et al. 2011) or BBLeuning (Leuning 1995)
+#' @param g0,g1 Parameters of Ball-Berry type stomatal conductance models.
 #' @param gk Optional, exponent of VPD in gs model (Duursma et al. 2013)
 #' @param vpdmin Below vpdmin, VPD=vpdmin, to avoid very high gs.
+#' @param D0 Parameter for the BBLeuning stomatal conductance model.
 #' @param alpha Quantum yield of electron transport (mol mol-1)
 #' @param theta Shape of light response curve.
 #' @param Jmax Maximum rate of electron transport at 25 degrees C (mu mol m-2 s-1)
@@ -61,10 +63,12 @@ Photosyn <- function(VPD=1.5,
                      Tleaf=25,
                      Patm=101,
                      
+                     gsmodel=c("BBOpti","BBLeuning"),
                      g1=4,
                      g0=0, 
                      gk=0.5,
                      vpdmin=0.5,
+                     D0=5,
                       
                      alpha=0.24, 
                      theta=0.85, 
@@ -90,7 +94,7 @@ Photosyn <- function(VPD=1.5,
 
   
   whichA <- match.arg(whichA)
-  
+  gsmodel <- match.arg(gsmodel)
   
   # Functions
   
@@ -140,7 +144,7 @@ Photosyn <- function(VPD=1.5,
   # Pre-calculations
   
   # g1 and g0 are ALWAYS IN UNITS OF H20
-  # G0 must be converted (but no G1, see below)
+  # G0 must be converted to CO2 (but not G1, see below)
   g0 <- g0/1.57
   
   # Leaf respiration
@@ -162,10 +166,17 @@ Photosyn <- function(VPD=1.5,
   VJ <- J/4
   
   # Medlyn et al. 2011 model gs/A. NOTE: 1.6 not here because we need GCO2!
-  vpduse <- VPD
-  vpduse[vpduse < vpdmin] <- vpdmin
-  GSDIVA <- (1 + g1/(vpduse^(1-gk)))/Ca
-  
+  if(gsmodel == "BBOpti"){
+    vpduse <- VPD
+    vpduse[vpduse < vpdmin] <- vpdmin
+    GSDIVA <- (1 + g1/(vpduse^(1-gk)))/Ca
+  }
+  if(gsmodel == "BBLeuning"){
+    GSDIVA <- g1 / Ca / (1 + VPD/D0)
+    GSDIVA <- GSDIVA / 1.6   # convert to conductance to CO2
+  }
+    
+    
   # If CI not provided
   if(is.null(Ci)){
   

@@ -2,6 +2,7 @@
 #' FARquhar And Opti
 #' 
 #' @description The numerical solution of the optimal stomatal conductance model, coupled with the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation to this full numeric solution.
+#' @param lambda The marginal cost of water (mol mol-1)
 #' @param Ca The CO2 concentration. 
 #' @param gbl Optional, the boundary layer conductance (mol m-2 s-1). Somewhat experimental!
 #' @param photo Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. the minimum of Vcmax and Jmax limited rates.
@@ -9,14 +10,15 @@
 #' @param ... All other parameters are passed to \code{\link{Aci}}
 #' @author Remko Duursma
 #' @export
-FARAO <- function(Ca=400, VPD=1, gbl=NA, photo=c("BOTH","VCMAX","JMAX"), C4=FALSE, ...){
+FARAO <- function(lambda=0.002, Ca=400, VPD=1, gbl=NA, 
+                  photo=c("BOTH","VCMAX","JMAX"), C4=FALSE, ...){
   
   photo <- match.arg(photo)
   
   fx <- function(Ca,...)optimize(OPTfun, interval=c(0,Ca), 
                                  maximum=TRUE,Ca=Ca,
                                  ...)$maximum
-  optimalcis <- mapply(fx,Ca=Ca,gbl=gbl, photo=photo, C4=C4, VPD=VPD,...)
+  optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, gbl=gbl, photo=photo, C4=C4, VPD=VPD,...)
   
   res <- as.data.frame(OPTfun(Ci=optimalcis, retobjfun=FALSE, 
                               Ca=Ca,gbl=gbl, photo=photo, C4=C4, VPD=VPD,...))
@@ -44,7 +46,7 @@ OPTfun <- function(Ci,              # mu mol mol-1
 	
   # Given a Ci, calculate photosynthetic rate
   if(!C4)
-		run <- Aci(Ci=Ci, VPD=VPD, ...)   # note that VPD does not do anything, just for consistency
+		run <- Aci(Ci=Ci, VPD=VPD, ...)   # note that VPD does not do anything, just for consistency in I/O
 	else 
 		run <- AciC4(Ci, VPD=VPD, ...)
 	

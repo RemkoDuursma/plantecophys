@@ -2,10 +2,12 @@
 \alias{FARAO}
 \title{FARquhar And Opti}
 \usage{
-  FARAO(Ca = 400, VPD = 1, gbl = NA,
+  FARAO(lambda = 0.002, Ca = 400, VPD = 1, gbl = NA,
     photo = c("BOTH", "VCMAX", "JMAX"), C4 = FALSE, ...)
 }
 \arguments{
+  \item{lambda}{The marginal cost of water (mol mol-1)}
+
   \item{Ca}{The CO2 concentration.}
 
   \item{gbl}{Optional, the boundary layer conductance (mol
