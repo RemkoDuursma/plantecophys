@@ -27,6 +27,7 @@
 #' @param EaJ, EdVJ, delsJ Jmax temperature response parameters
 #' @param Ci Optional, intercellular CO2 concentration (ppm). If not provided, calculated via gs model.
 #' @param whichA Which assimilation rate does gs respond to? 
+#' @seealso FARAO fitaci AciC4
 #' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply
 #' of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model.
 #'  \if{html}{\figure{supplydemand.jpg}{Supply-demand}}
@@ -49,6 +50,8 @@
 #'  GS = G0 + g1*ALEAF/(Ca * (1 + VPD/D0))
 #'  
 #'  Note that this model also uses the g1 parameter, but it needs to be set to a much higher value to be comparable in magnitude to the BBOpti model.
+#'  
+#'  For the full numerical solution to the Cowan-Farquhar optimization, use the \code{\link{FARAO}} function.
 #'  
 #'  If the mesophyll conductance is provided, it is assumed that Vcmax and Jmax are the chloroplastic rates, and leaf photosynthesis is calculated following Ethier and Livingston (2004).
 #'  

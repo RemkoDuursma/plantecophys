@@ -19,19 +19,21 @@
 
   \item{VCMAX25}{}
 
-  \item{Vpr}{}
+  \item{Vpr}{PEP regeneration (mu mol m-2 s-1)}
 
-  \item{alpha}{}
+  \item{alpha}{Fraction of PSII activity in the bundle
+  sheath}
 
-  \item{gbs}{}
+  \item{gbs}{Bundle shead conductance (mol m-2 s-1)}
 
-  \item{O2}{}
+  \item{O2}{Mesophyll O2 concentration}
 
   \item{JMAX25}{}
 
-  \item{x}{}
+  \item{x}{Partitioning factor for electron transport}
 
-  \item{THETA}{}
+  \item{THETA}{Shape parameter of the non-rectangular
+  hyperbola}
 
   \item{Q10}{}
 
@@ -45,7 +47,8 @@
 
   \item{Q10F}{}
 
-  \item{FRM}{}
+  \item{FRM}{Fraction of dark respiration that is mesophyll
+  respiration (Rm)}
 }
 \description{
   An implementation of the A-Ci curve for C4 plants, based

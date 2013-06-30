@@ -1,4 +1,3 @@
-
 #' FARquhar And Opti
 #' 
 #' @description The numerical solution of the optimal stomatal conductance model, coupled with the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation to this full numeric solution.
@@ -9,6 +8,11 @@
 #' @param C4 If TRUE, uses the C4 photosynthesis routine (\code{\link{AciC4}})
 #' @param ... All other parameters are passed to \code{\link{Aci}}
 #' @author Remko Duursma
+#' @details This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011).
+#' @references 
+#' Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabolism and environment. Symposia of the Society for Experimental Biology. 31:471-505.
+#' 
+#' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @export
 FARAO <- function(lambda=0.002, Ca=400, VPD=1, gbl=NA, 
                   photo=c("BOTH","VCMAX","JMAX"), C4=FALSE, ...){

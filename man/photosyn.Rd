@@ -83,7 +83,7 @@
   to?}
 }
 \value{
-  A dataframe.
+  Returns a dataframe.
 }
 \description{
   A coupled photosynthesis - stomatal conductance model,
@@ -130,11 +130,14 @@
   The 'BBLeuning' model is that of Leuning (1995). It is
   given by,
 
-  GS = G0 + g1*A/(Ca * (1 + VPD/D0))
+  GS = G0 + g1*ALEAF/(Ca * (1 + VPD/D0))
 
   Note that this model also uses the g1 parameter, but it
   needs to be set to a much higher value to be comparable
   in magnitude to the BBOpti model.
+
+  For the full numerical solution to the Cowan-Farquhar
+  optimization, use the \code{\link{FARAO}} function.
 
   If the mesophyll conductance is provided, it is assumed
   that Vcmax and Jmax are the chloroplastic rates, and leaf
@@ -210,5 +213,8 @@ with(arun2, points(Ci, ALEAF, type='l', lty=5))
   M. Freeman and L. Wingate. 2011. Reconciling the optimal
   and empirical approaches to modelling stomatal
   conductance. Global Change Biology. 17:2134-2144.
+}
+\seealso{
+  FARAO fitaci AciC4
 }
 

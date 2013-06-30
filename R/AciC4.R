@@ -7,39 +7,39 @@
 #' @param Tleaf
 #' @param VPMAX25
 #' @param VCMAX25
-#' @param Vpr
-#' @param alpha
-#' @param gbs
-#' @param O2
+#' @param Vpr PEP regeneration (mu mol m-2 s-1)
+#' @param alpha Fraction of PSII activity in the bundle sheath
+#' @param gbs Bundle shead conductance (mol m-2 s-1)
+#' @param O2 Mesophyll O2 concentration
 #' @param JMAX25
-#' @param x
-#' @param THETA
+#' @param x Partitioning factor for electron transport
+#' @param THETA Shape parameter of the non-rectangular hyperbola
 #' @param Q10
 #' @param RD0
 #' @param RTEMP
 #' @param TBELOW
 #' @param DAYRESP
 #' @param Q10F
-#' @param FRM
+#' @param FRM Fraction of dark respiration that is mesophyll respiration (Rm)
 AciC4 <- function(Ci,
 	PPFD=1500, 
 	Tleaf = 25,
 	VPMAX25=120, 
 	VCMAX25=60, 
-	Vpr=80,         # PEP regeneration (mu mol m-2 s-1)
-	alpha=0.0,		 # Fraction of PSII activity in the bundle sheath
-	gbs=3e-3,		# Bundle shead conductance (mol m-2 s-1)
-	O2=210,			# Mesophyll O2 concentration
+	Vpr=80,         
+	alpha=0.0,		  
+	gbs=3e-3,		 
+	O2=210,			 
 	JMAX25=400,		
-	x=0.4, 			# Partitioning factor for electron transport
-	THETA=0.7,      # Shape parameter of the non-rectangular hyperbola
+	x=0.4, 			 
+	THETA=0.7,   
 	Q10 = 2.3,
 	RD0=1, 
   RTEMP=25, 
   TBELOW=0, 
   DAYRESP=1, 
   Q10F=2, 
-	FRM=0.5		# Fraction of dark respiration that is mesophyll respiration (Rm)
+	FRM=0.5		
 	)
 {
 
@@ -58,12 +58,12 @@ AciC4 <- function(Ci,
 	low_gammastar <- 1.93e-4
 	
 	# Michaelis-Menten coefficients for CO2 (Kc, mu mol mol-1) and O (Ko, mmol mol-1) and combined (K)
-    Kc <- 650*Q10^((Tleaf-25)/10)
-    Kp <- 80*Q10^((Tleaf-25)/10)
-    Ko <- 450*Q10^((Tleaf-25)/10)
-    K <- Kc*(1+O2/Ko)
-            
-    # T effects according to Massad et al. (2007)
+  Kc <- 650*Q10^((Tleaf-25)/10)
+  Kp <- 80*Q10^((Tleaf-25)/10)
+  Ko <- 450*Q10^((Tleaf-25)/10)
+  K <- Kc*(1+O2/Ko)
+          
+  # T effects according to Massad et al. (2007)
 	Vcmax <- VCMAX25*Arrhenius(Tk, 67294, 144568, 472)
 	Vpmax <- VPMAX25*Arrhenius(Tk, 70373, 117910, 376)
 	Jmax <- JMAX25*Arrhenius(Tk, 77900, 191929, 627)
@@ -73,11 +73,11 @@ AciC4 <- function(Ci,
 	# Rm <- 0.5*Rd
 	
 	# Day leaf respiration, umol m-2 s-1
-    if (Tleaf > TBELOW) {
-        Rd <- RD0 * exp(Q10F * (Tleaf - RTEMP)) * DAYRESP
-    } else {
-        Rd <- 0.0
-    }
+  if (Tleaf > TBELOW) {
+      Rd <- RD0 * exp(Q10F * (Tleaf - RTEMP)) * DAYRESP
+  } else {
+      Rd <- 0.0
+  }
 	Rm <-  FRM*Rd
 	
 	# PEP carboxylation rate
