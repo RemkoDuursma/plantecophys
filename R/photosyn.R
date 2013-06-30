@@ -33,6 +33,7 @@
 #' @param theta Shape of light response curve.
 #' @param Jmax Maximum rate of electron transport at 25 degrees C (mu mol m-2 s-1)
 #' @param Vcmax Maximum carboxylation rate at 25 degrees C (mu mol m-2 s-1)
+#' @param gmeso Mesophyll conductance. If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
 #' @param Rd Dark respiration rate, optional (if not provided, calculated from Tleaf)
 #' @param Rd0 Dark respiration rata at reference temperature (\code{TrefR})
 #' @param Q10 Temperature sensitivity of Rd.
@@ -44,15 +45,18 @@
 #' @param whichA Which assimilation rate does gs respond to?
 #' @references 
 #'
+#' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
+#'
 #' Farquhar, G.D., S. Caemmerer and J.A. Berry. 1980. A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta. 149:78-90.
 #' 
 #' Farquhar, G. D., & Sharkey, T. D. (1982). Stomatal conductance and photosynthesis. Annual review of plant physiology, 33(1), 317-345.
 #' 
+#' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
+#'
 #' Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter, P.C. Harley, M.U.F. Kirschbaum, X. Le Roux, P. Montpied, J. Strassemeyer, A. Walcroft, K. Wang and D. Loustau. 2002. Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. Plant Cell and Environment. 25:1167-1179.
 #' 
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' 
-#' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
 #' 
 #' @aliases Photosyn Aci
 #' @details If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). 
@@ -74,7 +78,8 @@ Photosyn <- function(VPD=1.5,
                      theta=0.85, 
                      Jmax=100, 
                      Vcmax=50, 
-                       
+                     gmeso=NULL,
+                     
                      Rd0 = 0.92,
                      Q10 = 1.92,
                      Rd=NULL,
