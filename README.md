@@ -6,15 +6,13 @@ plantecophys package notes
 
 ### High priority
 
-* T response parameters should be a list?
-
-* get MESO from GasExchangeR photosyn (BM's edits)
+* T response parameters more flexibility
 
 
 ### Low priority
 
-* no Tuzet, yet
-* no Penman-Monteith (as MAESTRA)
+* Tuzet
+* Penman-Monteith
 * more unit conversion utilities?
 
 
