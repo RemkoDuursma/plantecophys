@@ -6,11 +6,12 @@
   Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25,
     Patm = 101, gsmodel = c("BBOpti", "BBLeuning"), g1 = 4,
     g0 = 0, gk = 0.5, vpdmin = 0.5, D0 = 5, alpha = 0.24,
-    theta = 0.85, Jmax = 100, Vcmax = 50, Rd0 = 0.92,
-    Q10 = 1.92, Rd = NULL, TrefR = 25, Rdayfrac = 1,
-    EaV = 82620.87, EdVC = 0, delsC = 645.1013,
-    EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615,
-    Ci = NULL, whichA = c("Ah", "Amin", "Ac", "Aj"))
+    theta = 0.85, Jmax = 100, Vcmax = 50, gmeso = NULL,
+    Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25,
+    Rdayfrac = 1, EaV = 82620.87, EdVC = 0,
+    delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05,
+    delsJ = 641.3615, Ci = NULL,
+    whichA = c("Ah", "Amin", "Ac", "Aj"))
 
   Aci(Ci, ...)
 }
@@ -52,15 +53,19 @@
   \item{Vcmax}{Maximum carboxylation rate at 25 degrees C
   (mu mol m-2 s-1)}
 
-  \item{Rd}{Dark respiration rate, optional (if not
-  provided, calculated from Tleaf)}
+  \item{gmeso}{Mesophyll conductance (mol m-2 s-1). If not
+  NULL (the default), Vcmax and Jmax are chloroplastic
+  rates.}
+
+  \item{Rd}{Dark respiration rate (mu mol m-2 s-1),
+  optional (if not provided, calculated from Tleaf)}
 
   \item{Rd0}{Dark respiration rata at reference temperature
   (\code{TrefR})}
 
   \item{Q10}{Temperature sensitivity of Rd.}
 
-  \item{TrefR}{Reference temperature for Rd.}
+  \item{TrefR}{Reference temperature for Rd (Celcius).}
 
   \item{Rdayfrac}{Ratio of Rd in the light vs. in the
   dark.}
@@ -71,7 +76,8 @@
   \item{EaJ,}{EdVJ, delsJ Jmax temperature response
   parameters}
 
-  \item{Ci}{Optional, intercellular CO2 concentration}
+  \item{Ci}{Optional, intercellular CO2 concentration
+  (ppm). If not provided, calculated via gs model.}
 
   \item{whichA}{Which assimilation rate does gs respond
   to?}
@@ -84,7 +90,10 @@
   based on the Farquhar model of photosynthesis, and a
   Ball-Berry type model of stomatatal conductance. Includes
   temperature sensitivity of photosynthetic parameters,
-  dark respiration.
+  dark respiration (optionally calculated from leaf
+  temperature), and mesophyll conductance.
+
+  #'
 }
 \details{
   The coupled photosynthesis - stomatal conductance model
@@ -106,8 +115,9 @@
   including Vcmax, Jmax, Gammastar, and Km follow Medlyn et
   al. 2002.
 
-  At the moment, only one stomatal conductance model is
-  implemented, which is a slightly more general form of the
+  At the moment, two stomatal conductance models are
+  implemented, both are Ball-Berry type models. The
+  'BBOpti' model is a slightly more general form of the
   model of Medlyn et al. 2011 (see Duursma et al. 2013). It
   is given by (in notation of the parameters and output
   variables of \code{Photosyn}),
@@ -116,8 +126,65 @@
 
   where GK = 0.5 if stomata behave optimally (cf. Medlyn et
   al. 2011).
+
+  The 'BBLeuning' model is that of Leuning (1995). It is
+  given by,
+
+  GS = G0 + g1*A/(Ca * (1 + VPD/D0))
+
+  Note that this model also uses the g1 parameter, but it
+  needs to be set to a much higher value to be comparable
+  in magnitude to the BBOpti model.
+
+  If the mesophyll conductance is provided, it is assumed
+  that Vcmax and Jmax are the chloroplastic rates, and leaf
+  photosynthesis is calculated following Ethier and
+  Livingston (2004).
+
+  If Ci is provided as an input, this function calculates
+  an A-Ci curve. Otherwise, Ci is calculated from the
+  intersection between the 'supply' and 'demand'
+  relationships, using the stomatal conductance model of
+  Medlyn et al. (2011).
+
+  By default, the \code{Photosyn} function returns the
+  hyperbolic minimum of Vcmax and Jmax-limited
+  photosynthetic rates. This is to avoid the discontinuity
+  at the transition between the two rates. Both Ac and Aj
+  are also returned should they be needed. Note that those
+  rates are output as gross photosynthetic rates!
+}
+\examples{
+# Run the coupled leaf gas exchange model, set only a couple of parameters
+Photosyn(VPD=2, g1=4, Ca=500)
+
+# It is easy to set multiple values for inputs (and these can be mixed with single inputs);
+r <- Photosyn(VPD=seq(0.5, 4, length=25), Vcmax=50, Jmax=100)
+with(r, plot(VPD, ALEAF, type='l'))
+
+# Set the mesophyll conductance
+run1 <- Photosyn(PPFD=seq(50,1000,length=25), gmeso=0.15, Vcmax=40, Jmax=85)
+with(run1, plot(PPFD, GS, type='l'))
+
+# Run A-Ci curve only.
+arun1 <- Aci(Ci=seq(50, 1200, length=101), Vcmax=40, Jmax=85)
+arun2 <- Aci(Ci=seq(50, 1200, length=101), Vcmax=30, Jmax=70)
+with(arun1, plot(Ci, ALEAF, type='l'))
+with(arun2, points(Ci, ALEAF, type='l', lty=5))
 }
 \references{
+  Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J.,
+  Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,
+  Near-optimal response of instantaneous transpiration
+  efficiency to vapour pressure deficit, temperature and
+  [CO2] in cotton (Gossypium hirsutum L.). Agricultural and
+  Forest Meteorology 168 : 168 - 176.
+
+  Ethier, G. and N. Livingston. 2004. On the need to
+  incorporate sensitivity to CO2 transfer conductance into
+  the Farquhar–von Caemmerer–Berry leaf photosynthesis
+  model. Plant, Cell & Environment. 27:137-153.
+
   Farquhar, G.D., S. Caemmerer and J.A. Berry. 1980. A
   biochemical model of photosynthetic CO2 assimilation in
   leaves of C3 species. Planta. 149:78-90.
@@ -125,6 +192,10 @@
   Farquhar, G. D., & Sharkey, T. D. (1982). Stomatal
   conductance and photosynthesis. Annual review of plant
   physiology, 33(1), 317-345.
+
+  Leuning, R. 1995. A critical-appraisal of a combined
+  stomatal-photosynthesis model for C-3 plants. Plant Cell
+  and Environment. 18:339-355.
 
   Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter,
   P.C. Harley, M.U.F. Kirschbaum, X. Le Roux, P. Montpied,
@@ -139,12 +210,5 @@
   M. Freeman and L. Wingate. 2011. Reconciling the optimal
   and empirical approaches to modelling stomatal
   conductance. Global Change Biology. 17:2134-2144.
-
-  Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J.,
-  Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,
-  Near-optimal response of instantaneous transpiration
-  efficiency to vapour pressure deficit, temperature and
-  [CO2] in cotton (Gossypium hirsutum L.). Agricultural and
-  Forest Meteorology 168 : 168 - 176.
 }
 

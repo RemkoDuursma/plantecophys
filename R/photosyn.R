@@ -2,23 +2,7 @@
 #' 
 #' @export
 #' @rdname Photosyn
-#' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes temperature sensitivity of photosynthetic parameters, dark respiration.
-#' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply
-#' of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model.
-#'  \if{html}{\figure{supplydemand.jpg}{Supply-demand}}
-#'  \if{latex}{\figure{supplydemand}{Supply-demand}} 
-#'  
-#'  Figure 1. \code{Photosyn} calculates the operating point from the intersection of the supply and demand curves, here shown as the red dot.
-#'  
-#'  The model of Farquhar et al. (1980) is used to estimate the dependence of photosynthesis rate on Ci.
-#'  
-#'  The temperature response of photosynthetic parameters, including Vcmax, Jmax, Gammastar, and Km follow Medlyn et al. 2002. 
-#'  
-#'  At the moment, only one stomatal conductance model is implemented, which is a slightly more general form of the model of Medlyn et al. 2011 (see Duursma et al. 2013). It is given by (in notation of the parameters and output variables of \code{Photosyn}),
-#'  
-#'  GS = G0 + 1.6*(1 + G1/D^GK)*ALEAF/CA
-#'  
-#'  where GK = 0.5 if stomata behave optimally (cf. Medlyn et al. 2011).
+#' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance. 
 #' @param VPD Vapour pressure deficit (kPa)
 #' @param Ca Atmospheric CO2 concentration (ppm)
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
@@ -33,19 +17,48 @@
 #' @param theta Shape of light response curve.
 #' @param Jmax Maximum rate of electron transport at 25 degrees C (mu mol m-2 s-1)
 #' @param Vcmax Maximum carboxylation rate at 25 degrees C (mu mol m-2 s-1)
-#' @param gmeso Mesophyll conductance. If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
-#' @param Rd Dark respiration rate, optional (if not provided, calculated from Tleaf)
+#' @param gmeso Mesophyll conductance (mol m-2 s-1). If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
+#' @param Rd Dark respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf)
 #' @param Rd0 Dark respiration rata at reference temperature (\code{TrefR})
 #' @param Q10 Temperature sensitivity of Rd.
-#' @param TrefR Reference temperature for Rd.
+#' @param TrefR Reference temperature for Rd (Celcius).
 #' @param Rdayfrac Ratio of Rd in the light vs. in the dark.
 #' @param EaV, EdVC, delsC Vcmax temperature response parameters
 #' @param EaJ, EdVJ, delsJ Jmax temperature response parameters
-#' @param Ci Optional, intercellular CO2 concentration
-#' @param whichA Which assimilation rate does gs respond to?
+#' @param Ci Optional, intercellular CO2 concentration (ppm). If not provided, calculated via gs model.
+#' @param whichA Which assimilation rate does gs respond to? 
+#' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply
+#' of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model.
+#'  \if{html}{\figure{supplydemand.jpg}{Supply-demand}}
+#'  \if{latex}{\figure{supplydemand}{Supply-demand}} 
+#'  
+#'  Figure 1. \code{Photosyn} calculates the operating point from the intersection of the supply and demand curves, here shown as the red dot.
+#'  
+#'  The model of Farquhar et al. (1980) is used to estimate the dependence of photosynthesis rate on Ci.
+#'  
+#'  The temperature response of photosynthetic parameters, including Vcmax, Jmax, Gammastar, and Km follow Medlyn et al. 2002. 
+#'  
+#'  At the moment, two stomatal conductance models are implemented, both are Ball-Berry type models. The 'BBOpti' model is a slightly more general form of the model of Medlyn et al. 2011 (see Duursma et al. 2013). It is given by (in notation of the parameters and output variables of \code{Photosyn}),
+#'  
+#'  GS = G0 + 1.6*(1 + G1/D^GK)*ALEAF/CA
+#'  
+#'  where GK = 0.5 if stomata behave optimally (cf. Medlyn et al. 2011).
+#'  
+#'  The 'BBLeuning' model is that of Leuning (1995). It is given by,
+#'  
+#'  GS = G0 + g1*ALEAF/(Ca * (1 + VPD/D0))
+#'  
+#'  Note that this model also uses the g1 parameter, but it needs to be set to a much higher value to be comparable in magnitude to the BBOpti model.
+#'  
+#'  If the mesophyll conductance is provided, it is assumed that Vcmax and Jmax are the chloroplastic rates, and leaf photosynthesis is calculated following Ethier and Livingston (2004).
+#'  
+#'  If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). 
+#'  
+#'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates!
 #' @references 
-#'
 #' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
+#'
+#'Ethier, G. and N. Livingston. 2004. On the need to incorporate sensitivity to CO2 transfer conductance into the Farquhar–von Caemmerer–Berry leaf photosynthesis model. Plant, Cell & Environment. 27:137-153.
 #'
 #' Farquhar, G.D., S. Caemmerer and J.A. Berry. 1980. A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta. 149:78-90.
 #' 
@@ -56,11 +69,25 @@
 #' Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter, P.C. Harley, M.U.F. Kirschbaum, X. Le Roux, P. Montpied, J. Strassemeyer, A. Walcroft, K. Wang and D. Loustau. 2002. Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. Plant Cell and Environment. 25:1167-1179.
 #' 
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
-#' 
-#' 
 #' @aliases Photosyn Aci
-#' @details If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). 
-#' @return A dataframe.
+#' @return Returns a dataframe.
+#' @examples
+#' # Run the coupled leaf gas exchange model, set only a couple of parameters
+#' Photosyn(VPD=2, g1=4, Ca=500)
+#' 
+#' # It is easy to set multiple values for inputs (and these can be mixed with single inputs);
+#' r <- Photosyn(VPD=seq(0.5, 4, length=25), Vcmax=50, Jmax=100)
+#' with(r, plot(VPD, ALEAF, type='l'))
+#' 
+#' # Set the mesophyll conductance
+#' run1 <- Photosyn(PPFD=seq(50,1000,length=25), gmeso=0.15, Vcmax=40, Jmax=85)
+#' with(run1, plot(PPFD, GS, type='l'))
+#' 
+#' # Run A-Ci curve only.
+#' arun1 <- Aci(Ci=seq(50, 1200, length=101), Vcmax=40, Jmax=85)
+#' arun2 <- Aci(Ci=seq(50, 1200, length=101), Vcmax=30, Jmax=70)
+#' with(arun1, plot(Ci, ALEAF, type='l'))
+#' with(arun2, points(Ci, ALEAF, type='l', lty=5))
 Photosyn <- function(VPD=1.5, 
                      Ca=400, 
                      PPFD=1500,
@@ -197,7 +224,7 @@ Photosyn <- function(VPD=1.5,
           vec <- c(Ca,Ca)
           return(vec)
         }
-            
+        
         # Taken from MAESTRA.
         # Following calculations are used for both BB & BBL models.
         # Solution when Rubisco activity is limiting
@@ -248,11 +275,31 @@ Photosyn <- function(VPD=1.5,
       CIC <- Ci
     }
     
-    # Get photosynthetic rate  
-    Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
-    Aj <- VJ * (CIJ-GammaStar)/(CIJ + 2*GammaStar)
+  
+    # Photosynthetic rates, without or with mesophyll limitation
+    if(is.null(gmeso)){
+      # Get photosynthetic rate  
+      Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
+      Aj <- VJ * (CIJ-GammaStar)/(CIJ + 2*GammaStar)
+    
+    } else {
+    # Ethier and Livingston (2004) (Equation 10).
+      A <- -1/gmeso
+      BC <- (Vcmax - Rd)/gmeso + CIC + Km
+      CC <- Rd*(CIC+Km)-Vcmax*(CIC-GammaStar)
+      Ac <- mapply(QUADP, A=A,B=BC,C=CC)
+      
+      BJ <- (VJ - Rd)/gmeso + CIC + 2.0*GammaStar
+      CJ <- Rd*(CIC+2.0*GammaStar) - VJ*(CIC - GammaStar)
+      Aj <- mapply(QUADP, A=A,B=BJ,C=CJ)
+      
+      Ac <- Ac + Rd
+      Aj <- Aj + Rd
+      
+    }
     
     # When below light-compensation points, Ci=Ca.
+    lesslcp <- vector("logical", length(Aj))
     lesslcp <- Aj-Rd < 0
     
     if(length(Ca) == 1)Ca <- rep(Ca, length(CIJ))
@@ -297,8 +344,29 @@ Photosyn <- function(VPD=1.5,
 return(df)
 }
 
-#'@rdname Photosyn
+#' #'@rdname Photosyn
 #'@export
 Aci <- function(Ci,...)Photosyn(Ci=Ci,...)
+
+
+QUADP <- function(A,B,C){
+  
+  if((B^2 - 4*A*C) < 0){
+    warning("IMAGINARY ROOTS IN QUADRATIC")
+    return(0)
+  }
+  
+  if(identical(A,0)){
+    if(identical(B,0)){
+      return(0)
+    }
+  } else {
+    return(-C/B)
+  }
+  
+  
+  (- B + sqrt(B^2 - 4*A*C)) / (2*A)
+  
+}
 
 
