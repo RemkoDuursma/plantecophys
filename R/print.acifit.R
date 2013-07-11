@@ -8,7 +8,7 @@ print.acifit <- function(x,...){
   cat("Data and predictions:\n")
   print(x$df)
   
-  cat("\nParameters:\n")
+  cat("\nParameters (at 25C):\n")
   
   print(x$pars)
   cat("\n")
