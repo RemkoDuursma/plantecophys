@@ -20,3 +20,4 @@ Collate:
     'plot.acifit.R'
     'print.acifit.R'
     'RHtoVPD.R'
+    'gamplot.R'
