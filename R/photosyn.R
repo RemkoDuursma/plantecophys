@@ -130,6 +130,7 @@ Photosyn <- function(VPD=1.5,
   
   whichA <- match.arg(whichA)
   gsmodel <- match.arg(gsmodel)
+  inputCi <- !is.null(Ci)
   
   # Functions
   
@@ -213,7 +214,7 @@ Photosyn <- function(VPD=1.5,
     
     
   # If CI not provided
-  if(is.null(Ci)){
+  if(!inputCi){
   
     #--- non-vectorized workhorse
     #! This can be vectorized, if we exclude Zero PPFD first,
@@ -275,6 +276,9 @@ Photosyn <- function(VPD=1.5,
       
       # Ci provided (A-Ci function mode)
       CIJ <- Ci
+      
+      CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
+      
       CIC <- Ci
     }
     
@@ -301,22 +305,23 @@ Photosyn <- function(VPD=1.5,
       
     }
     
+  
     # When below light-compensation points, Ci=Ca.
-    lesslcp <- vector("logical", length(Aj))
-    lesslcp <- Aj-Rd < 0
-    
-    if(length(Ca) == 1)Ca <- rep(Ca, length(CIJ))
-    if(length(GammaStar) == 1)GammaStar <- rep(GammaStar, length(CIJ))
-    if(length(VJ) == 1)VJ <- rep(VJ, length(CIJ))
-    
-    CIJ[lesslcp] <- Ca[lesslcp]
-    Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / (CIJ[lesslcp] + 2*GammaStar[lesslcp])
-    
+    if(!inputCi){
+      lesslcp <- vector("logical", length(Aj))
+      lesslcp <- Aj-Rd < 0
       
-    # Ci
-    Ci <- vector("numeric",length(CIC))
-    Ci <- ifelse(Aj < Ac, CIJ, CIC)
-    
+      if(length(Ca) == 1)Ca <- rep(Ca, length(CIJ))
+      if(length(GammaStar) == 1)GammaStar <- rep(GammaStar, length(CIJ))
+      if(length(VJ) == 1)VJ <- rep(VJ, length(CIJ))
+      
+      CIJ[lesslcp] <- Ca[lesslcp]
+      Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / (CIJ[lesslcp] + 2*GammaStar[lesslcp])
+
+      Ci <- vector("numeric",length(CIC))
+      Ci <- ifelse(Aj < Ac, CIJ, CIC)
+    }
+
     # Hyperbolic minimum.
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape) - Rd
