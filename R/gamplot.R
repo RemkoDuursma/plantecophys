@@ -1,5 +1,5 @@
 #' Plot a simple generalized additive model fit
-#'@description A wrapper for \code{gam} from the \code{mgcv} package, to produce a nice smoother with a 95% confidence region.
+#'@description A wrapper for \code{gam} from the \code{mgcv} package, to produce a  smoother with a confidence region.
 #'@param xvarname Name of the X variable (quoted)
 #'@param yvarname Name of the Y variable (quoted)
 #'@param groupname Name of the grouping variable (quoted, optional)
@@ -12,14 +12,25 @@
 #'@param linecolor Color of the line (can be a vector with colors for each group)
 #'@param lwd Width of the line
 #'@param optline Logical, if TRUE adds a vertical line at the maximum value of Y.
+#'@param gamfit Optional, an object returned by \code{gam}, which can yield predictions for the dfr provided as input. 
 #'
+#'@details If a fitted gam object is not provided, this function fits a vanilla smoother function when there is no grouping variable,
+#'\preformatted{
+#'gamfit <- gam(Y ~ s(X), data=dat)
+#'}
 #'
+#'When a grouping variable is provided, it fits :
+#'\preformatted{
+#'gamfit <- gam(Y ~ group + s(X, by=group, id=1), data=dat)
+#'}
 #'
+#'See the documentation for \code{\link{mgcv::gam}} in the \code{mgcv} package.
+#' @return The fitted gam object, invisibly.
 #' @export
 gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
                     CI=TRUE, CIlevel=0.95, polycolor="grey", line=TRUE, 
                     linecolor="black", lwd=2,
-                    optline=FALSE, ...){
+                    optline=FALSE, gamfit=NULL, ...){
   
   library(mgcv)
   
@@ -33,12 +44,14 @@ gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
   
   dat <- dfr[complete.cases(dfr),]
   
-  if(nlevels(dat$group) > 1)
-    b <- gam(Y ~ group + s(X, by=group, id=1), data=dat)
-  else
-    b <- gam(Y ~ s(X), data=dat)
+  if(is.null(gamfit)){
+    if(nlevels(dat$group) > 1)
+      gamfit <- gam(Y ~ group + s(X, by=group, id=1), data=dat)
+    else
+      gamfit <- gam(Y ~ s(X), data=dat)
+  }
   
-  p <- predict(b, dat, se.fit=TRUE)
+  p <- predict(gamfit, dat, se.fit=TRUE)
   
   dat$Ypred <- p[[1]]
   dat$YpredSE <- p[[2]]
@@ -89,4 +102,6 @@ gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
                lwd=lwd, col=linecolor[i],...)
     }
   }
+  
+return(invisible(gamfit))
 }
