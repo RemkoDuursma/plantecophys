@@ -21,3 +21,4 @@ Collate:
     'print.acifit.R'
     'RHtoVPD.R'
     'gamplot.R'
+    'fitacis.R'

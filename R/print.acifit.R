@@ -1,5 +1,5 @@
-
 #' @S3method print acifit
+#' @method print acifit
 #' @rdname fitaci
 print.acifit <- function(x,...){
   

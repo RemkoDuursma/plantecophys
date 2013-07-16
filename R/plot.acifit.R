@@ -1,4 +1,5 @@
 #' @S3method plot acifit
+#' @method plot acifit
 #' @rdname fitaci
 plot.acifit <- function(x, ...){
   
@@ -12,7 +13,8 @@ plot.acifit <- function(x, ...){
                ylim=c(min(Ameas), 1.1*max(Ameas)),
                xlim=c(0, max(Ci)),
                xlab=expression(italic(C)[i]~~(ppm)),
-               ylab=expression(italic(A)[net]~~(mu*mol~m^-2~s^-1))                 
+               ylab=expression(italic(A)[net]~~(mu*mol~m^-2~s^-1)),
+               ...
               ))
   
   with(pred, points(Ci, Aj-Rd, type='l', col="blue"))
