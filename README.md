@@ -1,4 +1,4 @@
-The `plantecophys` R package
+The plantecophys R package
 ==========================
 
 
@@ -9,11 +9,12 @@ The following functions are the core of the `plantecophys` package:
 **Leaf gas exchange**
 
 * `Photosyn` is an implementation of a coupled leaf gas exchange model, including the Farquhar-Berry-von Caemmerer model of photosynthesis, and Ball-Berry-type stomatal conductance models.
-* `Aci` calculates the dependence of photosynthesis (A) on the intercellular $CO_2$ concentration ($C_i$), with the Farquhar model. 
-* `fitaci` and `fitacis` fit the Farquhar model of photosynthesis to observations of A and $C_i$ as measured with a Licor 6400 or similar instrument.
+* `Aci` calculates the dependence of photosynthesis (A) on the intercellular CO2 concentration (Ci), with the Farquhar model. 
+* `fitaci` and `fitacis` fit the Farquhar model of photosynthesis to observations of A and Ci as measured with a Licor 6400 or similar instrument.
 * `FARAO` is an implementation of the stomatal optimization model as suggested by Cowan and Farquhar (1977). It is a full numerical solution to the model, and uses the FARquhar model for photosynthesis.
 
 **Unit conversion**
+
 * `RHtoVPD` converts from relative humidity to VPD. There are others as well (see `?RHtoVPD`).
 
 
