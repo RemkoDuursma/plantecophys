@@ -10,7 +10,6 @@ fitacis <- function(data, group,...){
   if(any(tb == 0))
     stop("Some levels of your group variable have zero observations.\nUse droplevels() or fix data otherwise!")
   
-  
   d <- split(data, data[,"group"])  
   ng <- length(d)
   success <- vector("logical", ng)

@@ -1,22 +1,26 @@
-plantecophys package notes
+The `plantecophys` R package
 ==========================
 
 
-## To do list
+Welcome to the home for an R package that bundles a number of tools to analyze and visualize plant ecophysiological data, particularly leaf gas exchange data.
 
-### High priority
+The following functions are the core of the `plantecophys` package:
 
-* T response parameters more flexibility
+**Leaf gas exchange**
 
+* `Photosyn` is an implementation of a coupled leaf gas exchange model, including the Farquhar-Berry-von Caemmerer model of photosynthesis, and Ball-Berry-type stomatal conductance models.
+* `Aci` calculates the dependence of photosynthesis (A) on the intercellular $CO_2$ concentration ($C_i$), with the Farquhar model. 
+* `fitaci` and `fitacis` fit the Farquhar model of photosynthesis to observations of A and $C_i$ as measured with a Licor 6400 or similar instrument.
+* `FARAO` is an implementation of the stomatal optimization model as suggested by Cowan and Farquhar (1977). It is a full numerical solution to the model, and uses the FARquhar model for photosynthesis.
 
-### Low priority
-
-* Tuzet
-* Penman-Monteith
-* more unit conversion utilities?
-
-
-## Notes
-* `Photosyn()` is faster than `GasExchangeR::photosyn()` (see doc in subdir)
+**Unit conversion**
+* `RHtoVPD` converts from relative humidity to VPD. There are others as well (see `?RHtoVPD`).
 
 
+**visualization**
+
+* `gamplot` is a simple wrapper to produce smoothed regressions with confidence intervals, using generalized additive model fits. This is a useful function to visualize many types of quantitative relationships for which no model can be easily specified.
+
+
+
+For questions, comments, and suggestions, please email remkoduursma@gmail.com
