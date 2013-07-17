@@ -2,6 +2,7 @@
 \alias{fitaci}
 \alias{fitacis}
 \alias{plot.acifit}
+\alias{plot.acifits}
 \alias{print.acifit}
 \alias{summary.acifit}
 \title{Fit A-Ci curve}
@@ -17,6 +18,8 @@
   summary.acifit(x, ...)
 
   fitacis(data, group, ...)
+
+  \method{plot}{acifits} (x, ...)
 }
 \arguments{
   \item{dat}{Dataset with Ci, Photo, Tleaf, PPFD (the last

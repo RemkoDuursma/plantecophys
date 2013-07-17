@@ -27,17 +27,34 @@ fitacis <- function(data, group,...){
     setTxtProgressBar(wp, i)
   }
   close(wp)
-)
+
   names(fits) <- names(d)
   
   if(any(!success)){
-    print("The following groups could not be fit:")
+    message("The following groups could not be fit:")
     print(names(d)[!success])
   }
   
+  # toss unfitted ones
+  fits <- fits[success]
+
   class(fits) <- "acifits"
 
 return(fits)
 }
+
+#' @method plot acifits
+#' @S3method plot acifits
+#' @rdname fitaci
+plot.acifits <- function(x,...){
+  
+  for(i in seq_along(x))
+    plot.acifit(x[[i]],main=names(x)[i],...)
+    
+}
+
+
+
+
 
 
