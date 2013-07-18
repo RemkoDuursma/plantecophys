@@ -50,7 +50,10 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
     else
       warning("Parameter ",extrapars[i]," not recognized.")
   }
-  
+  photpars <- formals(Photosyn)
+  removevars <- c("whichA")
+  photpars <- photpars[-which(names(photpars) %in% removevars)]
+    
   if(!varnames$PPFD %in% names(dat)){
     dat$PPFD <- 1800
     if(!quiet)warning("PPFD not in dataset; assumed PPFD = 1800.")
@@ -98,6 +101,9 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   l$df <- acirun
   l$pars <- summary(nlsfit)$coefficients[,1:2]
   l$nlsfit <- nlsfit
+  
+  # Save full list of parameters
+  l$Photosyn <- Photosyn
   
   class(l) <- "acifit"
   

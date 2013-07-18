@@ -6,7 +6,8 @@ plot.acifit <- function(x, ...){
   
   Ci <- with(x$df, seq(min(Ci), max(Ci), length=101))
   
-  pred <- Aci(Ci=Ci, Vcmax=x$pars[1], Jmax=x$pars[2], Rd=x$pars[3],
+  # Exact model used to fit the A-Ci curve was saved in the object.
+  pred <- x$Photosyn(Ci=Ci, Vcmax=x$pars[1], Jmax=x$pars[2], Rd=x$pars[3],
                    Tleaf=mean(x$df$Tleaf), PPFD=mean(x$df$PPFD))
   
   with(x$df, plot(Ci, Ameas, pch=19,
