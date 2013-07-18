@@ -18,7 +18,6 @@ Collate:
     'fitBBOpti.R'
     'photosyn.R'
     'plot.acifit.R'
-    'print.acifit.R'
     'RHtoVPD.R'
     'gamplot.R'
     'fitacis.R'

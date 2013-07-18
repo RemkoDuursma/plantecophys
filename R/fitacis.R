@@ -44,7 +44,6 @@ return(fits)
 
 #' @method plot acifits
 #' @S3method plot acifits
-#' @rdname fitaci
 plot.acifits <- function(x,...){
   
   for(i in seq_along(x))
