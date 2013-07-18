@@ -1,5 +1,5 @@
 
-#' Fit the Farquhar-Berry-von Caemmerer model of photosynthesis
+#' Fit the Farquhar Berry von Caemmerer model of photosynthesis
 #' 
 #' @description Fits the Farquhar model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their (approximate) standard errors. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
 #' @param dat Dataset with Ci, Photo, Tleaf, PPFD (the last two are optional).

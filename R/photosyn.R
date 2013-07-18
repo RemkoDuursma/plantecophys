@@ -1,7 +1,5 @@
 #' @title Coupled leaf gas exchange model
 #' 
-#' @export
-#' @rdname Photosyn
 #' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance. 
 #' @param VPD Vapour pressure deficit (kPa)
 #' @param Ca Atmospheric CO2 concentration (ppm)
@@ -91,6 +89,8 @@
 #' arun2 <- Aci(Ci=seq(50, 1200, length=101), Vcmax=30, Jmax=70)
 #' with(arun1, plot(Ci, ALEAF, type='l'))
 #' with(arun2, points(Ci, ALEAF, type='l', lty=5))
+#' @export
+#' @rdname Photosyn
 Photosyn <- function(VPD=1.5, 
                      Ca=400, 
                      PPFD=1500,

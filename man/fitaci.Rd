@@ -2,7 +2,7 @@
 \alias{fitaci}
 \alias{fitacis}
 \alias{plot.acifit}
-\title{Fit the Farquhar-Berry-von Caemmerer model of photosynthesis}
+\title{Fit the Farquhar Berry von Caemmerer model of photosynthesis}
 \usage{
   fitaci(dat,
     varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PPFD"),
