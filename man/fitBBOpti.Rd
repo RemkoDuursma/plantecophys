@@ -1,0 +1,63 @@
+\name{fitBBOpti}
+\alias{fitBBOpti}
+\title{Fit the BBOpti stomatal conductance model.}
+\usage{
+  fitBBOpti(filename = NULL)
+}
+\arguments{
+  \item{Name}{of the CSV file (optional).}
+}
+\description{
+  This function fits the stomatal conductance model of
+  Medlyn et al. (2011) to leaf gas exchange data using
+  non-linear regression. See Details (below) for
+  instructions on how to organize your data, and how to
+  interpret the output.
+}
+\details{
+  The following function is fit, using non-linear
+  regression:
+
+  \preformatted{ gs = g0 + 1.6*(1 + g1/sqrt(D)) * (A/Ca) }
+  Where : \itemize{ \item \bold{gs} - Stomatal conductance
+  to H2O (mol m-2 s-1) \item \bold{D} - Vapor pressure
+  deficit (kPa) \item \bold{A} - Leaf net photosynthesis
+  (mu mol m-2 s-1) \item \bold{Ca} - Ambient CO2
+  concentration (ppm) \item \bold{g0,g1} - The fitted
+  parameters } The data needs to be saved in a CSV
+  (comma-separated values) file, with the following four
+  columns (these are the header names that the program uses
+  to find the variables):
+
+  A, gs, Ca and D (or VPD) in *exactly* the same units as
+  in the table above. If #' you are unsure on how to
+  organize your data, just send an email to the package
+  maintainer to receive an example CSV file.
+
+  Once you have the data organized properly, simply type
+  the following command:
+
+  \code{fitBBOpti()}
+
+  Menus and messages guide you through the process of
+  fitting the model to your data.
+
+  Optionally, the fitted stomatal conductance values of the
+  model are saved in the #'same CSV file, and saved in the
+  same folder as the original CSV file. The new CSV file
+  has the suffix \sQuote{_R}.
+
+  The \code{fitBBOpti} function is a very user-friendly
+  interface without any options. If you want more control,
+  run the non-linear regression yourself, with this
+  command: \preformatted{ nlsfit <- nls(g ~ g0 +
+  1.6*(1+g1/sqrt(D))*(A/Ca),start=list(g0=0.02, g1=8),
+  data=mydataframe) } where \code{mydataframe} is a
+  dataframe that contains the variables A,Ca and D.
+}
+\examples{
+\dontrun{
+fitBBOpti("myfile.csv")
+}
+}
+
