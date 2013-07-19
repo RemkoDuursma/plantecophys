@@ -77,5 +77,8 @@ abline(0,1)
 
 # The fitted values can also be extracted with the fitted() function:
 fitted(f)
+
+# The non-linear regression (nls) fit is stored as well,
+summary(f$nlsfit)
 }
 
