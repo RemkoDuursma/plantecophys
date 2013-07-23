@@ -7,7 +7,7 @@ ci <- seq(50, 800, length=101)
 acirun <- Aci(Ci=ci)
 
 
-jpeg("./man/figures/supplydemand.jpg", width=500, height=250, quality=100, pointsize=8)
+jpeg("man/figures/supplydemand.jpg", width=500, height=250, quality=100, pointsize=8)
 par(xaxs="i", yaxs="i", cex.lab=2, mar=c(6,6,2,1), cex.axis=1.6)
 with(acirun, plot(Ci, ALEAF, type='l',
                   ylim=c(0,20), xlim=c(0,800),

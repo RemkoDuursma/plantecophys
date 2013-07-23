@@ -128,9 +128,9 @@ print.acifit <- function(x,...){
 
 #' @S3method summary acifit
 #' @method summary acifit
-summary.acifit <- function(x,...){
+summary.acifit <- function(object,...){
   
-  print.acifit(x, ...)
+  print.acifit(object, ...)
   
 }
 

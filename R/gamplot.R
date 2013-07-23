@@ -32,7 +32,6 @@ gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
                     linecolor="black", lwd=2,
                     optline=FALSE, gamfit=NULL, ...){
   
-  library(mgcv)
   
   dfr$Y <- dfr[,yvarname]
   dfr$X <- as.numeric(dfr[,xvarname])
