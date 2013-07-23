@@ -1,5 +1,5 @@
 
-#' Fit the Farquhar-Berry-von Caemmerer model of photosynthesis
+#' Fit the Farquhar Berry von Caemmerer model of photosynthesis
 #' 
 #' @description Fits the Farquhar model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their (approximate) standard errors. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
 #' @param dat Dataset with Ci, Photo, Tleaf, PPFD (the last two are optional).
@@ -32,6 +32,9 @@
 #' 
 #' # The fitted values can also be extracted with the fitted() function:
 #' fitted(f)
+#' 
+#' # The non-linear regression (nls) fit is stored as well,
+#' summary(f$nlsfit)
 #' 
 #' @export
 #' @rdname fitaci
@@ -74,6 +77,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   }
   
   # Guess some initial values.
+  # Here I assume, Jmax/Vcmax = 1.9, GammaStar=45, Rd/Vcmax=0.015.
   maxCi <- max(dat$Ci)
   maxPhoto <- dat$ALEAF[which.max(dat$Ci)]
   VJ <- maxPhoto / ((maxCi - 45) / (maxCi + 2*45))
@@ -102,7 +106,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   l$pars <- summary(nlsfit)$coefficients[,1:2]
   l$nlsfit <- nlsfit
   
-  # Save full list of parameters
+  # Save function itself, the formals contain the parameters used to fit the A-Ci curve.
   l$Photosyn <- Photosyn
   
   class(l) <- "acifit"
@@ -119,10 +123,17 @@ print.acifit <- function(x,...){
   cat("Data and predictions:\n")
   print(x$df)
   
-  cat("\nParameters (at 25C):\n")
+  cat("\nEstimated parameters:\n")
   
   print(x$pars)
-  cat("\n")
+  cat("Note: Vcmax, Jmax are at 25C, Rd is at measurement T.")
+  cat("\n\n")
+  
+  cat("Parameter settings:\n")
+  fm <- formals(x$Photosyn)
+  pars <- c("alpha","theta","EaV","EdVC","delsC","EaJ","EdVJ","delsJ")
+  fm <- fm[pars]
+  cat(paste0(names(fm)," = ", unlist(fm),"\n"))
   
 }
 

@@ -2,7 +2,7 @@
 \alias{fitaci}
 \alias{fitacis}
 \alias{plot.acifit}
-\title{Fit the Farquhar-Berry-von Caemmerer model of photosynthesis}
+\title{Fit the Farquhar Berry von Caemmerer model of photosynthesis}
 \usage{
   fitaci(dat,
     varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PPFD"),
@@ -77,5 +77,8 @@ abline(0,1)
 
 # The fitted values can also be extracted with the fitted() function:
 fitted(f)
+
+# The non-linear regression (nls) fit is stored as well,
+summary(f$nlsfit)
 }
 
