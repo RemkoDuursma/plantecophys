@@ -44,12 +44,27 @@ return(fits)
 
 #' @method plot acifits
 #' @S3method plot acifits
-plot.acifits <- function(x,...){
+#' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
+#' @rdname fitaci
+#' @export
+plot.acifits <- function(x, how=c("manyplots","oneplot"), ...){
   
+  how <- match.arg(how)
+  
+  if(how == "manyplots"){
   for(i in seq_along(x))
     plot.acifit(x[[i]],main=names(x)[i],...)
+  }
+  
+  if(how == "oneplot"){
+    amax <- max(sapply(fits, function(x)max(x$df$Amodel)))
+    amin <- max(sapply(fits, function(x)min(x$df$Amodel)))
     
+    plot.acifit(x[[1]], what="model",ylim=c(amin,amax), whichA="Amin")
+    for(i in seq_along(x))plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,...)
+  }
 }
+
 
 #' @method coef acifits
 #' @S3method coef acifits

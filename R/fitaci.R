@@ -164,4 +164,52 @@ fitted.acifit <- function(object,...){
 
 
 
-
+#' @S3method plot acifit
+#' @method plot acifit
+#' @param what The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them.
+#' @param add If TRUE, adds to the current plot
+#' @param pch The plotting symbol for the data
+#' @param xlim Limits for the X axis, if left blank estimated from data
+#' @param ylim Limits for the Y axis, if left blank estimated from data
+#' @param whichA By default all three photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)). Or, specify one or two of them. 
+#' @param addzeroline If TRUE, the default, adds a dashed line at y=0
+#' @param addlegend If TRUE, adds a legend (by default does not add a legend if add=TRUE)
+#' @rdname fitaci
+plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, addzeroline=TRUE, addlegend=!add,...){
+  
+  if(is.null(ylim))ylim <- with(x$df, c(min(Ameas), 1.1*max(Ameas)))
+  if(is.null(xlim))xlim <- with(x$df,c(0, max(Ci)))
+  
+  Ci <- with(x$df, seq(min(Ci), max(Ci), length=101))
+  
+  # Exact model used to fit the A-Ci curve was saved in the object.
+  pred <- x$Photosyn(Ci=Ci, Vcmax=x$pars[1], Jmax=x$pars[2], Rd=x$pars[3],
+                     Tleaf=mean(x$df$Tleaf), PPFD=mean(x$df$PPFD))
+  
+  if(!add){
+    with(x$df, plot(Ci, Ameas, type='n',
+                    ylim=ylim,
+                    xlim=xlim,
+                    xlab=expression(italic(C)[i]~~(ppm)),
+                    ylab=expression(italic(A)[net]~~(mu*mol~m^-2~s^-1)),
+                    ...
+    ))
+  }
+  if("data" %in% what)with(x$df, points(Ci, Ameas, pch=pch,...))
+  
+  if("model" %in% what){
+    if("Aj" %in% whichA)with(pred, points(Ci, Aj-Rd, type='l', col="blue"))
+    if("Ac" %in% whichA)with(pred, points(Ci, Ac-Rd, type='l', col="red"))
+    if("Amin" %in% whichA)with(pred, points(Ci, ALEAF, type='l', col="black", lwd=2))
+  }
+  
+  if(addzeroline)
+    abline(h=0, lty=3)
+  
+  if(addlegend){
+    legend("bottomright", c(expression(italic(A)[c]),
+                            expression(italic(A)[j]),
+                            "Limiting rate"), lty=1, lwd=c(1,1,2), col=c("red","blue","black"))
+  }
+  
+}

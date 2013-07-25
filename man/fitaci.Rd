@@ -2,15 +2,22 @@
 \alias{fitaci}
 \alias{fitacis}
 \alias{plot.acifit}
+\alias{plot.acifits}
 \title{Fit the Farquhar Berry von Caemmerer model of photosynthesis}
 \usage{
   fitaci(dat,
     varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PPFD"),
     nlsmethod = "default", quiet = FALSE, ...)
 
-  \method{plot}{acifit} (x, ...)
+  \method{plot}{acifit} (x, what = c("data", "model"),
+    xlim = NULL, ylim = NULL,
+    whichA = c("Ac", "Aj", "Amin"), add = FALSE, pch = 19,
+    addzeroline = TRUE, addlegend = !add, ...)
 
   fitacis(data, group, ...)
+
+  \method{plot}{acifits} (x,
+    how = c("manyplots", "oneplot"), ...)
 }
 \arguments{
   \item{dat}{Dataset with Ci, Photo, Tleaf, PPFD (the last
@@ -27,6 +34,34 @@
 
   \item{group}{For batch analysis using \code{fitacis}, the
   name of the grouping variable in the dataframe.}
+
+  \item{what}{The default is to plot both the data and the
+  model fit, or specify 'data' or 'model' to plot one of
+  them.}
+
+  \item{add}{If TRUE, adds to the current plot}
+
+  \item{pch}{The plotting symbol for the data}
+
+  \item{xlim}{Limits for the X axis, if left blank
+  estimated from data}
+
+  \item{ylim}{Limits for the Y axis, if left blank
+  estimated from data}
+
+  \item{whichA}{By default all three photosynthetic rates
+  are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited
+  (red), Hyperbolic minimum (black)). Or, specify one or
+  two of them.}
+
+  \item{addzeroline}{If TRUE, the default, adds a dashed
+  line at y=0}
+
+  \item{addlegend}{If TRUE, adds a legend (by default does
+  not add a legend if add=TRUE)}
+
+  \item{how}{If 'manyplots', produces a single plot for
+  each A-Ci curve. If 'oneplot' overlays all of them.}
 }
 \value{
   A list of class 'acifit', with three components: 'df' is
