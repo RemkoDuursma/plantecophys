@@ -51,7 +51,18 @@ plot.acifits <- function(x,...){
     
 }
 
-
+#' @method coef acifits
+#' @S3method coef acifits
+coef.acifits <- function(object,...){
+  
+  f <- lapply(object, function(x)c(x$pars))
+  pars <- as.data.frame(do.call(rbind,f))
+  rn <- rownames(object[[1]]$pars)
+  nm <- c(rn, paste0(rn,"_SE"))
+  names(pars) <- nm
+  
+return(pars)
+}
 
 
 
