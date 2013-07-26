@@ -10,8 +10,14 @@
 #' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax (both at 25deg C) and Rd (at the measurement temperature).
 #' 
 #' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1.
-#' @return A list of class 'acifit', with three components:
-#' 'df' is a dataframe with the original data, and the fitted photosynthetic rate (Amodel). 'pars' contains the parameter estimates and their approximate standard errors. 'nlsfit' is the object returned by \code{\link{nls2}}, and contains more detail on the quality of the fit.
+#' @return A list of class 'acifit', with five components:
+#' \describe{
+#' \item{df}{A dataframe with the original data, the fitted photosynthetic rate (Amodel), Jmax and Vcmax-limited gross rates (Aj, Ac)}
+#' \item{pars}{Contains the parameter estimates and their approximate standard errors}
+#' \item{nlsfit}{The object returned by \code{\link{nls2}}, and contains more detail on the quality of the fit}
+#' \item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and PPFD are set to the mean value in the dataset.}
+#' \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax to Jmax limited photosynthesis.}
+#' }
 #' @examples
 #' # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. Here, we use the built-in example dataset 'acidata1'.
 #' f <- fitaci(acidata1)
@@ -35,6 +41,13 @@
 #' 
 #' # The non-linear regression (nls) fit is stored as well,
 #' summary(f$nlsfit)
+#' 
+#' # The curve generator is stored as f$Photosyn:
+#' # Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, PPFD for the dataset
+#' f$Photosyn(Ci=820)
+#' 
+#' # Photosynthetic rate at the transition point:
+#' f$Photosyn(Ci=f$Ci_transition)$ALEAF
 #' 
 #' @export
 #' @rdname fitaci
@@ -107,7 +120,16 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   l$nlsfit <- nlsfit
   
   # Save function itself, the formals contain the parameters used to fit the A-Ci curve.
+  # First save Tleaf, PPFD in the formals (as the mean of the dataset)
+  formals(Photosyn)$Tleaf <- mean(dat$Tleaf)
+  formals(Photosyn)$PPFD <- mean(dat$PPFD)
+  formals(Photosyn)$Vcmax <- l$pars[1]
+  formals(Photosyn)$Jmax <- l$pars[2]
+  formals(Photosyn)$Rd <- l$pars[3]
   l$Photosyn <- Photosyn
+  
+  # Store Ci at which photosynthesis transitions from Jmax to Vcmax limitation
+  l$Ci_transition <- findCiTransition(l$Photosyn)
   
   class(l) <- "acifit"
   
@@ -175,7 +197,7 @@ fitted.acifit <- function(object,...){
 #' @param addzeroline If TRUE, the default, adds a dashed line at y=0
 #' @param addlegend If TRUE, adds a legend (by default does not add a legend if add=TRUE)
 #' @rdname fitaci
-plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, addzeroline=TRUE, addlegend=!add,...){
+plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, addzeroline=TRUE, addlegend=!add, transitionpoint=TRUE, ...){
   
   if(is.null(ylim))ylim <- with(x$df, c(min(Ameas), 1.1*max(Ameas)))
   if(is.null(xlim))xlim <- with(x$df,c(0, max(Ci)))
@@ -183,8 +205,7 @@ plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, whichA=
   Ci <- with(x$df, seq(min(Ci), max(Ci), length=101))
   
   # Exact model used to fit the A-Ci curve was saved in the object.
-  pred <- x$Photosyn(Ci=Ci, Vcmax=x$pars[1], Jmax=x$pars[2], Rd=x$pars[3],
-                     Tleaf=mean(x$df$Tleaf), PPFD=mean(x$df$PPFD))
+  pred <- x$Photosyn(Ci=Ci)
   
   if(!add){
     with(x$df, plot(Ci, Ameas, type='n',
@@ -202,6 +223,9 @@ plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, whichA=
     if("Ac" %in% whichA)with(pred, points(Ci, Ac-Rd, type='l', col="red"))
     if("Amin" %in% whichA)with(pred, points(Ci, ALEAF, type='l', col="black", lwd=2))
   }
+  
+  if(transitionpoint)
+    points(x$Ci_transition, x$Photosyn(Ci=x$Ci_transition)$ALEAF, pch=21, bg="lightgrey", cex=0.8)
   
   if(addzeroline)
     abline(h=0, lty=3)

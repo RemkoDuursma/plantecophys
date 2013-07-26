@@ -20,3 +20,4 @@ Collate:
     'RHtoVPD.R'
     'gamplot.R'
     'fitacis.R'
+    'findCiTransition.R'

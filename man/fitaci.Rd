@@ -12,7 +12,8 @@
   \method{plot}{acifit} (x, what = c("data", "model"),
     xlim = NULL, ylim = NULL,
     whichA = c("Ac", "Aj", "Amin"), add = FALSE, pch = 19,
-    addzeroline = TRUE, addlegend = !add, ...)
+    addzeroline = TRUE, addlegend = !add,
+    transitionpoint = TRUE, ...)
 
   fitacis(data, group, ...)
 
@@ -64,13 +65,20 @@
   each A-Ci curve. If 'oneplot' overlays all of them.}
 }
 \value{
-  A list of class 'acifit', with three components: 'df' is
-  a dataframe with the original data, and the fitted
-  photosynthetic rate (Amodel). 'pars' contains the
-  parameter estimates and their approximate standard
-  errors. 'nlsfit' is the object returned by
+  A list of class 'acifit', with five components:
+  \describe{ \item{df}{A dataframe with the original data,
+  the fitted photosynthetic rate (Amodel), Jmax and
+  Vcmax-limited gross rates (Aj, Ac)} \item{pars}{Contains
+  the parameter estimates and their approximate standard
+  errors} \item{nlsfit}{The object returned by
   \code{\link{nls2}}, and contains more detail on the
-  quality of the fit.
+  quality of the fit} \item{Photosyn}{A copy of the
+  \code{\link{Photosyn}} function with the arguments
+  adjusted for the current fit. That is, Vcmax, Jmax and Rd
+  are set to those estimated in the fit, and Tleaf and PPFD
+  are set to the mean value in the dataset.}
+  \item{Ci_transition}{The Ci at which photosynthesis
+  transitions from Vcmax to Jmax limited photosynthesis.} }
 }
 \description{
   Fits the Farquhar model of photosynthesis to measurements
@@ -115,5 +123,12 @@ fitted(f)
 
 # The non-linear regression (nls) fit is stored as well,
 summary(f$nlsfit)
+
+# The curve generator is stored as f$Photosyn:
+# Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, PPFD for the dataset
+f$Photosyn(Ci=820)
+
+# Photosynthetic rate at the transition point:
+f$Photosyn(Ci=f$Ci_transition)$ALEAF
 }
 
