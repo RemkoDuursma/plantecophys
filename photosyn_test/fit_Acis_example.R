@@ -27,7 +27,7 @@ library(plantecophys)
 
 #read in the example dataset of 81 A:Ci curves. 
 #You will need to edit this code to match where the data are stored on your computer.
-dat <- read.csv("./photosyn_test/Aci_data_glasshouse.csv")
+dat <- read.csv("photosyn_test/Aci_data_glasshouse.csv")
 
 #look at the top bit of the data. The object "dat" is a dataframe. The first column
 # is a factor that identifies each curve, and the subsequent columns contain the
@@ -68,6 +68,10 @@ my.lm <-lm(Jmax~Vcmax,data=fitted.pars)
 abline(my.lm)
 legend("topleft",legend=paste("slope = ",round(my.lm$coefficients[2],2),", r2 = ",round(summary(my.lm)$r.squared,2)))
 
+
+# Ratio Jmax/Vcmax and Ci at transition
+citrans <- sapply(fits, "[[", "Ci_transition")
+with(fitted.pars, plot(Jmax/Vcmax, citrans))
 
 ######################################################################################
 ######################################################################################
