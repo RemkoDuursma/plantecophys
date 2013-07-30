@@ -21,3 +21,4 @@ Collate:
     'gamplot.R'
     'fitacis.R'
     'findCiTransition.R'
+    'adderrorbars.R'

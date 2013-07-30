@@ -6,7 +6,7 @@
 \title{Fit the Farquhar Berry von Caemmerer model of photosynthesis}
 \usage{
   fitaci(dat,
-    varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PPFD"),
+    varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PARi"),
     nlsmethod = "default", quiet = FALSE, ...)
 
   \method{plot}{acifit} (x, what = c("data", "model"),
