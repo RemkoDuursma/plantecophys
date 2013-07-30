@@ -51,7 +51,7 @@
 #' 
 #' @export
 #' @rdname fitaci
-fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PPFD"),
+fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi"),
                    nlsmethod="default", quiet=FALSE, ...){
   
   # Set extra parameters if provided
