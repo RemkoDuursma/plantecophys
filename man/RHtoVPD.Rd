@@ -1,8 +1,8 @@
 \name{RHtoVPD}
 \alias{DewtoVPD}
-\alias{esat}
 \alias{RHtoVPD}
 \alias{VPDtoRH}
+\alias{esat}
 \title{Conversions between relative humidity, vapour pressure deficit and dewpoint}
 \usage{
   RHtoVPD(RH, TdegC, Pa = 101)

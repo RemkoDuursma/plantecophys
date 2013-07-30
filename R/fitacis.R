@@ -38,7 +38,8 @@ fitacis <- function(data, group,...){
   fits <- fits[success]
 
   class(fits) <- "acifits"
-
+  attributes(fits)$groupname <- group
+  
 return(fits)
 }
 
@@ -75,6 +76,11 @@ coef.acifits <- function(object,...){
   rn <- rownames(object[[1]]$pars)
   nm <- c(rn, paste0(rn,"_SE"))
   names(pars) <- nm
+  
+  d <- data.frame(group=names(object))
+  names(d) <- attr(object,"group")
+  pars <- cbind(d,pars)
+  rownames(pars) <- NULL
   
 return(pars)
 }
