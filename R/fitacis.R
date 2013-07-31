@@ -1,6 +1,6 @@
 #' @export
 #' @rdname fitaci
-fitacis <- function(data, group,...){
+fitacis <- function(data, group, progressbar=TRUE...){
   
   if(!group %in% names(data))
     stop("group variable must be in the dataframe.")
@@ -14,8 +14,10 @@ fitacis <- function(data, group,...){
   ng <- length(d)
   success <- vector("logical", ng)
   
-  wp <- txtProgressBar(title = "Fittin A-Ci curves", 
+  if(progressbar){
+    wp <- txtProgressBar(title = "Fittin A-Ci curves", 
                        label = "", min = 0, max = ng, initial = 0, width = 50,style=3)
+  }
   
   fits <- list()
   for(i in 1:ng){
@@ -23,9 +25,9 @@ fitacis <- function(data, group,...){
     success[i] <- !inherits(f, "try-error")
     
     fits[[i]] <- if(success[i]) f else NA
-    setTxtProgressBar(wp, i)
+    if(progressbar)setTxtProgressBar(wp, i)
   }
-  close(wp)
+  if(progressbar)close(wp)
 
   names(fits) <- names(d)
   
