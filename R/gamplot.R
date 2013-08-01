@@ -60,6 +60,12 @@ gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
     box()
   }
   
+  # Colours for polygons and lines
+  nl <- nlevels(dat$group)
+  nc <- length(linecolor)
+  if(nc < nl)linecolor <- rep(linecolor, ceiling(nl/nc))
+  np <- length(polycolor)
+  if(np < nl)polycolor <- rep(polycolor, ceiling(nl/np))
   
   addgampoly <- function(dataset,...){
     alpha <- 1-CIlevel
@@ -67,22 +73,24 @@ gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
     x <- dataset[order(dataset$X),]
     with(x,
          polygon(x=c(X, rev(X)), y=c(Ypred + qn*YpredSE, rev(Ypred - qn*YpredSE)), 
-                 col=polycolor, border=NA))
+                 border=NA,...))
   }
   
   # gam polygon (CI)
-  if(CI)lapply(split(dat,dat$group),function(x)addgampoly(x))
-  
+  if(CI){
+    for(i in 1:nl){
+      addgampoly(dat[dat$group==levels(dat$group)[i],],
+                 col=polycolor[i])
+    }
+  }
+      
   addgamline <- function(dataset,...){
     x <- dataset[order(dataset$X),]
     points(x$X, x$Ypred, type='l',  ...)
   }
   
   # line (mean)
-  nl <- nlevels(dat$group)
-  nc <- length(linecolor)
-  if(nc < nl)linecolor <- rep(linecolor, ceiling(nl/nc))
-  
+
   for(i in 1:nl){
     addgamline(dat[dat$group==levels(dat$group)[i],],
                lwd=lwd, col=linecolor[i],...)
