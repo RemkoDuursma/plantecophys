@@ -1,6 +1,6 @@
 #' @export
 #' @rdname fitaci
-fitacis <- function(data, group, progressbar=TRUE...){
+fitacis <- function(data, group, progressbar=TRUE, ...){
   
   if(!group %in% names(data))
     stop("group variable must be in the dataframe.")

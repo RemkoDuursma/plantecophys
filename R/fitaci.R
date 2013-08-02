@@ -72,7 +72,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
     
   if(!varnames$PPFD %in% names(dat)){
     dat$PPFD <- 1800
-    if(!quiet)warning("PPFD not in dataset; assumed PPFD = 1800.")
+    if(!quiet)warning("PARi not in dataset; assumed PARi = 1800.")
   } else dat$PPFD <- dat[,varnames$PPFD]
   
   
