@@ -132,6 +132,11 @@ Photosyn <- function(VPD=1.5,
   gsmodel <- match.arg(gsmodel)
   inputCi <- !is.null(Ci)
   
+  
+  # Constants; hard-wired parameters.
+  Rgas <- 8.314
+  Oi <- 210
+  
   # Functions
   
   # Non-rectangular hyperbola
@@ -140,11 +145,28 @@ Photosyn <- function(VPD=1.5,
        sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
   }
   
-  # Hard-wired parameters.
-  Kmfun <- function(Tleaf){
-    exp(38.05-79430/(8.314*(Tleaf+273)))*
-      (1+210/exp(20.3-36380/(8.314*(Tleaf+273))))
+#   # Hard-wired parameters.
+#   Kmfun <- function(Tleaf){
+#     exp(38.05-79430/(8.314*(Tleaf+273)))*
+#       (1+210/exp(20.3-36380/(8.314*(Tleaf+273))))
+#   }
+  
+  #
+#   Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
+#   Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
+  #Km <- Kc * (1.0 + self.Oi / Ko)
+#   404.9 * (1.0 + 210 / 278.4)
+  arrh <- function(Tleaf, Ea){
+    Tk <- Tleaf + 273.15
+    exp((Ea * (Tk - 298.15)) / (298.15 * Rgas * Tk)) 
   }
+  Ec <- 79430.0
+  Eo <- 36380.0
+  Kc25 <- 404.9
+  Ko25 <- 278.4
+  Ko <- Ko25*arrh(Tleaf, Eo)
+  Kc <- Kc25*arrh(Tleaf, Ec)
+  Km <- Kc * (1.0 + Oi / Ko)
   
   # Hard-wired parameters.
   GammaStarfun <- function(Tleaf){
@@ -173,9 +195,6 @@ Photosyn <- function(VPD=1.5,
   # Do all calculations that can be vectorized, send as argument
   # to non-vectorized bits ('photosynF')
   
-  # Constants; hard-wired parameters.
-  Rgas <- 8.314
-  
   
   # Pre-calculations
   
@@ -189,8 +208,11 @@ Photosyn <- function(VPD=1.5,
     Rd <- Rdayfrac*Rd0*Q10^((Tleaf-TrefR)/10)
   
   # Km, GammaStar
-  Km <- Kmfun(Tleaf)
-  GammaStar <- GammaStarfun(Tleaf)
+#   Km <- Kmfun(Tleaf)
+#   GammaStar <- GammaStarfun(Tleaf)
+  gamstar25 <- 42.75
+  Egamma <- 37830.0
+  GammaStar <- gamstar25*arrh(Tleaf,Egamma)
   
   #-- Vcmax
   # Need function flexibility here.

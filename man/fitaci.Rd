@@ -15,7 +15,7 @@
     addzeroline = TRUE, addlegend = !add,
     transitionpoint = TRUE, ...)
 
-  fitacis(data, group, progressbar = TRUE...)
+  fitacis(data, group, progressbar = TRUE, ...)
 
   \method{plot}{acifits} (x,
     how = c("manyplots", "oneplot"), ...)
