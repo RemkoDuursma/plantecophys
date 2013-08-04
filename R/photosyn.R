@@ -133,44 +133,24 @@ Photosyn <- function(VPD=1.5,
   inputCi <- !is.null(Ci)
   
   
-  # Constants; hard-wired parameters.
+  #---- Constants; hard-wired parameters.
   Rgas <- 8.314
-  Oi <- 210
+  Oi <- 210      # O2 concentration
+  Ec <- 79430.0  # activation energy for Kc
+  Eo <- 36380.0  # activation energy for Ko
+  Kc25 <- 404.9  # Kc at 25C
+  Ko25 <- 278.4  # Ko at 25C
+  gamstar25 <- 42.75 # gammastar at 25C
+  Egamma <- 37830.0  # Activation energy for gammastar
+  GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
   
-  # Functions
+  
+  #---- Functions
   
   # Non-rectangular hyperbola
   Jfun <- function(PPFD, alpha, Jmax, theta){
     (alpha*PPFD + Jmax - 
        sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
-  }
-  
-#   # Hard-wired parameters.
-#   Kmfun <- function(Tleaf){
-#     exp(38.05-79430/(8.314*(Tleaf+273)))*
-#       (1+210/exp(20.3-36380/(8.314*(Tleaf+273))))
-#   }
-  
-  #
-#   Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
-#   Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
-  #Km <- Kc * (1.0 + self.Oi / Ko)
-#   404.9 * (1.0 + 210 / 278.4)
-  arrh <- function(Tleaf, Ea){
-    Tk <- Tleaf + 273.15
-    exp((Ea * (Tk - 298.15)) / (298.15 * Rgas * Tk)) 
-  }
-  Ec <- 79430.0
-  Eo <- 36380.0
-  Kc25 <- 404.9
-  Ko25 <- 278.4
-  Ko <- Ko25*arrh(Tleaf, Eo)
-  Kc <- Kc25*arrh(Tleaf, Ec)
-  Km <- Kc * (1.0 + Oi / Ko)
-  
-  # Hard-wired parameters.
-  GammaStarfun <- function(Tleaf){
-    42.75*exp(37830*(Tleaf-25)/(8.314*298.15*(Tleaf+273.15)))
   }
   
   # Hard-wired parameters.
@@ -192,30 +172,25 @@ Photosyn <- function(VPD=1.5,
   }
   
   
-  # Do all calculations that can be vectorized, send as argument
-  # to non-vectorized bits ('photosynF')
-  
-  
-  # Pre-calculations
+  #---- Do all calculations that can be vectorized
   
   # g1 and g0 are ALWAYS IN UNITS OF H20
   # G0 must be converted to CO2 (but not G1, see below)
-  g0 <- g0/1.57
+  g0 <- g0/GCtoGW
   
   # Leaf respiration
-  #! acclimation
   if(is.null(Rd))
     Rd <- Rdayfrac*Rd0*Q10^((Tleaf-TrefR)/10)
   
-  # Km, GammaStar
-#   Km <- Kmfun(Tleaf)
-#   GammaStar <- GammaStarfun(Tleaf)
-  gamstar25 <- 42.75
-  Egamma <- 37830.0
+  # CO2 compensation point in absence of photorespiration
   GammaStar <- gamstar25*arrh(Tleaf,Egamma)
   
-  #-- Vcmax
-  # Need function flexibility here.
+  # Michaelis-Menten coefficient
+  Ko <- Ko25*arrh(Tleaf, Eo)
+  Kc <- Kc25*arrh(Tleaf, Ec)
+  Km <- Kc * (1.0 + Oi / Ko)
+  
+  #-- Vcmax, Jmax T responses
   Vcmax <- Vcmax * Vcmaxfun(Tleaf)
   Jmax <- Jmax * Jmaxfun(Tleaf)
   
@@ -229,13 +204,14 @@ Photosyn <- function(VPD=1.5,
     vpduse[vpduse < vpdmin] <- vpdmin
     GSDIVA <- (1 + g1/(vpduse^(1-gk)))/Ca
   }
+  # Leuning 1995 model, without gamma (CO2 compensation point)
   if(gsmodel == "BBLeuning"){
     GSDIVA <- g1 / Ca / (1 + VPD/D0)
-    GSDIVA <- GSDIVA / 1.6   # convert to conductance to CO2
+    GSDIVA <- GSDIVA / GCtoGW   # convert to conductance to CO2
   }
     
     
-  # If CI not provided
+  # If CI not provided, calculate from intersection between supply and demand
   if(!inputCi){
   
     #--- non-vectorized workhorse
@@ -245,7 +221,6 @@ Photosyn <- function(VPD=1.5,
       getCI <- function(VJ,GSDIVA,PPFD,VPD,Ca,Tleaf,vpdmin,g0,Rd,
                             Vcmax,Jmax,Km,GammaStar){
         
-    
         if(PPFD == 0){
           vec <- c(Ca,Ca)
           return(vec)
@@ -328,7 +303,7 @@ Photosyn <- function(VPD=1.5,
     }
     
   
-    # When below light-compensation points, Ci=Ca.
+    # When below light-compensation points, assume Ci=Ca.
     if(!inputCi){
       lesslcp <- vector("logical", length(Aj))
       lesslcp <- Aj-Rd < 0
@@ -338,9 +313,9 @@ Photosyn <- function(VPD=1.5,
       if(length(VJ) == 1)VJ <- rep(VJ, length(CIJ))
       
       CIJ[lesslcp] <- Ca[lesslcp]
-      Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / (CIJ[lesslcp] + 2*GammaStar[lesslcp])
+      Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / 
+        (CIJ[lesslcp] + 2*GammaStar[lesslcp])
 
-      Ci <- vector("numeric",length(CIC))
       Ci <- ifelse(Aj < Ac, CIJ, CIC)
     }
 
@@ -348,15 +323,16 @@ Photosyn <- function(VPD=1.5,
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape) - Rd
     
-    # Conductance to CO2
+    # Calculate conductance to CO2
     if(whichA == "Ah")GS <- g0 + GSDIVA*Am
     if(whichA == "Aj")GS <- g0 + GSDIVA*(Aj-Rd)
     if(whichA == "Ac")GS <- g0 + GSDIVA*(Ac-Rd)
     
-    # H2O
-    GS <- GS*1.57
+    # Output conductance to H2O
+    GS <- GS*GCtoGW
     
-    # Transpiration rate; perfect coupling.
+    # Transpiration rate assuming perfect coupling.
+    # Output units are mmol m-2 s-1
     E <- 1000*GS*VPD/Patm
     
     df <- data.frame( Ci=Ci,
@@ -379,24 +355,6 @@ return(df)
 Aci <- function(Ci,...)Photosyn(Ci=Ci,...)
 
 
-QUADP <- function(A,B,C){
-  
-  if((B^2 - 4*A*C) < 0){
-    warning("IMAGINARY ROOTS IN QUADRATIC")
-    return(0)
-  }
-  
-  if(identical(A,0)){
-    if(identical(B,0)){
-      return(0)
-    }
-  } else {
-    return(-C/B)
-  }
-  
-  
-  (- B + sqrt(B^2 - 4*A*C)) / (2*A)
-  
-}
+
 
 
