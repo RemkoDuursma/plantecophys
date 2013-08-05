@@ -125,6 +125,8 @@ Photosyn <- function(VPD=1.5,
                      delsJ = 641.3615,
                      
                      Ci = NULL,         
+                     Tcorrect=TRUE,  
+                     returnParsOnly=FALSE,
                      whichA=c("Ah","Amin","Ac","Aj")){
 
   
@@ -191,8 +193,15 @@ Photosyn <- function(VPD=1.5,
   Km <- Kc * (1.0 + Oi / Ko)
   
   #-- Vcmax, Jmax T responses
-  Vcmax <- Vcmax * Vcmaxfun(Tleaf)
-  Jmax <- Jmax * Jmaxfun(Tleaf)
+  if(Tcorrect){
+    Vcmax <- Vcmax * Vcmaxfun(Tleaf)
+    Jmax <- Jmax * Jmaxfun(Tleaf)
+  }
+  
+  #--- Stop here if only the parameters are required
+  if(returnParsOnly){
+    return(list(Vcmax=Vcmax, Jmax=Jmax, Km=Km, GammaStar=GammaStar))
+  }
   
   # Electron transport rate
   J <- Jfun(PPFD, alpha, Jmax, theta)
