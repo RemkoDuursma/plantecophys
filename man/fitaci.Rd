@@ -7,8 +7,7 @@
 \usage{
   fitaci(dat,
     varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PARi"),
-    nlsmethod = "default", Tcorrect = TRUE, quiet = FALSE,
-    ...)
+    Tcorrect = TRUE, quiet = FALSE, ...)
 
   \method{plot}{acifit} (x, what = c("data", "model"),
     xlim = NULL, ylim = NULL,
@@ -27,9 +26,6 @@
 
   \item{varnames}{List of names of variables (see
   Details).}
-
-  \item{nlsmethod}{Method passed to nls2 ('algorithm' in
-  nls2).}
 
   \item{Tcorrect}{If TRUE, Vcmax and Jmax are corrected to
   25C. Otherwise, Vcmax and Jmax are estimated at

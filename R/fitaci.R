@@ -128,8 +128,11 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   
   # Using fitted coefficients, get predictions from model.
   p <- coef(nlsfit)
-  acirun <- Photosyn(Ci=Ci, PPFD=PPFD, Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], Tleaf=Tleaf,
-                          Tcorrect=Tcorrect)
+  acirun <- Photosyn(Ci=dat$Ci, 
+                     Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], 
+                     PPFD=dat$PPFD, 
+                     Tleaf=dat$Tleaf,
+                     Tcorrect=Tcorrect)
   acirun$Ameas <- dat$ALEAF
   acirun$ELEAF <- NULL
   acirun$GS <- NULL
