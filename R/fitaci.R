@@ -115,7 +115,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   acirun <- acirun[,c(avars, setdiff(1:ncol(acirun), avars))]
   
   l <- list()  
-  l$df <- acirun
+  l$df <- acirun[order(acirun$Ci),]
   l$pars <- summary(nlsfit)$coefficients[,1:2]
   l$nlsfit <- nlsfit
   
@@ -135,6 +135,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   
 return(l)
 }
+
 
 #' @S3method print acifit
 #' @method print acifit
