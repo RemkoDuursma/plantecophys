@@ -148,6 +148,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   l$df <- acirun[order(acirun$Ci),]
   l$pars <- summary(nlsfit)$coefficients[,1:2]
   l$nlsfit <- nlsfit
+  l$Tcorrect <- Tcorrect
   
   # Save function itself, the formals contain the parameters used to fit the A-Ci curve.
   # First save Tleaf, PPFD in the formals (as the mean of the dataset)
@@ -179,7 +180,11 @@ print.acifit <- function(x,...){
   cat("\nEstimated parameters:\n")
   
   print(x$pars)
-  cat("Note: Vcmax, Jmax are at 25C, Rd is at measurement T.")
+  if(x$Tcorrect)
+    cat("Note: Vcmax, Jmax are at 25C, Rd is at measurement T.")
+  else
+    cat("Note: Vcmax, Jmax, Rd are at measurement T.")
+  
   cat("\n\n")
   
   cat("Parameter settings:\n")
