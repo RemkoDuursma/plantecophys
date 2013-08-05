@@ -4,7 +4,7 @@
 #' @description Fits the Farquhar model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their (approximate) standard errors. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
 #' @param dat Dataset with Ci, Photo, Tleaf, PPFD (the last two are optional).
 #' @param varnames List of names of variables (see Details).
-#' @param nlsmethod Method passed to nls2 ('algorithm' in nls2).
+#' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.
 #' @param quiet If TRUE, no messages are written to the screen.
 #' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
 #' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax (both at 25deg C) and Rd (at the measurement temperature).
@@ -52,7 +52,7 @@
 #' @export
 #' @rdname fitaci
 fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi"),
-                   nlsmethod="default", quiet=FALSE, ...){
+                   Tcorrect=TRUE, quiet=FALSE, ...){
   
   # Set extra parameters if provided
   m <- as.list(match.call())
@@ -61,21 +61,24 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   
   extrapars <- setdiff(names(m), c(names(a),""))
   for(i in seq_along(extrapars)){
-    if(extrapars[i] %in% f)
-      formals(Photosyn)[extrapars[i]] <- m[[extrapars[i]]]
-    else
+    if(extrapars[i] %in% f){
+      val <- m[[extrapars[i]]]
+      formals(Photosyn)[extrapars[i]] <- val
+    } else {
       warning("Parameter ",extrapars[i]," not recognized.")
+    }
   }
   photpars <- formals(Photosyn)
   removevars <- c("whichA")
   photpars <- photpars[-which(names(photpars) %in% removevars)]
-    
+  
+  # Check if PAR is provided
   if(!varnames$PPFD %in% names(dat)){
     dat$PPFD <- 1800
     if(!quiet)warning("PARi not in dataset; assumed PARi = 1800.")
   } else dat$PPFD <- dat[,varnames$PPFD]
   
-  
+  # Check if Tleaf is provided
   if(!varnames$Tleaf %in% names(dat)){
     dat$Tleaf <- 25
     if(!quiet)warning("Tleaf not in dataset; assumed Tleaf = 25.")
@@ -84,26 +87,49 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   dat$Ci <- dat[,varnames$Ci]
   dat$ALEAF <- dat[,varnames$ALEAF]
   
+  
+  # Needed to avoid apparent recursion below.
+  TcorrectVJ <- Tcorrect
+  
+  # Wrapper around Photosyn; this wrapper will be sent to nls2. 
   acifun_wrap <- function(Ci,...){
-    r <- Photosyn(Ci=Ci,...)
+    r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,...)
     r$ALEAF
   }
   
-  # Guess some initial values.
-  # Here I assume, Jmax/Vcmax = 1.9, GammaStar=45, Rd/Vcmax=0.015.
-  maxCi <- max(dat$Ci)
-  maxPhoto <- dat$ALEAF[which.max(dat$Ci)]
-  VJ <- maxPhoto / ((maxCi - 45) / (maxCi + 2*45))
-  Jmax_guess <- VJ*4
-  Vcmax_guess <- Jmax_guess/1.9
-  Rd_guess <- 0.015*Vcmax_guess
+#   # Guess some initial values.
+#   # Here I assume, Jmax/Vcmax = 1.9, GammaStar=45, Rd/Vcmax=0.015.
+#   maxCi <- max(dat$Ci)
+#   maxPhoto <- dat$ALEAF[which.max(dat$Ci)]
+#   VJ <- maxPhoto / ((maxCi - 45) / (maxCi + 2*45))
+#   Jmax_guess <- VJ*4
+#   Vcmax_guess <- Jmax_guess/1.9
+#   Rd_guess <- 0.015*Vcmax_guess
+#  
+#   
+#   nlsfit <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+#                 data=dat, algorithm=nlsmethod,
+#                 start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
+# 
+#   browser()
+#   
+  # Pre-fit ; this finds the best starting values
+  n <- 50
+  nlsfit_pre <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+                 data=dat, algorithm="plinear-brute",
+                 start=data.frame(Vcmax=seq(5,350,length=n),
+                                   Jmax=seq(5,350,length=n),
+                                   Rd=seq(0.01, 11, length=n)))
   
+  # Now fit with optimized starting values
   nlsfit <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
-                data=dat, algorithm=nlsmethod,
-                start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
-
+                  data=dat, control=nls.control(maxiter=100, minFactor = 1/4096),
+                  start=nlsfit_pre)
+  
+  # Using fitted coefficients, get predictions from model.
   p <- coef(nlsfit)
-  acirun <- with(dat, Aci(Ci, PPFD=PPFD, Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], Tleaf=Tleaf))
+  acirun <- Photosyn(Ci=Ci, PPFD=PPFD, Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], Tleaf=Tleaf,
+                          Tcorrect=Tcorrect)
   acirun$Ameas <- dat$ALEAF
   acirun$ELEAF <- NULL
   acirun$GS <- NULL
@@ -114,6 +140,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   avars <- match(c("Ci","Ameas","Amodel"),names(acirun))
   acirun <- acirun[,c(avars, setdiff(1:ncol(acirun), avars))]
   
+  # Organize output
   l <- list()  
   l$df <- acirun[order(acirun$Ci),]
   l$pars <- summary(nlsfit)$coefficients[,1:2]
