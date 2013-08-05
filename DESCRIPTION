@@ -22,3 +22,5 @@ Collate:
     'fitacis.R'
     'findCiTransition.R'
     'adderrorbars.R'
+    'QUADP.R'
+    'arrh.R'

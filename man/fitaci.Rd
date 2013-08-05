@@ -7,7 +7,8 @@
 \usage{
   fitaci(dat,
     varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PARi"),
-    nlsmethod = "default", quiet = FALSE, ...)
+    nlsmethod = "default", Tcorrect = TRUE, quiet = FALSE,
+    ...)
 
   \method{plot}{acifit} (x, what = c("data", "model"),
     xlim = NULL, ylim = NULL,
@@ -29,6 +30,10 @@
 
   \item{nlsmethod}{Method passed to nls2 ('algorithm' in
   nls2).}
+
+  \item{Tcorrect}{If TRUE, Vcmax and Jmax are corrected to
+  25C. Otherwise, Vcmax and Jmax are estimated at
+  measurement temperature.}
 
   \item{quiet}{If TRUE, no messages are written to the
   screen.}
