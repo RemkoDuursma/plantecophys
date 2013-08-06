@@ -137,13 +137,8 @@ Photosyn <- function(VPD=1.5,
   
   #---- Constants; hard-wired parameters.
   Rgas <- 8.314
-  Oi <- 210      # O2 concentration
-  Ec <- 79430.0  # activation energy for Kc
-  Eo <- 36380.0  # activation energy for Ko
-  Kc25 <- 404.9  # Kc at 25C
-  Ko25 <- 278.4  # Ko at 25C
-  gamstar25 <- 42.75 # gammastar at 25C
-  Egamma <- 37830.0  # Activation energy for gammastar
+  
+  
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
   
   
@@ -185,12 +180,10 @@ Photosyn <- function(VPD=1.5,
     Rd <- Rdayfrac*Rd0*Q10^((Tleaf-TrefR)/10)
   
   # CO2 compensation point in absence of photorespiration
-  GammaStar <- gamstar25*arrh(Tleaf,Egamma)
+  GammaStar <- TGammaStar(Tleaf)
   
   # Michaelis-Menten coefficient
-  Ko <- Ko25*arrh(Tleaf, Eo)
-  Kc <- Kc25*arrh(Tleaf, Ec)
-  Km <- Kc * (1.0 + Oi / Ko)
+  Km <- TKm(Tleaf)
   
   #-- Vcmax, Jmax T responses
   if(Tcorrect){

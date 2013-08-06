@@ -113,18 +113,60 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
 # 
 #   browser()
 #   
-  # Pre-fit ; this finds the best starting values
-  n <- 50
-  nlsfit_pre <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
-                 data=dat, algorithm="plinear-brute",
-                 start=data.frame(Vcmax=seq(5,350,length=n),
-                                   Jmax=seq(5,350,length=n),
-                                   Rd=seq(0.01, 11, length=n)))
+#   # Pre-fit ; this finds the best starting values
+#   n <- 50
+#   nlsfit_pre <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+#                  data=dat, algorithm="plinear-brute",
+#                  start=data.frame(Vcmax=seq(5,350,length=n),
+#                                    Jmax=seq(5,350,length=n),
+#                                    Rd=seq(0.01, 11, length=n)))
+#   
   
+  aciSS <- function(Vcmax, Jmax, Rd){
+    Photo_mod <- acifun_wrap(dat$Ci, PPFD=dat$PPFD, 
+                             Vcmax=Vcmax, Jmax=Jmax, 
+                             Rd=Rd, Tleaf=dat$Tleaf)
+    SS <- sum((dat$Photo - Photo_mod)^2)
+  return(SS)
+  }
+  
+  # Guess some initial values.
+  # Here I assume, Jmax/Vcmax = 1.9, GammaStar=45, Rd/Vcmax=0.015.
+  maxCi <- max(dat$Ci)
+  mi <- which.max(dat$Ci)
+  maxPhoto <- dat$ALEAF[mi]
+  Tl <- dat$Tleaf[mi]
+  gammastar <- TGammaStar(Tl)
+  
+  VJ <- maxPhoto / ((maxCi - gammastar) / (maxCi + 2*gammastar))
+  Jmax_guess <- VJ*4
+  
+  dato <- dat[dat$Ci < 150 & dat$Ci > 60,]
+  if(nrow(dato) > 0){
+    Km <- TKm(dato$Tleaf)
+    gammastar <- TGammaStar(dato$Tleaf)
+    vcmax <- with(dato, Photo / ((Ci - gammastar)/(Ci + Km)))
+    Vcmax_guess <- mean(vcmax)
+  } else {
+    Vcmax_guess <- Jmax_guess/1.8 
+  }
+  
+  Rd_guess <- 0.03*Vcmax_guess
+  
+  d <- 0.3
+  n <- 20
+  gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
+                    #Jmax=seq(Jmax_guess*(1-d),Jmax_guess*(1+d),length=n),
+                    Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
+
+  m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
+  ii <- which.min(m)
+  browser()
   # Now fit with optimized starting values
-  nlsfit <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
-                  data=dat, control=nls.control(maxiter=100, minFactor = 1/4096),
-                  start=nlsfit_pre)
+  nlsfit <- nls(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                    Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+                  data=dat, control=nls.control(maxiter=500),
+                  start=list(Vcmax=gg$Vcmax[ii], Jmax=Jmax_guess, Rd=gg$Rd[ii]))
   
   # Using fitted coefficients, get predictions from model.
   p <- coef(nlsfit)
