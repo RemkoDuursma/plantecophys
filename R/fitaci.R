@@ -52,7 +52,7 @@
 #' @export
 #' @rdname fitaci
 fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi"),
-                   Tcorrect=TRUE, quiet=FALSE, ...){
+                   Tcorrect=TRUE, quiet=FALSE, startValgrid=TRUE,...){
   
   # Set extra parameters if provided
   m <- as.list(match.call())
@@ -121,26 +121,20 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
 #                                    Jmax=seq(5,350,length=n),
 #                                    Rd=seq(0.01, 11, length=n)))
 #   
-  
-  aciSS <- function(Vcmax, Jmax, Rd){
-    Photo_mod <- acifun_wrap(dat$Ci, PPFD=dat$PPFD, 
-                             Vcmax=Vcmax, Jmax=Jmax, 
-                             Rd=Rd, Tleaf=dat$Tleaf)
-    SS <- sum((dat$Photo - Photo_mod)^2)
-  return(SS)
-  }
+
   
   # Guess some initial values.
-  # Here I assume, Jmax/Vcmax = 1.9, GammaStar=45, Rd/Vcmax=0.015.
+  
+  # Guess Jmax from max A, T-corrected gammastar
   maxCi <- max(dat$Ci)
   mi <- which.max(dat$Ci)
   maxPhoto <- dat$ALEAF[mi]
   Tl <- dat$Tleaf[mi]
   gammastar <- TGammaStar(Tl)
-  
   VJ <- maxPhoto / ((maxCi - gammastar) / (maxCi + 2*gammastar))
   Jmax_guess <- VJ*4
   
+  # Guess Vcmax, from section of curve that is definitely Vcmax-limited
   dato <- dat[dat$Ci < 150 & dat$Ci > 60,]
   if(nrow(dato) > 0){
     Km <- TKm(dato$Tleaf)
@@ -150,23 +144,34 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   } else {
     Vcmax_guess <- Jmax_guess/1.8 
   }
-  
   Rd_guess <- 0.03*Vcmax_guess
   
-  d <- 0.3
-  n <- 20
-  gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
-                    #Jmax=seq(Jmax_guess*(1-d),Jmax_guess*(1+d),length=n),
-                    Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
-
-  m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
-  ii <- which.min(m)
-  browser()
-  # Now fit with optimized starting values
+  # Fine-tune starting values; try grid of values around initial estimates.
+  if(startValgrid){
+    aciSS <- function(Vcmax, Jmax, Rd){
+      Photo_mod <- acifun_wrap(dat$Ci, PPFD=dat$PPFD, 
+                               Vcmax=Vcmax, Jmax=Jmax, 
+                               Rd=Rd, Tleaf=dat$Tleaf)
+      SS <- sum((dat$Photo - Photo_mod)^2)
+      return(SS)
+    }
+    d <- 0.3
+    n <- 20
+    gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
+                      #Jmax=seq(Jmax_guess*(1-d),Jmax_guess*(1+d),length=n),
+                      Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
+  
+    m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
+    ii <- which.min(m)
+    Vcmax_guess <- gg$Vcmax[ii]
+    Rd_guess <- gg$Rd[ii]
+  }
+  
+  # Fit curve.
   nlsfit <- nls(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                     Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
                   data=dat, control=nls.control(maxiter=500),
-                  start=list(Vcmax=gg$Vcmax[ii], Jmax=Jmax_guess, Rd=gg$Rd[ii]))
+                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
   
   # Using fitted coefficients, get predictions from model.
   p <- coef(nlsfit)
