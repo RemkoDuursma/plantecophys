@@ -7,7 +7,8 @@
 \usage{
   fitaci(dat,
     varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD = "PARi"),
-    Tcorrect = TRUE, quiet = FALSE, ...)
+    Tcorrect = TRUE, quiet = FALSE, startValgrid = TRUE,
+    algorithm = "default", debug = FALSE, ...)
 
   \method{plot}{acifit} (x, what = c("data", "model"),
     xlim = NULL, ylim = NULL,

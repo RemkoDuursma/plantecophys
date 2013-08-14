@@ -23,5 +23,4 @@ Collate:
     'findCiTransition.R'
     'adderrorbars.R'
     'QUADP.R'
-    'arrh.R'
     'Tresponsefunctions.R'

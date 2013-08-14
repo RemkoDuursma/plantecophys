@@ -52,7 +52,7 @@
 #' @export
 #' @rdname fitaci
 fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi"),
-                   Tcorrect=TRUE, quiet=FALSE, startValgrid=TRUE,...){
+                   Tcorrect=TRUE, quiet=FALSE, startValgrid=TRUE, algorithm="default",debug=FALSE, ...){
   
   # Set extra parameters if provided
   m <- as.list(match.call())
@@ -93,7 +93,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   
   # Wrapper around Photosyn; this wrapper will be sent to nls2. 
   acifun_wrap <- function(Ci,...){
-    r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,...)
+    r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,AcCi=150,...)
     r$ALEAF
   }
   
@@ -126,25 +126,34 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   # Guess some initial values.
   
   # Guess Jmax from max A, T-corrected gammastar
+  Rd_guess <- 1.5
+  
   maxCi <- max(dat$Ci)
   mi <- which.max(dat$Ci)
   maxPhoto <- dat$ALEAF[mi]
   Tl <- dat$Tleaf[mi]
   gammastar <- TGammaStar(Tl)
-  VJ <- maxPhoto / ((maxCi - gammastar) / (maxCi + 2*gammastar))
+  VJ <- (maxPhoto+Rd_guess) / ((maxCi - gammastar) / (maxCi + 2*gammastar))
   Jmax_guess <- VJ*4
+  if(Tcorrect){
+    Teffect <- TJmax(Tl,  EaJ=39676.89, delsJ=641.3615, EdVJ=200000)
+    Jmax_guess <- Jmax_guess / Teffect
+  }
   
   # Guess Vcmax, from section of curve that is definitely Vcmax-limited
-  dato <- dat[dat$Ci < 150 & dat$Ci > 60,]
+  dato <- dat[dat$Ci < 150 & dat$Ci > 60 & dat$ALEAF > 0,]
   if(nrow(dato) > 0){
     Km <- TKm(dato$Tleaf)
     gammastar <- TGammaStar(dato$Tleaf)
-    vcmax <- with(dato, Photo / ((Ci - gammastar)/(Ci + Km)))
-    Vcmax_guess <- mean(vcmax)
+    vcmax <- with(dato, (Photo+Rd_guess) / ((Ci - gammastar)/(Ci + Km)))
+    Vcmax_guess <- median(vcmax)
   } else {
     Vcmax_guess <- Jmax_guess/1.8 
   }
-  Rd_guess <- 0.03*Vcmax_guess
+  if(Tcorrect){
+    Teffect <- TVcmax(Tl, EaV=82620.87, delsC=645.1013, EdVC=0)
+    Vcmax_guess <- Vcmax_guess / Teffect
+  }
   
   # Fine-tune starting values; try grid of values around initial estimates.
   if(startValgrid){
@@ -166,11 +175,13 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
     Vcmax_guess <- gg$Vcmax[ii]
     Rd_guess <- gg$Rd[ii]
   }
+  if(debug)browser()
   
   # Fit curve.
   nlsfit <- nls(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                     Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
-                  data=dat, control=nls.control(maxiter=500),
+                algorithm=algorithm,
+                  data=dat, control=nls.control(maxiter=500, minFactor=1/10000),
                   start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
   
   # Using fitted coefficients, get predictions from model.
@@ -180,6 +191,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
                      PPFD=dat$PPFD, 
                      Tleaf=dat$Tleaf,
                      Tcorrect=Tcorrect)
+  
   acirun$Ameas <- dat$ALEAF
   acirun$ELEAF <- NULL
   acirun$GS <- NULL
@@ -204,10 +216,15 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   formals(Photosyn)$Vcmax <- l$pars[1]
   formals(Photosyn)$Jmax <- l$pars[2]
   formals(Photosyn)$Rd <- l$pars[3]
+  formals(Photosyn)$Tcorrect <- Tcorrect
   l$Photosyn <- Photosyn
   
   # Store Ci at which photosynthesis transitions from Jmax to Vcmax limitation
   l$Ci_transition <- findCiTransition(l$Photosyn)
+  
+  l$Vcmax_guess <- Vcmax_guess
+  l$Jmax_guess <- Jmax_guess
+  l$Rd_guess <- Rd_guess
   
   class(l) <- "acifit"
   

@@ -124,7 +124,8 @@ Photosyn <- function(VPD=1.5,
                      EdVJ = 200000,
                      delsJ = 641.3615,
                      
-                     Ci = NULL,         
+                     Ci = NULL,
+                     AcCi=NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
                      whichA=c("Ah","Amin","Ac","Aj")){
@@ -136,36 +137,15 @@ Photosyn <- function(VPD=1.5,
   
   
   #---- Constants; hard-wired parameters.
-  Rgas <- 8.314
-  
-  
+  Rgas <- .Rgas()
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
   
   
   #---- Functions
-  
   # Non-rectangular hyperbola
   Jfun <- function(PPFD, alpha, Jmax, theta){
     (alpha*PPFD + Jmax - 
        sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
-  }
-  
-  # Hard-wired parameters.
-  Vcmaxfun <- function(Tleaf){
-    if(EdVC > 0){
-      V1 <- (1+exp((delsC*(25 + 273.15)-EdVC)/(Rgas*(25 + 273.15))))
-      V2 <- (1+exp((delsC*(Tleaf+273.15)-EdVC)/(Rgas*(Tleaf+273.15))))
-      f <- V1/V2
-    } else f <- 1
-    
-    exp((Tleaf-25)*EaV/(Rgas*(Tleaf+273.15)*(25 + 273.15))) * f
-  }
-  
-  # Hard-wired parameters.
-  Jmaxfun <- function(Jmax){
-    J1 <- 1+exp((298.15*delsJ-EdVJ)/Rgas/298.15)
-    J2 <- 1+exp(((Tleaf+273.15)*delsJ-EdVJ)/Rgas/(Tleaf+273.15))
-    exp(EaJ/Rgas*(1/298.15 - 1/(Tleaf+273.15)))*J1/J2
   }
   
   
@@ -187,8 +167,8 @@ Photosyn <- function(VPD=1.5,
   
   #-- Vcmax, Jmax T responses
   if(Tcorrect){
-    Vcmax <- Vcmax * Vcmaxfun(Tleaf)
-    Jmax <- Jmax * Jmaxfun(Tleaf)
+    Vcmax <- Vcmax * TVcmax(Tleaf,EaV, delsC, EdVC)
+    Jmax <- Jmax * TJmax(Tleaf, EaJ, delsJ, EdVJ)
   }
   
   #--- Stop here if only the parameters are required
@@ -324,7 +304,14 @@ Photosyn <- function(VPD=1.5,
     # Hyperbolic minimum.
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape) - Rd
+#     
+#     # If Ci below some set minimum, A will always be Rubisco limited.
+#     # Used only for fitting stubborn A-Ci curves!
+#     if(!is.null(AcCi)){
+#       Am[Ci < AcCi] <- Ac[Ci < AcCi]
+#     }
     
+  
     # Calculate conductance to CO2
     if(whichA == "Ah")GS <- g0 + GSDIVA*Am
     if(whichA == "Aj")GS <- g0 + GSDIVA*(Aj-Rd)
