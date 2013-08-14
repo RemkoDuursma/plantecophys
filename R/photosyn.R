@@ -125,7 +125,7 @@ Photosyn <- function(VPD=1.5,
                      delsJ = 641.3615,
                      
                      Ci = NULL,
-                     AcCi=NULL,
+                     #AcCi=NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
                      whichA=c("Ah","Amin","Ac","Aj")){
