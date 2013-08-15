@@ -62,7 +62,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   extrapars <- setdiff(names(m), c(names(a),""))
   for(i in seq_along(extrapars)){
     if(extrapars[i] %in% f){
-      val <- m[[extrapars[i]]]
+      val <- eval(m[[extrapars[i]]])
       formals(Photosyn)[extrapars[i]] <- val
     } else {
       warning("Parameter ",extrapars[i]," not recognized.")
@@ -93,7 +93,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   
   # Wrapper around Photosyn; this wrapper will be sent to nls2. 
   acifun_wrap <- function(Ci,...){
-    r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,AcCi=150,...)
+    r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,...)
     r$ALEAF
   }
   

@@ -10,8 +10,8 @@
     Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25,
     Rdayfrac = 1, EaV = 82620.87, EdVC = 0,
     delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05,
-    delsJ = 641.3615, Ci = NULL, AcCi = NULL,
-    Tcorrect = TRUE, returnParsOnly = FALSE,
+    delsJ = 641.3615, Ci = NULL, Tcorrect = TRUE,
+    returnParsOnly = FALSE,
     whichA = c("Ah", "Amin", "Ac", "Aj"))
 
   Aci(Ci, ...)
