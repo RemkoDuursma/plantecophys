@@ -105,7 +105,7 @@ gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
   
   if(optline){
     for(i in 1:nl){
-      Ymaxline(dat[dat$group==levels(dat$group)[i],],
+      addOptline(dat[dat$group==levels(dat$group)[i],],
                lwd=lwd, col=linecolor[i],...)
     }
   }
