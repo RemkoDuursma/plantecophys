@@ -4,11 +4,12 @@
 \title{Coupled leaf gas exchange model}
 \usage{
   Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25,
-    Patm = 101, gsmodel = c("BBOpti", "BBLeuning"), g1 = 4,
-    g0 = 0, gk = 0.5, vpdmin = 0.5, D0 = 5, alpha = 0.24,
-    theta = 0.85, Jmax = 100, Vcmax = 50, gmeso = NULL,
-    Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25,
-    Rdayfrac = 1, EaV = 82620.87, EdVC = 0,
+    Patm = 101, RH = NULL,
+    gsmodel = c("BBOpti", "BBLeuning", "BallBerry"),
+    g1 = 4, g0 = 0, gk = 0.5, vpdmin = 0.5, D0 = 5,
+    alpha = 0.24, theta = 0.85, Jmax = 100, Vcmax = 50,
+    gmeso = NULL, Rd0 = 0.92, Q10 = 1.92, Rd = NULL,
+    TrefR = 25, Rdayfrac = 1, EaV = 82620.87, EdVC = 0,
     delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05,
     delsJ = 641.3615, Ci = NULL, Tcorrect = TRUE,
     returnParsOnly = FALSE,
@@ -28,8 +29,11 @@
 
   \item{Patm}{Atmospheric pressure (kPa)}
 
-  \item{gsmodel}{One of BBOpti (Medlyn et al. 2011) or
-  BBLeuning (Leuning 1995)}
+  \item{RH}{Relative humidity (in \%)}
+
+  \item{gsmodel}{One of BBOpti (Medlyn et al. 2011),
+  BBLeuning (Leuning 1995), or BallBerry (Ball et al.
+  1987)}
 
   \item{g0,g1}{Parameters of Ball-Berry type stomatal
   conductance models.}
@@ -136,6 +140,13 @@
   Note that this model also uses the g1 parameter, but it
   needs to be set to a much higher value to be comparable
   in magnitude to the BBOpti model.
+
+  The 'BallBerry' model is that of Ball et al. (1987). It
+  is given by,
+
+  GS = G0 + g1*RH*ALEAF/Ca
+
+  Where RH is relative humidity.
 
   For the full numerical solution to the Cowan-Farquhar
   optimization, use the \code{\link{FARAO}} function.

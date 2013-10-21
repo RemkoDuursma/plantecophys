@@ -6,7 +6,8 @@
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
 #' @param Tleaf Leaf temperature (degrees C)
 #' @param Patm Atmospheric pressure (kPa)
-#' @param gsmodel One of BBOpti (Medlyn et al. 2011) or BBLeuning (Leuning 1995)
+#' @param RH Relative humidity (in \%)
+#' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball et al. 1987)
 #' @param g0,g1 Parameters of Ball-Berry type stomatal conductance models.
 #' @param gk Optional, exponent of VPD in gs model (Duursma et al. 2013)
 #' @param vpdmin Below vpdmin, VPD=vpdmin, to avoid very high gs.
@@ -48,6 +49,12 @@
 #'  GS = G0 + g1*ALEAF/(Ca * (1 + VPD/D0))
 #'  
 #'  Note that this model also uses the g1 parameter, but it needs to be set to a much higher value to be comparable in magnitude to the BBOpti model.
+#'  
+#'  The 'BallBerry' model is that of Ball et al. (1987). It is given by,
+#'  
+#'  GS = G0 + g1*RH*ALEAF/Ca
+#'  
+#'  Where RH is relative humidity.
 #'  
 #'  For the full numerical solution to the Cowan-Farquhar optimization, use the \code{\link{FARAO}} function.
 #'  
@@ -96,8 +103,9 @@ Photosyn <- function(VPD=1.5,
                      PPFD=1500,
                      Tleaf=25,
                      Patm=101,
+                     RH=NULL,
                      
-                     gsmodel=c("BBOpti","BBLeuning"),
+                     gsmodel=c("BBOpti","BBLeuning","BallBerry"),
                      g1=4,
                      g0=0, 
                      gk=0.5,
@@ -191,7 +199,12 @@ Photosyn <- function(VPD=1.5,
     GSDIVA <- g1 / Ca / (1 + VPD/D0)
     GSDIVA <- GSDIVA / GCtoGW   # convert to conductance to CO2
   }
-    
+  if(gsmodel == "BallBerry"){
+    if(is.null(RH))RH <- VPDtoRH(VPD, Tleaf)
+    RH <- RH / 100
+    GSDIVA <- g1 * RH / Ca
+    GSDIVA <- GSDIVA / GCtoGW   # convert to conductance to CO2
+  }  
     
   # If CI not provided, calculate from intersection between supply and demand
   if(!inputCi){
