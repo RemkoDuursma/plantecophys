@@ -7,6 +7,7 @@
 
 #'@examples
 #'
+#'\dontrun{
 #' f <- function(t, k=0.5)1 - exp(-k*t)
 #' x <- seq(0,12,length=101)
 #' y <- f(x) + rnorm(101,sd=0.1)
@@ -21,12 +22,13 @@
 #'   lines(x, lwr, lty=4, col="red")
 #'   lines(x, upr, lty=4, col="red")
 #' })
+#' 
+#' # Compare to predictNLS, which uses a 2nd order Taylor expansion.
+#' library(propagate)
 #' P <- predictNLS(nls1, newdata = data.frame(x=p$x))
 #' lines(p$x, P$summary[,5], col="blue", lty=5)
 #' lines(p$x, P$summary[,6], col="blue", lty=5)
-# 
-
-
+# }
 predict_nls <- function(object, from=NULL, to=NULL, x=NULL,interval = c("none", "confidence"), 
                         level=0.95, 
                         n=101, nboot=999, add=TRUE, ...){
@@ -44,6 +46,15 @@ predict_nls <- function(object, from=NULL, to=NULL, x=NULL,interval = c("none", 
   }
   
   if(is.null(x)){
+    
+    if(is.null(from) || is.null(to)){
+      
+      e <- object$m$getEnv()
+      xval <- get(getx(object), envir=e)
+      
+      if(is.null(from))from <- min(xval)
+      if(is.null(to))to <- max(xval)
+    } 
     xi <- seq(from,to, length=n)
   } else {
     xi <- x
@@ -82,8 +93,36 @@ predict_nls <- function(object, from=NULL, to=NULL, x=NULL,interval = c("none", 
   }
   
   return(l)
-  
-  
+   
 }
 
+#'@rdname predict_nls
+#'@export
+plot.nls <- function(x, add=FALSE, 
+                     lwd=c(1,1), lty=c(1,5), col=c("black", "red"), 
+         xlim=NULL, ylim=NULL, xlab=NULL, ylab=NULL,  ...){
+  
+  p <- predict_nls(x,...)
+  
+  if(!add){
+    with(p, plot(rep(x,3), c(pred,upr,lwr), type='n'))
+  }
+  
+  with(p,{
+    lines(x, pred, lty=lty[1], lwd=lwd[1], col=col[1])
+    if("upr" %in% names(p)){
+      lines(x, upr, lty=lty[2], lwd=lwd[2], col=col[2])
+      lines(x, lwr, lty=lty[2], lwd=lwd[2], col=col[2])
+    }
+  })
+   
+}
+
+# 
+# plot(x,y)
+# plot(nls1, add=T)
+# 
+# plot(x,y,pch=19,cex=1.3,
+#      panel.first=plot(nls1,add=T,lwd=2,interval="confidence",col=c("grey","red")))
+# 
 

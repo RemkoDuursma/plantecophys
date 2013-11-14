@@ -24,3 +24,4 @@ Collate:
     'adderrorbars.R'
     'QUADP.R'
     'Tresponsefunctions.R'
+    'predict_nls.R'
