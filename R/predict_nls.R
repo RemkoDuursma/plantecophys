@@ -4,7 +4,7 @@
 #' Also calculates a confidence interval using a case bootstrap resampling method (using \code{\link{bootCase}}) from the \code{car} package.
 #' @param object An object of class 'nls'
 #' @param from 
-
+#' @export
 #'@examples
 #'
 #'\dontrun{
@@ -48,7 +48,6 @@ predict_nls <- function(object, from=NULL, to=NULL, x=NULL,interval = c("none", 
   if(is.null(x)){
     
     if(is.null(from) || is.null(to)){
-      
       e <- object$m$getEnv()
       xval <- get(getx(object), envir=e)
       
