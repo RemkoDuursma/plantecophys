@@ -84,9 +84,9 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
     if(!quiet)warning("Tleaf not in dataset; assumed Tleaf = 25.")
   } else dat$Tleaf <- dat[,varnames$Tleaf]
   
+  
   dat$Ci <- dat[,varnames$Ci]
   dat$ALEAF <- dat[,varnames$ALEAF]
-  
   
   # Needed to avoid apparent recursion below.
   TcorrectVJ <- Tcorrect
@@ -145,7 +145,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   if(nrow(dato) > 0){
     Km <- TKm(dato$Tleaf)
     gammastar <- TGammaStar(dato$Tleaf)
-    vcmax <- with(dato, (Photo+Rd_guess) / ((Ci - gammastar)/(Ci + Km)))
+    vcmax <- with(dato, (ALEAF + Rd_guess) / ((Ci - gammastar)/(Ci + Km)))
     Vcmax_guess <- median(vcmax)
   } else {
     Vcmax_guess <- Jmax_guess/1.8 
@@ -161,7 +161,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
       Photo_mod <- acifun_wrap(dat$Ci, PPFD=dat$PPFD, 
                                Vcmax=Vcmax, Jmax=Jmax, 
                                Rd=Rd, Tleaf=dat$Tleaf)
-      SS <- sum((dat$Photo - Photo_mod)^2)
+      SS <- sum((dat$ALEAF - Photo_mod)^2)
       return(SS)
     }
     d <- 0.3
@@ -178,7 +178,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   if(debug)browser()
   
   # Fit curve.
-  nlsfit <- nls(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+  nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                     Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
                 algorithm=algorithm,
                   data=dat, control=nls.control(maxiter=500, minFactor=1/10000),
