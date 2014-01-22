@@ -1,2 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+photosyn_test/
+R_other/
+.gitignore
+README.md

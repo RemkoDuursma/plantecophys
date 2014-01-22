@@ -2,10 +2,9 @@
 \alias{gamplot}
 \title{Plot a simple generalized additive model fit}
 \usage{
-  gamplot(xvarname, yvarname, groupname = "", dfr,
-    add = FALSE, CI = TRUE, CIlevel = 0.95,
-    polycolor = "grey", line = TRUE, linecolor = "black",
-    lwd = 2, optline = FALSE, gamfit = NULL, ...)
+gamplot(xvarname, yvarname, groupname = "", dfr, add = FALSE, CI = TRUE,
+  CIlevel = 0.95, polycolor = "grey", line = TRUE, linecolor = "black",
+  lwd = 2, optline = FALSE, gamfit = NULL, ...)
 }
 \arguments{
   \item{xvarname}{Name of the X variable (quoted)}
@@ -44,23 +43,23 @@
   input.}
 }
 \value{
-  The fitted gam object, invisibly.
+The fitted gam object, invisibly.
 }
 \description{
-  A wrapper for \code{gam} from the \code{mgcv} package, to
-  produce a smoother with a confidence region.
+A wrapper for \code{gam} from the \code{mgcv} package, to
+produce a smoother with a confidence region.
 }
 \details{
-  If a fitted gam object is not provided, this function
-  fits a vanilla smoother function when there is no
-  grouping variable, \preformatted{ gamfit <- gam(Y ~ s(X),
-  data=dat) }
+If a fitted gam object is not provided, this function fits
+a vanilla smoother function when there is no grouping
+variable, \preformatted{ gamfit <- gam(Y ~ s(X), data=dat)
+}
 
-  When a grouping variable is provided, it fits :
-  \preformatted{ gamfit <- gam(Y ~ group + s(X, by=group,
-  id=1), data=dat) }
+When a grouping variable is provided, it fits :
+\preformatted{ gamfit <- gam(Y ~ group + s(X, by=group,
+id=1), data=dat) }
 
-  See the documentation for \code{\link{mgcv::gam}} in the
-  \code{mgcv} package.
+See the documentation for \code{\link{mgcv::gam}} in the
+\code{mgcv} package.
 }
 

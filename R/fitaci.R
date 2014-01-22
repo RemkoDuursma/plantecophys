@@ -65,7 +65,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
       val <- eval(m[[extrapars[i]]])
       formals(Photosyn)[extrapars[i]] <- val
     } else {
-      warning("Parameter ",extrapars[i]," not recognized.")
+      warning("Parameter ", extrapars[i]," not recognized.")
     }
   }
   photpars <- formals(Photosyn)

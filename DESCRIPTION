@@ -11,17 +11,3 @@ Description: Coupled leaf gas exchange model, A-Ci curve simulation and
     fitting, Cowan-Farquhar optimization, unit conversions.
 License: GPL
 LazyData: yes
-Collate:
-    'AciC4.R'
-    'FARAO.R'
-    'fitaci.R'
-    'fitBBOpti.R'
-    'photosyn.R'
-    'RHtoVPD.R'
-    'gamplot.R'
-    'fitacis.R'
-    'findCiTransition.R'
-    'adderrorbars.R'
-    'QUADP.R'
-    'Tresponsefunctions.R'
-    'predict_nls.R'

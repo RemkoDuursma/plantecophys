@@ -1,9 +1,11 @@
 #' @export
 #' @rdname fitaci
-fitacis <- function(data, group, progressbar=TRUE, ...){
+fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
   
   if(!group %in% names(data))
     stop("group variable must be in the dataframe.")
+  
+  if(quiet)progressbar <- FALSE
   
   data$group <- data[,group]
   tb <- table(data$group)
@@ -15,13 +17,14 @@ fitacis <- function(data, group, progressbar=TRUE, ...){
   success <- vector("logical", ng)
   
   if(progressbar){
-    wp <- txtProgressBar(title = "Fittin A-Ci curves", 
-                       label = "", min = 0, max = ng, initial = 0, width = 50,style=3)
+    wp <- txtProgressBar(title = "Fitting A-Ci curves", 
+                       label = "", min = 0, max = ng, initial = 0, 
+                       width = 50, style=3)
   }
   
   fits <- list()
   for(i in 1:ng){
-    f <- try(fitaci(d[[i]],quiet=TRUE,...), silent=TRUE)
+    f <- try(fitaci(d[[i]], quiet=TRUE, ...), silent=TRUE)
     success[i] <- !inherits(f, "try-error")
     
     fits[[i]] <- if(success[i]) f else NA
@@ -32,8 +35,10 @@ fitacis <- function(data, group, progressbar=TRUE, ...){
   names(fits) <- names(d)
   
   if(any(!success)){
-    message("The following groups could not be fit:")
-    print(names(d)[!success])
+    if(!quiet){
+      message("The following groups could not be fit:")
+      print(names(d)[!success])
+    }
   }
   
   # toss unfitted ones

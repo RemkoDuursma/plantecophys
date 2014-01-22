@@ -2,7 +2,7 @@
 \alias{adderrorbars}
 \title{Adds error bars to a plot}
 \usage{
-  adderrorbars(x, y, SE, direction, barlen = 0.04, ...)
+adderrorbars(x, y, SE, direction, barlen = 0.04, ...)
 }
 \arguments{
   \item{x}{The x coordinates of start of the error bar}
@@ -22,13 +22,13 @@
   #'}
 }
 \description{
-  Yet another function that adds error bars. The user must
-  specify the length of the error bars.
+Yet another function that adds error bars. The user must
+specify the length of the error bars.
 }
 \details{
-  Simple wrapper for \code{\link{arrows}}, where
-  \code{angle=90} and \code{code=3}. The \code{barlen}
-  argument corresponds to \code{length} in \code{arrows}.
+Simple wrapper for \code{\link{arrows}}, where
+\code{angle=90} and \code{code=3}. The \code{barlen}
+argument corresponds to \code{length} in \code{arrows}.
 }
 \examples{
 # A simple example. Also note that we can specify the colour of the error bars, or other parameters

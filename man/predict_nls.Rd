@@ -3,13 +3,13 @@
 \alias{predict_nls}
 \title{Predict from a non-linear regression object}
 \usage{
-  predict_nls(object, from = NULL, to = NULL, x = NULL,
-    interval = c("none", "confidence"), level = 0.95,
-    n = 101, nboot = 999, add = TRUE, ...)
+predict_nls(object, from = NULL, to = NULL, x = NULL,
+  interval = c("none", "confidence"), level = 0.95, n = 101,
+  nboot = 999, add = TRUE, ...)
 
-  plot.nls(x, add = FALSE, lwd = c(1, 1), lty = c(1, 5),
-    col = c("black", "red"), xlim = NULL, ylim = NULL,
-    xlab = NULL, ylab = NULL, ...)
+\method{plot}{nls}(x, add = FALSE, lwd = c(1, 1), lty = c(1, 5),
+  col = c("black", "red"), xlim = NULL, ylim = NULL, xlab = NULL,
+  ylab = NULL, ...)
 }
 \arguments{
   \item{object}{An object of class 'nls'}
@@ -17,11 +17,10 @@
   \item{from}{}
 }
 \description{
-  Predicts from a fitted non-linear regression object, as
-  returned by \code{\link{nls}}. Also calculates a
-  confidence interval using a case bootstrap resampling
-  method (using \code{\link{bootCase}}) from the \code{car}
-  package.
+Predicts from a fitted non-linear regression object, as
+returned by \code{\link{nls}}. Also calculates a confidence
+interval using a case bootstrap resampling method (using
+\code{\link{bootCase}}) from the \code{car} package.
 }
 \examples{
 \dontrun{
