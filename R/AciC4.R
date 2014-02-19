@@ -21,6 +21,7 @@
 #' @param DAYRESP
 #' @param Q10F
 #' @param FRM Fraction of dark respiration that is mesophyll respiration (Rm)
+#' @export
 AciC4 <- function(Ci,
 	PPFD=1500, 
 	Tleaf = 25,
