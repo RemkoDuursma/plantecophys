@@ -6,7 +6,7 @@
 #' @param PPFD
 #' @param Tleaf
 #' @param VPMAX25
-#' @param VCMAX25
+#' @param Vcmax
 #' @param Vpr PEP regeneration (mu mol m-2 s-1)
 #' @param alpha Fraction of PSII activity in the bundle sheath
 #' @param gbs Bundle shead conductance (mol m-2 s-1)
@@ -25,7 +25,7 @@ AciC4 <- function(Ci,
 	PPFD=1500, 
 	Tleaf = 25,
 	VPMAX25=120, 
-	VCMAX25=60, 
+	Vcmax=60, 
 	Vpr=80,         
 	alpha=0.0,		  
 	gbs=3e-3,		 
@@ -39,9 +39,7 @@ AciC4 <- function(Ci,
   TBELOW=0, 
   DAYRESP=1, 
   Q10F=2, 
-	FRM=0.5		
-	)
-{
+	FRM=0.5	,...){
 
 	Tk <- Tleaf+273.15
 	
@@ -64,7 +62,7 @@ AciC4 <- function(Ci,
   K <- Kc*(1+O2/Ko)
           
   # T effects according to Massad et al. (2007)
-	Vcmax <- VCMAX25*Arrhenius(Tk, 67294, 144568, 472)
+	Vcmax <- Vcmax*Arrhenius(Tk, 67294, 144568, 472)
 	Vpmax <- VPMAX25*Arrhenius(Tk, 70373, 117910, 376)
 	Jmax <- JMAX25*Arrhenius(Tk, 77900, 191929, 627)
 	
@@ -114,5 +112,5 @@ AciC4 <- function(Ci,
 	Ac <- Ac - Rd
 	Aj <- Aj - Rd
 		
-	return(list(ALEAF=Ad, An=An, Ac=Ac, Aj=Aj, Vp=Vp, Rd=Rd))
+	return(list(ALEAF=Ad, An=An, Ac=Ac, Aj=Aj, Vp=Vp, Rd=Rd, Tleaf=Tleaf, PPFD=PPFD))
 }
