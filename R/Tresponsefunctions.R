@@ -11,7 +11,6 @@ TGammaStar <- function(Tleaf,
                        value25=42.75){  
 
   value25*arrh(Tleaf,Egamma)
-  
 }
 
 TKm <- function(Tleaf,
@@ -29,7 +28,7 @@ TKm <- function(Tleaf,
 return(Km)
 }
 
-# Hard-wired parameters.
+# Vcmax temperature response (Arrhenius)
 TVcmax <- function(Tleaf, EaV, delsC, EdVC){
   
   if(EdVC > 0){
@@ -41,7 +40,7 @@ TVcmax <- function(Tleaf, EaV, delsC, EdVC){
   exp((Tleaf-25)*EaV/(.Rgas()*Tk(Tleaf)*Tk(25))) * f
 }
 
-# Hard-wired parameters.
+# Jmax temperature response (Arrhenius)
 TJmax <- function(Tleaf, EaJ, delsJ, EdVJ){
   J1 <- 1+exp((298.15*delsJ-EdVJ)/.Rgas()/298.15)
   J2 <- 1+exp((Tk(Tleaf)*delsJ-EdVJ)/.Rgas()/Tk(Tleaf))

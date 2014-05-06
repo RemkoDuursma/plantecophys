@@ -8,20 +8,21 @@ The following functions are the core of the package:
 
 **Leaf gas exchange**
 
-* `Photosyn` is an implementation of a coupled leaf gas exchange model, including the Farquhar-Berry-von Caemmerer model of photosynthesis, and Ball-Berry-type stomatal conductance models.
+* `Photosyn` is an implementation of a coupled leaf gas exchange model, including the Farquhar-Berry-von Caemmerer model of photosynthesis, and Ball-Berry-type stomatal conductance models. Accounts for leaf temperature effects on many processes.
+* `PhotosynEB` is the same, but also calculates the leaf temperature (Tleaf) by solving the leaf energy balance (and takes air temperature as input). Extra inputs are wind speed, leaf width, and some others.
 * `Aci` calculates the dependence of photosynthesis (A) on the intercellular CO2 concentration (Ci), with the Farquhar model. 
 * `fitaci` and `fitacis` fit the Farquhar model of photosynthesis to observations of A and Ci as measured with a Licor 6400 or similar instrument.
 * `FARAO` is an implementation of the stomatal optimization model as suggested by Cowan and Farquhar (1977). It is a full numerical solution to the model, and uses the FARquhar model for photosynthesis.
 
 **Unit conversion**
 
-* `RHtoVPD` converts from relative humidity to VPD. There are others as well (see `?RHtoVPD`).
+* The functions `RHtoVPD`, `VPDtoRH`, and `DewtoVPD`convert between relative humidity, vapour pressure deficit (VPD) and the dewpoint. 
 
 
-**visualization**
+**Visualization**
 
 * `gamplot` is a simple wrapper to produce smoothed regressions with confidence intervals, using generalized additive model fits. This is a useful function to visualize many types of quantitative relationships for which no model can be easily specified.
-
+* `adderrorbars` is yet another function to add simple error bars to a plot.
 
 ### Installation
 

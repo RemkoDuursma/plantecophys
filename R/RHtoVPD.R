@@ -7,7 +7,7 @@
 #' @param Pa Atmospheric pressure
 #' @param Tdew Dewpoint temperature
 #' @export RHtoVPD VPDtoRH esat DewtoVPD
-#' @aliases RHtoVPD VPDtoRH esat DewtoVPD
+#' @rdname Conversions
 #' @references Jones, H.G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology. 2nd Edition., 2nd Edn. Cambridge University Press, Cambridge. 428 p.
 #' @author Remko Duursma
 RHtoVPD <- function(RH, TdegC, Pa=101){
@@ -16,12 +16,14 @@ RHtoVPD <- function(RH, TdegC, Pa=101){
 	VPD <- (esatval - e)/1000
 return(VPD)
 }
+#' @rdname Conversions
 VPDtoRH <- function(VPD, TdegC, Pa=101){
   esatval <- esat(TdegC)
   e <- pmax(0, esatval - VPD*1000)
   RH <- 100 * e/esatval
   return(RH)
 }
+#' @rdname Conversions
 esat <- function(TdegC, Pa=101){  
   a <- 611.21
   b <- 17.502
@@ -30,6 +32,7 @@ esat <- function(TdegC, Pa=101){
   esatval <- f * a * (exp(b * TdegC/(c + TdegC)))
   return(esatval)
 }
+#' @rdname Conversions
 DewtoVPD <- function(Tdew, TdegC, Pa=101){
   
   # Actual vapor pressure.
