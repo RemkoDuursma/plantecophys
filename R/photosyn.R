@@ -347,7 +347,8 @@ Photosyn <- function(VPD=1.5,
                       VPD=VPD,
                       Tleaf=Tleaf,
                       Ca=Ca,
-                      PPFD=PPFD)
+                      PPFD=PPFD,
+                      Patm=Patm)
   
 return(df)
 }
