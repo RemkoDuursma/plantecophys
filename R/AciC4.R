@@ -42,16 +42,15 @@ AciC4 <- function(Ci,
   Q10F=2, 
 	FRM=0.5	,...){
 
-	Tk <- Tleaf+273.15
+	TK <- Tleaf+273.15
 	
 	# Temperature effects on Vcmax, Vpmax and Jmax (Massad et al. 2007)
-    # This function returns value between 0 and 1.
-    Arrhenius <- function(Tk, Ea, Hd, DS){
-			R <- 8.3144
-            fTk <- exp( Ea*(Tk-298)/(298*R*Tk) ) * 
-            		(1+exp( (298*DS-Hd)/(298*R) )) / 
-            		(1+exp( (Tk*DS-Hd)/(Tk*R) )) 
-    }
+  # This function returns value between 0 and 1.
+  Arrhenius <- function(TK, Ea, Hd, DS){
+        exp( Ea*(TK-298)/(298*.Rgas()*TK) ) * 
+        		(1+exp( (298*DS-Hd)/(298*.Rgas()) )) / 
+        		(1+exp( (TK*DS-Hd)/(TK*.Rgas()) )) 
+  }
 	
 	# Half the reciprocal for Rubisco specificity (NOT CO2 compensation point)
 	low_gammastar <- 1.93e-4
@@ -63,9 +62,9 @@ AciC4 <- function(Ci,
   K <- Kc*(1+O2/Ko)
           
   # T effects according to Massad et al. (2007)
-	Vcmax <- Vcmax*Arrhenius(Tk, 67294, 144568, 472)
-	Vpmax <- VPMAX25*Arrhenius(Tk, 70373, 117910, 376)
-	Jmax <- JMAX25*Arrhenius(Tk, 77900, 191929, 627)
+	Vcmax <- Vcmax*Arrhenius(TK, 67294, 144568, 472)
+	Vpmax <- VPMAX25*Arrhenius(TK, 70373, 117910, 376)
+	Jmax <- JMAX25*Arrhenius(TK, 77900, 191929, 627)
 	
 	# # Dark and Mesophyll respiration
 	# Rd <- 0.01*Vcmax
