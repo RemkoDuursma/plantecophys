@@ -67,10 +67,10 @@ OPTfun <- function(Ci,              # mu mol mol-1
 	else
 		gtot <- 1/(1/gs + 1/gbl)
 	
-  # Transpiration rare
+  # Transpiration rate
   E <- gtot*VPDmol  
   
-  # Objective function to be maximizes (Cowan-Farquhar condition)
+  # Objective function to be maximized (Cowan-Farquhar condition)
   objfun <- 10^-6*A - lambda*E
 
 if(retobjfun)return(objfun)
