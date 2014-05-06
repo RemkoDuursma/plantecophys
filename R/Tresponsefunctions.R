@@ -3,7 +3,7 @@ Tk <- function(x)x+273.15
 
 # Arrhenius
 arrh <- function(Tleaf, Ea){
-  exp((Ea * (Tk - 298.15)) / (298.15 * .Rgas() * Tk(Tleaf))) 
+  exp((Ea * (Tk(Tleaf) - 298.15)) / (298.15 * .Rgas() * Tk(Tleaf))) 
 }
 
 TGammaStar <- function(Tleaf, 
