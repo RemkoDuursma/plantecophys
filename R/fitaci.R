@@ -2,10 +2,12 @@
 #' Fit the Farquhar Berry von Caemmerer model of photosynthesis
 #' 
 #' @description Fits the Farquhar model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their (approximate) standard errors. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
-#' @param dat Dataset with Ci, Photo, Tleaf, PPFD (the last two are optional).
-#' @param varnames List of names of variables (see Details).
+#' @param dat Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional).
+#' @param varnames List of names of variables in the dataset (see Details).
 #' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.
 #' @param quiet If TRUE, no messages are written to the screen.
+#' @param startValGrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
+#' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
 #' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax (both at 25deg C) and Rd (at the measurement temperature).
 #' 
@@ -18,6 +20,7 @@
 #' \item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and PPFD are set to the mean value in the dataset.}
 #' \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax to Jmax limited photosynthesis.}
 #' }
+#' 
 #' @examples
 #' # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. Here, we use the built-in example dataset 'acidata1'.
 #' f <- fitaci(acidata1)

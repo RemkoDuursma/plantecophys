@@ -18,11 +18,11 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 \method{plot}{acifits}(x, how = c("manyplots", "oneplot"), ...)
 }
 \arguments{
-  \item{dat}{Dataset with Ci, Photo, Tleaf, PPFD (the last
-  two are optional).}
+  \item{dat}{Dataframe with Ci, Photo, Tleaf, PPFD (the
+  last two are optional).}
 
-  \item{varnames}{List of names of variables (see
-  Details).}
+  \item{varnames}{List of names of variables in the dataset
+  (see Details).}
 
   \item{Tcorrect}{If TRUE, Vcmax and Jmax are corrected to
   25C. Otherwise, Vcmax and Jmax are estimated at
@@ -30,6 +30,13 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
   \item{quiet}{If TRUE, no messages are written to the
   screen.}
+
+  \item{startValGrid}{If TRUE (the default), uses a fine
+  grid of starting values to increase the chance of finding
+  a solution.}
+
+  \item{algorithm}{Passed to \code{\link{nls}}, sets the
+  algorithm for finding parameter values.}
 
   \item{group}{For batch analysis using \code{fitacis}, the
   name of the grouping variable in the dataframe.}
