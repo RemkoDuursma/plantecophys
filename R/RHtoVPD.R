@@ -66,5 +66,21 @@ VPDairToLeaf <- function(VPD, Tair, Tleaf){
   
   return(vpd/1000)
 }
+#' @rdname Conversions
+RHleafToAir <- function(RH, Tleaf, Tair){
+  
+  e <- (RH/100)*esat(Tleaf)
+  rh <- e/esat(Tair)
+  
+  return(rh*100)
+}
+#' @rdname Conversions
+RHairToLeaf <- function(RH, Tair, Tleaf){
+  
+  e <- (RH/100)*esat(Tair)
+  rh <- e/esat(Tleaf)
+  
+  return(rh*100)
+}
 
 
