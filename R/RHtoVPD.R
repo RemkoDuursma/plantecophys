@@ -1,12 +1,19 @@
 #' Conversions between relative humidity, vapour pressure deficit and dewpoint
 #' 
-#' @description Converts relative humidity (\%) to vapour pressure deficit (kPa), or vice versa. To convert from relative humidity, use the \code{RHtoVPD} function, use \code{VPDtoRH} for the other way around. The water vapor saturation pressure is calculated with \code{esat}, which is from Jones 1992. Also provided is \code{DewtoVPD} to convert from dewpoint temperature to VPD.
+#' @description Converts relative humidity (\%) to vapour pressure deficit (kPa), or vice versa. 
+#' To convert from relative humidity, use the \code{RHtoVPD} function, 
+#' use \code{VPDtoRH} for the other way around. The water vapor saturation pressure is 
+#' calculated with \code{esat} (using Jones 1992). Also provided is \code{DewtoVPD} to 
+#' convert from dewpoint temperature to VPD. The functions \code{VPDleafToAir} and \code{VPDairToLeaf}
+#' convert VPD from a leaf temperature to an air-temperature basis and vice versa.
 #' @param RH Relative humidity (\%)
-#' @param TdegC Temperature (degrees C)
+#' @param TdegC Temperature (degrees C) (either leaf or air)
+#' @param Tair Air temperature (degrees C)
+#' @param Tleaf Leaf temperature (degrees C)
 #' @param VPD Vapour pressure deficit (kPa)
 #' @param Pa Atmospheric pressure
 #' @param Tdew Dewpoint temperature
-#' @export RHtoVPD VPDtoRH esat DewtoVPD
+#' @export RHtoVPD VPDtoRH esat DewtoVPD VPDleafToAir VPDairToLeaf
 #' @rdname Conversions
 #' @references Jones, H.G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology. 2nd Edition., 2nd Edn. Cambridge University Press, Cambridge. 428 p.
 #' @author Remko Duursma
@@ -43,3 +50,21 @@ DewtoVPD <- function(Tdew, TdegC, Pa=101){
   
   return((esatval - e)/1000)
 }
+#' @rdname Conversions
+VPDleafToAir <- function(VPD, Tleaf, Tair){
+  
+  e <- esat(Tleaf) - VPD*1000
+  vpd <- esat(Tair) - e
+  
+  return(vpd/1000)
+}
+#' @rdname Conversions
+VPDairToLeaf <- function(VPD, Tair, Tleaf){
+  
+  e <- esat(Tair) - VPD*1000
+  vpd <- esat(Tleaf) - e
+  
+  return(vpd/1000)
+}
+
+
