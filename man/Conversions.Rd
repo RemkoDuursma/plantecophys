@@ -1,5 +1,7 @@
 \name{RHtoVPD}
 \alias{DewtoVPD}
+\alias{RHairToLeaf}
+\alias{RHleafToAir}
 \alias{RHtoVPD}
 \alias{VPDairToLeaf}
 \alias{VPDleafToAir}
@@ -18,6 +20,10 @@ DewtoVPD(Tdew, TdegC, Pa = 101)
 VPDleafToAir(VPD, Tleaf, Tair)
 
 VPDairToLeaf(VPD, Tair, Tleaf)
+
+RHleafToAir(RH, Tleaf, Tair)
+
+RHairToLeaf(RH, Tair, Tleaf)
 }
 \arguments{
   \item{RH}{Relative humidity (\%)}

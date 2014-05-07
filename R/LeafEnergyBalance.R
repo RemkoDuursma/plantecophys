@@ -3,10 +3,79 @@
 #' 
 #'@details Uses the Penman-Monteith equation to calculate the leaf transpiration rate, and finds Tleaf by solving the leaf energy balance iteratively. In the solution, it is accounted for that stomatal conductance and net radiation depend on Tleaf. There are no simplifications or approximations made to find the solution.
 #'@param Wind Wind speed (m s-1)
+#'@param VPD The vapour pressure deficit of the air (i.e. not the leaf-to-air VPD)
 #'@param Wleaf Leaf width (m)
 #'@param StomatalRatio The stomatal ratio (cf. Licor6400 terminology), if it is 1, leaves have stomata only on one side (hypostomatous), 2 for leaves with stomata on both sides (amphistomatous)
 #'@param LeafAbs Leaf absorptance of solar radiation
+#'@param RH The relative humidity of the air (i.e. not calculated with leaf temperature)
 #'@export PhotosynEB
+PhotosynEB <- function(Tair=25,
+                       VPD=1.5,
+                       Wind = 2,   
+                       Wleaf = 0.02, 
+                       StomatalRatio = 1,   # 2 for amphistomatous
+                       LeafAbs = 0.86, 
+                       RH=NULL,
+                       ...){
+  
+  
+  if(!is.null(RH))VPD <- RHtoVPD(RH,Tair)
+  
+  # Non-vectorized function declared here.
+  PhotosynEBfun <- function(Tair,
+                            VPD,
+                            Wind,   
+                            Wleaf, 
+                            StomatalRatio,   # 2 for amphistomatous
+                            LeafAbs,
+                            ...){   # passed to Photosyn
+    
+    
+    m <- match.call(expand.dots=TRUE)
+    if("Tleaf" %in% names(m))
+      stop("Cannot pass Tleaf to PhotosynEB - it is calculated from energy balance.")
+    
+    # Wrapper for Photosyn to find gs only  
+    gsfun <- function(...)Photosyn(...)$GS
+    
+    # Find Tleaf. Here, we take into account that Tleaf as solved from
+    # energy balance affects gs, so this is the second loop to solve for Tleaf.
+    fx <- function(x, Tair, Wind, VPD, Wleaf, StomatalRatio, LeafAbs, ...){
+      newx <- FindTleaf(Tair=Tair, gs=gsfun(Tleaf=x, VPD=VPDairToLeaf(VPD,Tair,x), ...), 
+                        Wind=Wind, Wleaf=Wleaf, 
+                        StomatalRatio=StomatalRatio, LeafAbs=LeafAbs)
+      newx - x
+    }
+    Tleaf <- uniroot(fx, interval=c(Tair-15, Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
+                     VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$root
+    
+    # Now run Photosyn
+    p <- Photosyn(Tleaf=Tleaf, VPD=VPDairToLeaf(VPD,Tair,Tleaf), ...)
+    
+    # And energy balance components
+    e <- LeafEnergyBalance(Tleaf=Tleaf, Tair=Tair, gs=p$GS, 
+                           PPFD=p$PPFD, VPD=p$VPD, Patm=p$Patm, 
+                           Wind=Wind, Wleaf=Wleaf, 
+                           StomatalRatio=StomatalRatio, LeafAbs=LeafAbs,
+                           returnwhat="fluxes")
+    res <- cbind(p,e)
+    
+    # Replace ELEAF with energy-balance one.
+    res$ELEAF <- res$ELEAFeb
+    res$ELEAFeb <- NULL
+    
+    return(res)
+  }
+  
+  m <- t(mapply(PhotosynEBfun, Tair=Tair, 
+                VPD=VPD, 
+                Wind=Wind, Wleaf=Wleaf, StomatalRatio=StomatalRatio, 
+                LeafAbs=LeafAbs, ..., SIMPLIFY=FALSE))
+  
+  
+  return(as.data.frame(do.call(rbind, m)))
+}
+
 # The net leaf energy balance, given that we know Tleaf, gs
 LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20, 
                               gs = 0.15,
@@ -111,79 +180,6 @@ FindTleaf <- function(gs, Tair, ...){
 return(Tleaf)
 }
 
-
-# Photosyn with energy balance
-PhotosynEB <- function(Tair=25,
-                       Wind = 2,   
-                       Wleaf = 0.02, 
-                       StomatalRatio = 1,   # 2 for amphistomatous
-                       LeafAbs = 0.86, 
-                       ...){
-  
-  # Non-vectorized function declared here.
-  PhotosynEBfun <- function(Tair, 
-                            Wind,   
-                            Wleaf, 
-                            StomatalRatio,   # 2 for amphistomatous
-                            LeafAbs, 
-                            ...){   # passed to Photosyn
-    
-    m <- match.call(expand.dots=TRUE)
-    if("Tleaf" %in% names(m))
-      stop("Cannot pass Tleaf to PhotosynEB - it is calculated from energy balance.")
-    
-    # Wrapper for Photosyn to find gs only  
-    gsfun <- function(...)Photosyn(...)$GS
-    
-    # Find Tleaf. Here, we take into account that Tleaf as solved from
-    # energy balance affects gs, so this is the second loop to solve for Tleaf.
-    fx <- function(x, Tair, Wind, Wleaf, StomatalRatio, LeafAbs, ...){
-      newx <- FindTleaf(Tair=Tair, gs=gsfun(Tleaf=x, ...), Wind=Wind, Wleaf=Wleaf, 
-                        StomatalRatio=StomatalRatio, LeafAbs=LeafAbs)
-      newx - x
-    }
-    Tleaf <- uniroot(fx, interval=c(Tair-15, Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
-                     StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$root
-    
-    # Now run Photosyn
-    p <- Photosyn(Tleaf=Tleaf, ...)
-    
-    # And energy balance components
-    e <- LeafEnergyBalance(Tleaf=Tleaf, Tair=Tair, gs=p$GS, 
-                           PPFD=p$PPFD, VPD=p$VPD, Patm=p$Patm, 
-                           Wind=Wind, Wleaf=Wleaf, 
-                           StomatalRatio=StomatalRatio, LeafAbs=LeafAbs,
-                           returnwhat="fluxes")
-    res <- cbind(p,e)
-    
-    # Replace ELEAF with energy-balance one.
-    res$ELEAF <- res$ELEAFeb
-    res$ELEAFeb <- NULL
-    
-    return(res)
-  }
-  
-  m <- t(mapply(PhotosynEBfun, Tair=Tair, Wind=Wind, Wleaf=Wleaf, StomatalRatio=StomatalRatio, 
-              LeafAbs=LeafAbs, ..., SIMPLIFY=FALSE))
-  
-
-return(as.data.frame(do.call(rbind, m)))
-}
-
-
-# Ewers approx. for imposed evapotranspiration
-# VPD <- 1.5
-# TAIR <- 25
-# GS <- 0.2  # mol m-2 s-1
-# GSms <- GS * 8.314*293/101000
-# KG <- 115+0.4236*TAIR
-# 
-# E_kg <- VPD * GSms / KG
-# 
-# E_mol <- E_kg*1000/18
-# E_simple <- VPD*GS/101
-#   
-# ET <- GS*(AIRDENS*0.622/Patm)*VPD
 
 
 
