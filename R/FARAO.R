@@ -4,7 +4,12 @@
 #' @param lambda The marginal cost of water (mol mol-1)
 #' @param Ca The CO2 concentration. 
 #' @param photo Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. the minimum of Vcmax and Jmax limited rates.
-#' @param C4 If TRUE, uses the C4 photosynthesis routine (\code{\link{AciC4}})
+#' @param energybalance If TRUE (Default = FALSE), calculates leaf temperature from energy balance (and its effects on photosynthesis as well as leaf transpiration).
+#' @param C4 If TRUE, uses the C4 photosynthesis routine (\code{\link{AciC4}})Tair=25,
+#' @param Wind Wind speed (m s-1) (only used if energybalance=TRUE)
+#' @param Wleaf Leaf width (m) (only used if energybalance=TRUE)
+#'  @param StomatalRatio The stomatal ratio (see \code{\link{PhotosynEB}}) (only used if energybalance=TRUE)
+#'  @param LeafAbs Leaf absorptance (see \code{\link{PhotosynEB}}) (only used if energybalance=TRUE)
 #' @param ... All other parameters are passed to \code{\link{Aci}}
 #' @author Remko Duursma
 #' @details This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011).
@@ -14,17 +19,44 @@
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @export
 FARAO <- function(lambda=0.002, Ca=400, VPD=1, 
-                  photo=c("BOTH","VCMAX","JMAX"), C4=FALSE, ...){
+                  photo=c("BOTH","VCMAX","JMAX"), energybalance=FALSE, C4=FALSE,                   
+                  Tair=25,
+                  Wind=2,
+                  Wleaf=0.02,
+                  StomatalRatio=1,
+                  LeafAbs=0.86,
+                  ...){
   
   photo <- match.arg(photo)
   
-  fx <- function(Ca,...)optimize(OPTfun, interval=c(0,Ca), 
-                                 maximum=TRUE,Ca=Ca,
-                                 ...)$maximum
-  optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, photo=photo, C4=C4, VPD=VPD,...)
-  
-  res <- as.data.frame(OPTfun(Ci=optimalcis, retobjfun=FALSE, 
+
+  if(!energybalance){
+    fx <- function(Ca,...)optimize(OPTfun, interval=c(0,Ca), 
+                                   maximum=TRUE,Ca=Ca,
+                                   ...)$maximum
+    optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, photo=photo, C4=C4, VPD=VPD,...)
+    
+    res <- as.data.frame(OPTfun(Ci=optimalcis, retobjfun=FALSE, 
                               Ca=Ca, photo=photo, C4=C4, VPD=VPD,...))
+  } else {
+    fx <- function(Ca,...)optimize(OPTfunEB, interval=c(0,Ca), 
+                                   maximum=TRUE,Ca=Ca,
+                                   ...)$maximum
+    optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, photo=photo, C4=C4, VPD=VPD,
+                         Tair=25,
+                         Wind=2,
+                         Wleaf=0.02,
+                         StomatalRatio=1,
+                         LeafAbs=0.86,
+                         ...)
+    
+    res <- as.data.frame(OPTfunEB(Ci=optimalcis, retobjfun=FALSE, 
+                                Ca=Ca, photo=photo, C4=C4, VPD=VPD,Tair=25,
+                                Wind=2,
+                                Wleaf=0.02,
+                                StomatalRatio=1,
+                                LeafAbs=0.86,...))
+  }
   
   return(res)
 }
@@ -85,7 +117,6 @@ OPTfunEB <- function(Ci,           # mu mol mol-1
                    StomatalRatio=1,
                    LeafAbs=0.86,
                    photo=c("BOTH","VCMAX","JMAX"),
-                   energybalance=FALSE,
                    retobjfun=TRUE, # if false, returns A, g and E (otherwise sum(A-lambda*E))
                    C4=FALSE,
                    ...){     
@@ -144,7 +175,7 @@ OPTfunEB <- function(Ci,           # mu mol mol-1
   
   if(retobjfun)return(objfun)
   
-  if(!retobjfun)return(list( Ci=Ci, ALEAF=A, GS=gs, ELEAF=E*1000, Ac=z$run$Ac, Aj=z$run$Aj,
+  if(!retobjfun)return(list( Ci=Ci, ALEAF=A, GS=GS, ELEAF=E, Ac=z$run$Ac, Aj=z$run$Aj,
                              Rd=z$run$Rd, VPD=VPD, Tleaf=Tleaf,  Ca=Ca, PPFD=z$run$PPFD ))
 }  
 
