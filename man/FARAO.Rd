@@ -2,7 +2,7 @@
 \alias{FARAO}
 \title{FARquhar And Opti}
 \usage{
-FARAO(lambda = 0.002, Ca = 400, VPD = 1, gbl = NA, photo = c("BOTH",
+FARAO(lambda = 0.002, Ca = 400, VPD = 1, photo = c("BOTH",
   "VCMAX", "JMAX"), C4 = FALSE, ...)
 }
 \arguments{
