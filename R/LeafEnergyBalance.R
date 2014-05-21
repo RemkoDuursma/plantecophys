@@ -63,6 +63,9 @@ PhotosynEB <- function(Tair=25,
     # Replace ELEAF with energy-balance one.
     res$ELEAF <- res$ELEAFeb
     res$ELEAFeb <- NULL
+    res$VPDleaf <- VPDairToLeaf(res$VPD, Tair, res$Tleaf)
+    res$Tair <- Tair
+    res$Wind <- Wind
     
     return(res)
   }
