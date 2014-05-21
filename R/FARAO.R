@@ -36,14 +36,13 @@ OPTfun <- function(Ci,              # mu mol mol-1
                     lambda=0.002,   # mol mol-1
                     Ca=400,         # mu mol mol-1
                     VPD=1.5,        # kPa
-					          Pa=101,         # ambient pressure, kPa
-					          gbl=NA,
+					          Patm=101,         # ambient pressure, kPa
 					          photo=c("BOTH","VCMAX","JMAX"),
                     retobjfun=TRUE, # if false, returns A, g and E (otherwise sum(A-lambda*E))
 					          C4=FALSE,
 					          ...){     
 
-	a <- 1.6
+  GCtoGW <- 1.57
 	VPDmol <- VPD/Pa
 	
 	photo <- match.arg(photo)
@@ -59,16 +58,10 @@ OPTfun <- function(Ci,              # mu mol mol-1
 	if(photo == "JMAX")A <- run$Aj
   
   # Given Ci and A, calculate gs (diffusion constraint)
-  gs <- a* A / (Ca - Ci)
-	
-  # Boundary layer conductance (optional)
-	if(is.na(gbl))
-		gtot <- gs
-	else
-		gtot <- 1/(1/gs + 1/gbl)
+  gs <- GCtoGW * A / (Ca - Ci)
 	
   # Transpiration rate
-  E <- gtot*VPDmol  
+  E <- gtot*VPDmol
   
   # Objective function to be maximized (Cowan-Farquhar condition)
   objfun <- 10^-6*A - lambda*E
@@ -78,3 +71,4 @@ if(retobjfun)return(objfun)
 if(!retobjfun)return(list( Ci=Ci, ALEAF=A, GS=gs, ELEAF=E*1000, Ac=run$Ac, Aj=run$Aj,
                            Rd=run$Rd, VPD=VPD, Tleaf=run$Tleaf,  Ca=Ca, PPFD=run$PPFD ))
 }         
+
