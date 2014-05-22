@@ -50,11 +50,10 @@ fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
 return(fits)
 }
 
-#' @method plot acifits
-#' @S3method plot acifits
+
+#' @export plot.acifits
 #' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
 #' @rdname fitaci
-#' @export
 plot.acifits <- function(x, how=c("manyplots","oneplot"), ...){
   
   how <- match.arg(how)
@@ -74,8 +73,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"), ...){
 }
 
 
-#' @method coef acifits
-#' @S3method coef acifits
+#' @export coef.acifits
 coef.acifits <- function(object,...){
   
   f <- lapply(object, function(x)c(x$pars))

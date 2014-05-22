@@ -6,7 +6,6 @@
 #' @param from 
 #' @export
 #'@examples
-#'
 #'\dontrun{
 #' f <- function(t, k=0.5)1 - exp(-k*t)
 #' x <- seq(0,12,length=101)
@@ -28,7 +27,7 @@
 #' P <- predictNLS(nls1, newdata = data.frame(x=p$x))
 #' lines(p$x, P$summary[,5], col="blue", lty=5)
 #' lines(p$x, P$summary[,6], col="blue", lty=5)
-# }
+#'}
 predict_nls <- function(object, from=NULL, to=NULL, x=NULL,interval = c("none", "confidence"), 
                         level=0.95, 
                         n=101, nboot=999, add=TRUE, ...){

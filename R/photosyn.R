@@ -1,5 +1,4 @@
 #' @title Coupled leaf gas exchange model
-#' 
 #' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance. 
 #' @param VPD Vapour pressure deficit (kPa)
 #' @param Ca Atmospheric CO2 concentration (ppm)
@@ -27,14 +26,9 @@
 #' @param Ci Optional, intercellular CO2 concentration (ppm). If not provided, calculated via gs model.
 #' @param whichA Which assimilation rate does gs respond to? 
 #' @seealso FARAO fitaci AciC4
-#' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply
-#' of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model.
-#'  \if{html}{\figure{supplydemand.jpg}{Supply-demand}}
-#'  \if{latex}{\figure{supplydemand}{Supply-demand}} 
-#'  
-#'  Figure 1. \code{Photosyn} calculates the operating point from the intersection of the supply and demand curves, here shown as the red dot.
-#'  
-#'  The model of Farquhar et al. (1980) is used to estimate the dependence of photosynthesis rate on Ci.
+#' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model. 
+#' 
+#' The model of Farquhar et al. (1980) is used to estimate the dependence of photosynthesis rate on Ci.
 #'  
 #'  The temperature response of photosynthetic parameters, including Vcmax, Jmax, Gammastar, and Km follow Medlyn et al. 2002. 
 #'  

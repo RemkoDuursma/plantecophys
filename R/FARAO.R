@@ -29,36 +29,61 @@ FARAO <- function(lambda=0.002, Ca=400, VPD=1,
   
   photo <- match.arg(photo)
   
-
-  if(!energybalance){
-    fx <- function(Ca,...)optimize(OPTfun, interval=c(0,Ca), 
-                                   maximum=TRUE,Ca=Ca,
-                                   ...)$maximum
-    optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, photo=photo, C4=C4, VPD=VPD,...)
+  # Non-vectorized form.
+  FARAOfun <- function(lambda, Ca, VPD, 
+                       photo, 
+                       energybalance, C4,                   
+                       Tair,
+                       Wind,
+                       Wleaf,
+                       StomatalRatio,
+                       LeafAbs,
+                       ...){
     
-    res <- as.data.frame(OPTfun(Ci=optimalcis, retobjfun=FALSE, 
-                              Ca=Ca, photo=photo, C4=C4, VPD=VPD,...))
-  } else {
-    fx <- function(Ca,...)optimize(OPTfunEB, interval=c(0,Ca), 
-                                   maximum=TRUE,Ca=Ca,
-                                   ...)$maximum
-    optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, photo=photo, C4=C4, VPD=VPD,
-                         Tair=25,
-                         Wind=2,
-                         Wleaf=0.02,
-                         StomatalRatio=1,
-                         LeafAbs=0.86,
-                         ...)
+  
+    if(!energybalance){
+      fx <- function(Ca,...)optimize(OPTfun, interval=c(0,Ca), 
+                                     maximum=TRUE,Ca=Ca,
+                                     ...)$maximum
+      optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, photo=photo, C4=C4, VPD=VPD,...)
+      
+      res <- as.data.frame(OPTfun(Ci=optimalcis, retobjfun=FALSE, 
+                                Ca=Ca, photo=photo, C4=C4, VPD=VPD,...))
+    } else {
+      fx <- function(Ca,...)optimize(OPTfunEB, interval=c(0,Ca), 
+                                     maximum=TRUE,Ca=Ca,
+                                     ...)$maximum
+      optimalcis <- mapply(fx,Ca=Ca,lambda=lambda, photo=photo, C4=C4, VPD=VPD,
+                           Tair=Tair,
+                           Wind=Wind,
+                           Wleaf=Wleaf,
+                           StomatalRatio=StomatalRatio,
+                           LeafAbs=LeafAbs,
+                           ...)
+      
+      res <- as.data.frame(OPTfunEB(Ci=optimalcis, retobjfun=FALSE, 
+                                  Ca=Ca, photo=photo, C4=C4, VPD=VPD,
+                                  Tair=Tair,
+                                  Wind=Wind,
+                                  Wleaf=Wleaf,
+                                  StomatalRatio=StomatalRatio,
+                                  LeafAbs=LeafAbs,...))
+    }
     
-    res <- as.data.frame(OPTfunEB(Ci=optimalcis, retobjfun=FALSE, 
-                                Ca=Ca, photo=photo, C4=C4, VPD=VPD,Tair=25,
-                                Wind=2,
-                                Wleaf=0.02,
-                                StomatalRatio=1,
-                                LeafAbs=0.86,...))
+    return(res)
   }
   
-  return(res)
+  f <- t(mapply(FARAOfun, lambda=lambda, Ca=Ca, VPD=VPD, 
+              photo=photo, 
+              energybalance=energybalance, C4=C4,
+              Tair=Tair,
+              Wind=Wind,
+              Wleaf=Wleaf,
+              StomatalRatio=StomatalRatio,
+              LeafAbs=LeafAbs, ..., SIMPLIFY=FALSE))
+  
+return(as.data.frame(do.call(rbind,f)))
+
 }
 
 # This function returns the 'objective function' A - lambda*E

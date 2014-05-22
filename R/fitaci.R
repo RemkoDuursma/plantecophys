@@ -1,4 +1,3 @@
-
 #' Fit the Farquhar Berry von Caemmerer model of photosynthesis
 #' 
 #' @description Fits the Farquhar model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their (approximate) standard errors. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
@@ -235,8 +234,7 @@ return(l)
 }
 
 
-#' @S3method print acifit
-#' @method print acifit
+#' @export print.acifit
 print.acifit <- function(x,...){
   
   cat("Result of fitaci.\n\n")
@@ -262,8 +260,7 @@ print.acifit <- function(x,...){
   
 }
 
-#' @S3method summary acifit
-#' @method summary acifit
+#' @export summary.acifit
 summary.acifit <- function(object,...){
   
   print.acifit(object, ...)
@@ -271,16 +268,14 @@ summary.acifit <- function(object,...){
 }
 
 
-#' @S3method coef acifit
-#' @method coef acifit
+#' @export coef.acifit
 coef.acifit <- function(object, ...){
  v <- unname(object$pars[,1])
  names(v) <- rownames(object$pars)
 return(v)
 }
 
-#' @S3method fitted acifit
-#' @method fitted acifit
+#' @export fitted.acifit
 fitted.acifit <- function(object,...){
   
   object$df$Amodel
@@ -289,8 +284,7 @@ fitted.acifit <- function(object,...){
 
 
 
-#' @S3method plot acifit
-#' @method plot acifit
+#' @export plot.acifit
 #' @param what The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them.
 #' @param add If TRUE, adds to the current plot
 #' @param pch The plotting symbol for the data
