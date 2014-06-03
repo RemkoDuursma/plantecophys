@@ -19,7 +19,9 @@
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @export
 FARAO <- function(lambda=0.002, Ca=400, VPD=1, 
-                  photo=c("BOTH","VCMAX","JMAX"), energybalance=FALSE, C4=FALSE,                   
+                  photo=c("BOTH","VCMAX","JMAX"), 
+                  energybalance=FALSE, 
+                  C4=FALSE,                   
                   Tair=25,
                   Wind=2,
                   Wleaf=0.02,
@@ -178,10 +180,12 @@ OPTfunEB <- function(Ci,           # mu mol mol-1
     newx <- FindTleaf(Tair=Tair, gs=gsfun(Ci=Ci, Tleaf=x, VPD=VPD, ...), 
                       Wind=Wind, Wleaf=Wleaf, 
                       StomatalRatio=StomatalRatio, LeafAbs=LeafAbs)
-    newx - x
+    (newx - x)^2
   }
-  Tleaf <- uniroot(fx, interval=c(Tair-15, Tair+15), Ci=Ci, Tair=Tair, Wind=Wind, VPD=VPD, Wleaf=Wleaf, 
-                   StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$root
+
+  Tleaf <- optimize(fx, interval=c(Tair-10, Tair+10), Ci=Ci, Tair=Tair, Wind=Wind, VPD=VPD, Wleaf=Wleaf, 
+                   StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$minimum
+  
   z <- gsfun(Ci=Ci, Tleaf=Tleaf, VPD=VPD, returnwhat="all",...)
   GS <- z$GS
   A <- z$A
@@ -195,7 +199,7 @@ OPTfunEB <- function(Ci,           # mu mol mol-1
 
   E <- e$ELEAFeb
   
-  # Objective function to be maximized (Cowan-Farquhar condition)
+  # Objective function to be maximized (Cowan-Farquhar)
   objfun <- 10^-6*A - lambda*E/1000
   
   if(retobjfun)return(objfun)
