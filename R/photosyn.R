@@ -127,6 +127,7 @@ Photosyn <- function(VPD=1.5,
                      delsJ = 641.3615,
                      
                      Ci = NULL,
+                     GS = NULL,
                      #AcCi=NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
@@ -136,7 +137,8 @@ Photosyn <- function(VPD=1.5,
   whichA <- match.arg(whichA)
   gsmodel <- match.arg(gsmodel)
   inputCi <- !is.null(Ci)
-  
+  inputGS <- !is.null(GS)
+  if(inputCi & inputGS)stop("Cannot provide both Ci and GS")
   
   #---- Constants; hard-wired parameters.
   Rgas <- .Rgas()
@@ -320,10 +322,16 @@ Photosyn <- function(VPD=1.5,
     
   
     # Calculate conductance to CO2
-    if(whichA == "Ah")GS <- g0 + GSDIVA*Am
-    if(whichA == "Aj")GS <- g0 + GSDIVA*(Aj-Rd)
-    if(whichA == "Ac")GS <- g0 + GSDIVA*(Ac-Rd)
-    
+    if(!inputCi){
+      if(whichA == "Ah")GS <- g0 + GSDIVA*Am
+      if(whichA == "Aj")GS <- g0 + GSDIVA*(Aj-Rd)
+      if(whichA == "Ac")GS <- g0 + GSDIVA*(Ac-Rd)
+    } else {
+      if(whichA == "Ah")GS <- Am/(Ca - Ci)
+      if(whichA == "Aj")GS <- (Aj-Rd)/(Ca - Ci)
+      if(whichA == "Ac")GS <- (Ac-Rd)/(Ca - Ci)
+    }
+
     # Output conductance to H2O
     GS <- GS*GCtoGW
     
