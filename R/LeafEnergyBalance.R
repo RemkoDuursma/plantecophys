@@ -170,8 +170,9 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   lambdaET <- LHV * ET
   
   # Net energy balance for the leaf
-  EnergyBal <- Rnet - lambdaET - H
-
+  #EnergyBal <- Rnet - lambdaET - H
+  EnergyBal <- (Rnet - lambdaET - H)^2
+  
   if(returnwhat == "balance")return(EnergyBal)
   
   if(returnwhat == "fluxes"){
@@ -186,9 +187,10 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
 # Calculate Tleaf from energy balance, given that we know gs
 FindTleaf <- function(gs, Tair, penmon,  ...){
   
-  Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
-                   gs=gs, Tair=Tair, penmon=penmon, ...)$root)
-   if(inherits(Tleaf, "try-error"))browser()
+#   Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
+#                    gs=gs, Tair=Tair, penmon=penmon, ...)$root)
+  Tleaf <- optimize(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
+                      gs=gs, Tair=Tair, penmon=penmon, ...)$minimum
   
 return(Tleaf)
 }

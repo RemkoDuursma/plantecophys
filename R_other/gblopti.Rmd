@@ -128,16 +128,33 @@ This was done by calculating A and E at a given Ci, then adding a very small num
 
 
 
-```{r echo=FALSE}
-Cis <- seq(100,399, length=101)
+```{r echo=FALSE, eval=FALSE}
 
-f <- plantecophys:::getdAdE
+windlow <- 0.2
+windhigh <- 10
 
-r1 <- f(Cis, energybalance=T, Wind=10)
-r2 <- f(Cis, energybalance=T, Wind=0.2)
+Cis <- seq(100,375, length=101)
 
+rlow <- PhotosynEB(Ci=Cis, Wind=windlow)
+rhigh <- PhotosynEB(Ci=Cis, Wind=windhigh)
+rcon <- Photosyn(Ci=Cis)
 
+with(rcon, plot(Ci, ALEAF, type='l'))
+with(rlow, points(Ci, ALEAF, type='l', col="red"))
+with(rhigh, points(Ci, ALEAF, type='l', col="blue"))
 
+with(rcon, plot(Ci, ELEAF, type='l'))
+with(rlow, points(Ci, ELEAF, type='l', col="red"))
+with(rhigh, points(Ci, ELEAF, type='l', col="blue"))
+
+with(rcon, plot(Ci, Tleaf, type='l'))
+with(rlow, points(Ci, Tleaf, type='l', col="red"))
+with(rhigh, points(Ci, Tleaf, type='l', col="blue"))
+
+Cis <- seq(310,345, length=101)
+rlow <- PhotosynEB(Ci=Cis, Wind=windlow)
+with(rlow, plot(Ci, Tleaf, type='o'))
+abline(h=25)
 
 ```
 
