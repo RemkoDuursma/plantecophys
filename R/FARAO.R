@@ -235,19 +235,24 @@ getdAdE <- function(Ci,...,energybalance=FALSE,
 }
 
 #' @rdname FARAO
-#'@export
+#' @export
 FARAO2 <- function(lambda=0.002, Ca=400, energybalance=FALSE, ...){
   
-  f <- function(x, ...)(getdAdE(x, energybalance=energybalance, ...) - lambda*1000)^2
   
-  CI <- optimize(f, c(80, Ca-0.1))$minimum
+  faraofun <- function(lambda,Ca,energybalance,...){
+    f <- function(x, ...)(getdAdE(x, energybalance=energybalance, ...) - lambda*1000)^2
+    
+    CI <- optimize(f, c(80, Ca-0.1))$minimum
+    
+    if(energybalance)
+      p <- PhotosynEB(Ci=CI, ...)
+    else
+      p <- Photosyn(Ci=CI, ...)
+  }
+  m <- mapply(faraofun, lambda=lambda, Ca=Ca, energybalance=energybalance, ...)
   
-  if(energybalance)
-    p <- PhotosynEB(Ci=CI, ...)
-  else
-    p <- Photosyn(Ci=CI, ...)
   
-return(p)
+return(as.data.frame(t(m)))
 }
 
 
