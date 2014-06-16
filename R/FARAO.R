@@ -12,12 +12,13 @@
 #'  @param LeafAbs Leaf absorptance (see \code{\link{PhotosynEB}}) (only used if energybalance=TRUE)
 #' @param ... All other parameters are passed to \code{\link{Aci}}
 #' @author Remko Duursma
-#' @details This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011).
+#' @details This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably more stable) implementation, based on Buckley et al. 2014 (P,C&E). It will replace FARAO in due course, but at the moment misses a couple of options.
 #' @references 
 #' Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabolism and environment. Symposia of the Society for Experimental Biology. 31:471-505.
 #' 
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @export
+#' @rdname FARAO
 FARAO <- function(lambda=0.002, Ca=400, VPD=1, 
                   photo=c("BOTH","VCMAX","JMAX"), 
                   energybalance=FALSE, 
@@ -208,6 +209,46 @@ OPTfunEB <- function(Ci,           # mu mol mol-1
                              Rd=z$run$Rd, VPD=VPD, Tleaf=Tleaf,  Ca=Ca, PPFD=z$run$PPFD ))
 }  
 
+
+getdAdE <- function(Ci,...,energybalance=FALSE,
+                       returnwhat=c("dAdE","both")){
+  
+  returnwhat <- match.arg(returnwhat)
+  delta <- 1e-03
+  
+  if(energybalance){
+    r1 <- PhotosynEB(Ci=Ci, ...)
+    r2 <- PhotosynEB(Ci=Ci+delta, ...)
+  } else {
+    r1 <- Photosyn(Ci=Ci, ...)
+    r2 <- Photosyn(Ci=Ci+delta, ...)
+  }
+    
+  dA <- r2$ALEAF - r1$ALEAF
+  dE <- r2$ELEAF - r1$ELEAF
+  
+  if(returnwhat == "dAdE")
+    return(dA/dE)
+  else
+    return(c(dA=dA, dE=dE))
+  
+}
+
+#' @rdname FARAO
+#'@export
+FARAO2 <- function(lambda=0.002, Ca=400, energybalance=FALSE, ...){
+  
+  f <- function(x, ...)(getdAdE(x, energybalance=energybalance, ...) - lambda*1000)^2
+  
+  CI <- optimize(f, c(80, Ca-0.1))$minimum
+  
+  if(energybalance)
+    p <- PhotosynEB(Ci=CI, ...)
+  else
+    p <- Photosyn(Ci=CI, ...)
+  
+return(p)
+}
 
 
 

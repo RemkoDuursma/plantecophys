@@ -15,11 +15,13 @@ PhotosynEB <- function(Tair=25,
                        Wleaf = 0.02, 
                        StomatalRatio = 1,   # 2 for amphistomatous
                        LeafAbs = 0.86, 
+                       penmon=c("iso","full"),
                        RH=NULL,
                        ...){
   
   
   if(!is.null(RH))VPD <- RHtoVPD(RH,Tair)
+  penmon <- match.arg(penmon)
   
   # Non-vectorized function declared here.
   PhotosynEBfun <- function(Tair,
@@ -28,6 +30,7 @@ PhotosynEB <- function(Tair=25,
                             Wleaf, 
                             StomatalRatio,   # 2 for amphistomatous
                             LeafAbs,
+                            penmon,
                             ...){   # passed to Photosyn
     
     
@@ -40,15 +43,16 @@ PhotosynEB <- function(Tair=25,
     
     # Find Tleaf. Here, we take into account that Tleaf as solved from
     # energy balance affects gs, so this is the second loop to solve for Tleaf.
-    fx <- function(x, Tair, Wind, VPD, Wleaf, StomatalRatio, LeafAbs, ...){
+    fx <- function(x, Tair, Wind, VPD, Wleaf, StomatalRatio, LeafAbs, penmon, ...){
       newx <- FindTleaf(Tair=Tair, gs=gsfun(Tleaf=x, VPD=VPDairToLeaf(VPD,Tair,x), ...), 
                         Wind=Wind, Wleaf=Wleaf, 
-                        StomatalRatio=StomatalRatio, LeafAbs=LeafAbs)
-      newx - x
+                        StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, penmon=penmon)
+      (newx - x)^2
     }
-    Tleaf <- uniroot(fx, interval=c(Tair-15, Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
-                     VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$root
-    
+
+    Tleaf <- optimize(fx, interval=c(Tair-15, Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
+                     VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, penmon=penmon, ...)$minimum
+
     # Now run Photosyn
     p <- Photosyn(Tleaf=Tleaf, VPD=VPDairToLeaf(VPD,Tair,Tleaf), ...)
     
@@ -56,7 +60,7 @@ PhotosynEB <- function(Tair=25,
     e <- LeafEnergyBalance(Tleaf=Tleaf, Tair=Tair, gs=p$GS, 
                            PPFD=p$PPFD, VPD=p$VPD, Patm=p$Patm, 
                            Wind=Wind, Wleaf=Wleaf, 
-                           StomatalRatio=StomatalRatio, LeafAbs=LeafAbs,
+                           StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, penmon=penmon,
                            returnwhat="fluxes")
     res <- cbind(p,e)
     
@@ -73,7 +77,7 @@ PhotosynEB <- function(Tair=25,
   m <- t(mapply(PhotosynEBfun, Tair=Tair, 
                 VPD=VPD, 
                 Wind=Wind, Wleaf=Wleaf, StomatalRatio=StomatalRatio, 
-                LeafAbs=LeafAbs, ..., SIMPLIFY=FALSE))
+                LeafAbs=LeafAbs, penmon=penmon, ..., SIMPLIFY=FALSE))
   
   
   return(as.data.frame(do.call(rbind, m)))
@@ -86,10 +90,12 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
                               Wind = 2, Wleaf = 0.02, 
                               StomatalRatio = 1,   # 2 for amphistomatous
                               LeafAbs = 0.86,
+                              penmon=c("iso","full"),
                               returnwhat=c("balance","fluxes")){   # Leaf absorptance of total solar radiation
                               
   
   returnwhat <- match.arg(returnwhat)
+  penmon <- match.arg(penmon)
   
   # Constants
   Boltz <- 5.67 * 10^-8     # w M-2 K-4
@@ -115,8 +121,8 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   # Const s in Penman-Monteith equation  (Pa K-1)
   SLOPE <- (esat(Tair + 0.1) - esat(Tair)) / 0.1
   
-#   # Radiation conductance (mol m-2 s-1)
-#   Gradiation <- 4.*Boltz*(Tair+273.15)^3 * Emissivity / (CPAIR * AIRMA)
+  # Radiation conductance (mol m-2 s-1)
+  Gradiation <- 4.*Boltz*Tk(Tair)^3 * Emissivity / (CPAIR * AIRMA)
 
   # See Leuning et al (1995) PC&E 18:1183-1200 Appendix E
   # Boundary layer conductance for heat - single sided, forced convection
@@ -130,6 +136,9 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   # Total conductance to heat (both leaf sides)
   Gbh <- 2*(Gbhfree + Gbhforced)
   
+  # Heat and radiative conductance
+  Gbhr <- Gbh + 2*Gradiation
+  
   # Boundary layer conductance for water (mol m-2 s-1)
   Gbw <- StomatalRatio * 1.075 * Gbh  # Leuning 1995
   gw <- gs*Gbw/(gs + Gbw)
@@ -140,23 +149,23 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   
   # Longwave radiation
   # (positive flux is heat loss from leaf)
-  Rlongup <- Emissivity*Boltz*((Tleaf+273.15)^4)
+  Rlongup <- Emissivity*Boltz*Tk(Tleaf)^4
   
-  # Rnet - full calculation without using Gradiation.
+  # Rnet
   Rsol <- 2*PPFD/UMOLPERJ   # W m-2
-  Rnet <- LeafAbs*Rsol - Rlongup
+  Rnet <- LeafAbs*Rsol - Rlongup   # full
+  Rnetiso <- LeafAbs*Rsol - Emissivity*Boltz*Tk(Tair)^4 # isothermal net radiation
   
   # Transpiration rate
-
-# I had this; but ET seems very low
-#  # Jones 1992 Eq. 5.17 (this avoids the need for the Penmon-Monteith equation)
-#   e <- esat(Tleaf) - VPD*1000   # Water vapour partial pressure (Pa)
-#   ET <- gw*(AIRDENS*0.622/(Patm*1000))*(esat(Tleaf) - e)   # mol m-2 s-1
-
   # Penman-Monteith
   GAMMA <- CPAIR*AIRMA*Patm*1000/LHV
-  ET <- (1/LHV) * (SLOPE * Rnet + 1000*VPD * Gbh * CPAIR * AIRMA) / (SLOPE + GAMMA * Gbh/gw)
+
+  # Standard Penmon-Monteith (5.23 in Jones 1992)
+  if(penmon=="full")ET <- (1/LHV) * (SLOPE * Rnet + 1000*VPD * Gbh * CPAIR * AIRMA) / (SLOPE + GAMMA * Gbh/gw)
   
+  # iso-thermal version
+  if(penmon=="iso")ET <- (1/LHV) * (SLOPE * Rnetiso + 1000*VPD * Gbh * CPAIR * AIRMA) / (SLOPE + GAMMA * Gbhr/gw)
+
   # Latent heat loss
   lambdaET <- LHV * ET
   
@@ -175,10 +184,11 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   
   
 # Calculate Tleaf from energy balance, given that we know gs
-FindTleaf <- function(gs, Tair, ...){
+FindTleaf <- function(gs, Tair, penmon,  ...){
   
-  Tleaf <- uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
-                   gs=gs, Tair=Tair, ...)$root
+  Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
+                   gs=gs, Tair=Tair, penmon=penmon, ...)$root)
+   if(inherits(Tleaf, "try-error"))browser()
   
 return(Tleaf)
 }
