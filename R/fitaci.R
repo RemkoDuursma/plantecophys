@@ -293,11 +293,18 @@ fitted.acifit <- function(object,...){
 #' @param whichA By default all three photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)). Or, specify one or two of them. 
 #' @param addzeroline If TRUE, the default, adds a dashed line at y=0
 #' @param addlegend If TRUE, adds a legend (by default does not add a legend if add=TRUE)
+#' @param lwd Line widths, can be a vector of length 2 (first element for both rates, second one for the limiting rate).
 #' @rdname fitaci
-plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, addzeroline=TRUE, addlegend=!add, transitionpoint=TRUE, ...){
+plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, 
+                        whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, 
+                        addzeroline=TRUE, addlegend=!add, 
+                        transitionpoint=TRUE, 
+                        lwd=c(1,2),
+                        ...){
   
   if(is.null(ylim))ylim <- with(x$df, c(min(Ameas), 1.1*max(Ameas)))
   if(is.null(xlim))xlim <- with(x$df,c(0, max(Ci)))
+  if(length(lwd)==1)lwd <- c(lwd,lwd)
   
   Ci <- with(x$df, seq(min(Ci), max(Ci), length=101))
   
@@ -316,9 +323,9 @@ plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, whichA=
   if("data" %in% what)with(x$df, points(Ci, Ameas, pch=pch,...))
   
   if("model" %in% what){
-    if("Aj" %in% whichA)with(pred, points(Ci, Aj-Rd, type='l', col="blue"))
-    if("Ac" %in% whichA)with(pred, points(Ci, Ac-Rd, type='l', col="red"))
-    if("Amin" %in% whichA)with(pred, points(Ci, ALEAF, type='l', col="black", lwd=2))
+    if("Aj" %in% whichA)with(pred, points(Ci, Aj-Rd, type='l', col="blue",lwd=lwd[1]))
+    if("Ac" %in% whichA)with(pred, points(Ci, Ac-Rd, type='l', col="red",lwd=lwd[1]))
+    if("Amin" %in% whichA)with(pred, points(Ci, ALEAF, type='l', col="black", lwd=lwd[2]))
   }
   
   if(transitionpoint)
