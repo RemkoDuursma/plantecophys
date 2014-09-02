@@ -41,6 +41,7 @@ gamplot <- function(xvarname, yvarname, groupname="", dfr, add=FALSE,
   else
     dfr$group <- as.factor("a")
   
+  dfr <- dfr[,c("X","Y","group")]
   dat <- dfr[complete.cases(dfr),]
   
   if(is.null(gamfit)){
