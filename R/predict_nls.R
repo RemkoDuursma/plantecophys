@@ -96,19 +96,24 @@ predict_nls <- function(object, from=NULL, to=NULL, x=NULL,interval = c("none", 
 
 #'@rdname predict_nls
 #'@export
-plot.nls <- function(x, add=FALSE, 
+plot.nls <- function(x, add=FALSE, interval = c("none", "confidence"), 
                      lwd=c(1,1), lty=c(1,5), col=c("black", "red"), 
          xlim=NULL, ylim=NULL, xlab=NULL, ylab=NULL,  ...){
   
-  p <- predict_nls(x,...)
+  interval <- match.arg(interval)
+  p <- predict_nls(x,interval=interval,...)
   
   if(!add){
-    with(p, plot(rep(x,3), c(pred,upr,lwr), type='n'))
+    if(interval == "confidence"){
+      with(p, plot(rep(x,3), c(pred,upr,lwr), type='n'))
+    } else {
+      with(p, plot(x, pred, type='n'))
+    }
   }
   
   with(p,{
     lines(x, pred, lty=lty[1], lwd=lwd[1], col=col[1])
-    if("upr" %in% names(p)){
+    if(interval == "confidence"){
       lines(x, upr, lty=lty[2], lwd=lwd[2], col=col[2])
       lines(x, lwr, lty=lty[2], lwd=lwd[2], col=col[2])
     }

@@ -1,0 +1,170 @@
+---
+title: "Optimization with boundary layer conductance"
+author: "Remko Duursma"
+date: "Monday, June 16, 2014"
+output:
+  html_document:
+    fig_caption: yes
+---
+
+
+### Exploring the Penman-Monteith equation
+
+Here, a couple of key figures using the Penman-Monteith equation (full equation, not the isothermal radiation version). Leaf temperature is calculated by closing the energy balance (numerically), taking into all temperature effects. For the following figures, wind speed (and hence boundary layer conductance) and stomatal conductance were inputs, and transpiration and leaf temperature are simulated.
+
+
+```{r echo=FALSE, message=FALSE}
+library(plantecophys)
+library(magicaxis)
+
+
+windlabel <- expression(Wind~speed~~(m~s^-1))
+
+
+gslow <- 0.02
+gshigh <- 0.5
+
+Winds <- exp(seq(log(0.1), log(10), length=25))
+```
+
+
+```{r echo=FALSE, message=FALSE}
+
+# Calculate Tleaf given known gs, from energy balance
+rlow <- sapply(Winds, function(x)plantecophys:::FindTleaf(gs=gslow, Wind=x, Tair=25, penmon="full"))
+rhigh <- sapply(Winds, function(x)plantecophys:::FindTleaf(gs=gshigh, Wind=x, Tair=25, penmon="full"))
+rlow2 <- sapply(Winds, function(x)plantecophys:::FindTleaf(gs=gslow, Wind=x, Tair=25, penmon="iso"))
+rhigh2 <- sapply(Winds, function(x)plantecophys:::FindTleaf(gs=gshigh, Wind=x, Tair=25, penmon="iso"))
+
+plot(log10(Winds), rlow, ylim=c(20,30), type='l', col="red", axes=FALSE,
+     xlab=windlabel, ylab=expression(T[leaf]~~(degree*C)))
+points(log10(Winds), rhigh, type='l', col="blue")
+# points(log10(Winds), rlow2, type='l', col="red", lty=5)
+# points(log10(Winds), rhigh2, type='l', col="blue", lty=5)
+
+abline(h=25)
+magaxis(side=1, unlog=1)
+axis(2)
+box()
+legend("topright", legend=sapply(c(bquote(g[s] == .(gslow)),
+                          bquote(g[s] == .(gshigh)),
+                          bquote(T[air])
+                          ),as.expression), lty=1, col=c("red","blue","black"),
+       cex=0.9)
+```
+
+Leaf temperature calculated from energy balance, given a constant low or high stomatal conductance. Note how wind speed increases leaf temperature when gs is high, but decreases it when it is low. Monteith (1965) showed a similar figure. 
+
+```{r echo=FALSE}
+
+# Calculate ELEAF given known gs; calculate Tleaf from energy balance.
+f <- function(w,gs,penmon="full",...){
+  
+  tleaf <- plantecophys:::FindTleaf(gs=gs, Wind=w, Tair=25, penmon=penmon, VPD=1)
+  flux <- plantecophys:::LeafEnergyBalance(Tleaf=tleaf, Wind=w, Tair=25, gs=gs, penmon=penmon, VPD=1,
+                                           returnwhat="fluxes")
+  flux$Tleaf <- tleaf
+
+return(flux)
+}
+
+# Wind speed and E/gs
+gss <- seq(0.02, 0.5, length=25)
+windlow <- 0.1
+windhigh <- 10
+
+wlow <- do.call(rbind, lapply(gss, function(x)f(windlow,x)))
+whigh <- do.call(rbind, lapply(gss, function(x)f(windhigh,x)))
+
+plot(gss, wlow$ELEAFeb, type='l', col="red", ylim=c(0,5),xlim=c(0,0.6),
+     xlab=expression(g[s]~~(mol~m^-2~s^-1)),
+     ylab=expression(E[leaf]~~(mmol~m^-2~s^-1)))
+
+points(gss, whigh$ELEAFeb, type='l', col="blue")
+
+legend("topleft", legend=sapply(c(bquote(wind == .(windlow)),
+                                   bquote(wind == .(windhigh))),as.expression), 
+       lty=1, col=c("red","blue"), cex=0.9)
+```
+
+At low wind speed, the low boundary layer conductance leads to a curved relationship between E and gs. Note that at low gs, E is higher in low wind speed. This is due to increased leaf temperature as a result of low conductance to heat, which increases the leaf-to-air VPD. At high wind speed, we see the approximate E = gs*VPD relationship.
+
+
+```{r echo=FALSE}
+rlow <- do.call(rbind,lapply(Winds, function(x)f(x, gs=gslow, penmon="full")))
+rhigh <- do.call(rbind,lapply(Winds, function(x)f(x, gs=gshigh, penmon="full")))
+# rlow2 <- do.call(rbind,lapply(Winds, function(x)f(x, gs=gslow, penmon="iso")))
+# rhigh2 <- do.call(rbind,lapply(Winds, function(x)f(x, gs=gshigh, penmon="iso")))
+
+plot(log10(Winds), rlow$ELEAFeb/gslow/1000,  type='l', col="red", ylim=c(0,0.02),
+     axes=FALSE,  xlab=windlabel, ylab=expression(E[leaf]/g[s]~~(mol~mol^-1)))
+points(log10(Winds), rhigh$ELEAFeb/gshigh/1000, type='l', col="blue")
+# points(log10(Winds), rlow2$ELEAFeb/gslow/1000, type='l', col="red", lty=5)
+# points(log10(Winds), rhigh2$ELEAFeb/gshigh/1000, type='l', col="blue", lty=5)
+abline(h=0.01)
+
+magaxis(side=1, unlog=1)
+axis(2)
+box()
+legend("topright", legend=sapply(c(bquote(g[s] == .(gslow)),
+                                   bquote(g[s] == .(gshigh)),
+                                   bquote(VPD)), as.expression),
+       lty=1, col=c("red","blue","black"))
+
+f <- lapply(Winds, function(x)FARAO2(Wind=x, energybalance=TRUE))
+f <- do.call(rbind,f)
+```
+
+Test of the approximate relationship E = gs*VPD (note molar units), with varying wind speed and at low and high stomatal conductance. For this simulation, VPD was set to 0.01 mol mol-1 (ca. 1 kPa). As we know, at high wind speeds (when leaves are 'well coupled'), the ratio E/gs should then converge to VPD, as it does. Consistent with the above figures, there is an interaction between wind speed and gs.
+
+
+### FARAO with energy balance
+
+Here, I show some simulations with FARAO (FARquhar And Optimization). A new implementation follows Buckley et al. (2014). Using the leaf gas exchange model (that takes Ci, Tair - and other drivers of course - and calculates A, E, gs and Tleaf), lambda was calculated numerically with,
+
+$$\frac{dA}{dE} == \frac{dA / dC_i}{dE / dC_i}$$
+
+This was done by calculating A and E at a given Ci, then adding a very small number, and calculating $dA = A(C_i+d) - A(C_i)$. Then, the Ci at which the calculated lambda was equal to a preset value was found by optimization.
+
+
+
+```{r echo=FALSE, eval=FALSE}
+
+windlow <- 0.2
+windhigh <- 10
+
+Cis <- seq(100,375, length=101)
+
+rlow <- PhotosynEB(Ci=Cis, Wind=windlow)
+rhigh <- PhotosynEB(Ci=Cis, Wind=windhigh)
+rcon <- Photosyn(Ci=Cis)
+
+with(rcon, plot(Ci, ALEAF, type='l'))
+with(rlow, points(Ci, ALEAF, type='l', col="red"))
+with(rhigh, points(Ci, ALEAF, type='l', col="blue"))
+
+with(rcon, plot(Ci, ELEAF, type='l'))
+with(rlow, points(Ci, ELEAF, type='l', col="red"))
+with(rhigh, points(Ci, ELEAF, type='l', col="blue"))
+
+with(rcon, plot(Ci, Tleaf, type='l'))
+with(rlow, points(Ci, Tleaf, type='l', col="red"))
+with(rhigh, points(Ci, Tleaf, type='l', col="blue"))
+
+Cis <- seq(310,345, length=101)
+rlow <- PhotosynEB(Ci=Cis, Wind=windlow)
+with(rlow, plot(Ci, Tleaf, type='o'))
+abline(h=25)
+
+```
+
+
+
+
+
+
+
+
+
+
+

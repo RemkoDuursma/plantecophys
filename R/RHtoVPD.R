@@ -18,14 +18,14 @@
 #' @references Jones, H.G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology. 2nd Edition., 2nd Edn. Cambridge University Press, Cambridge. 428 p.
 #' @author Remko Duursma
 RHtoVPD <- function(RH, TdegC, Pa=101){
-	esatval <- esat(TdegC)
+	esatval <- esat(TdegC, Pa)
 	e <- (RH/100) * esatval
 	VPD <- (esatval - e)/1000
 return(VPD)
 }
 #' @rdname Conversions
 VPDtoRH <- function(VPD, TdegC, Pa=101){
-  esatval <- esat(TdegC)
+  esatval <- esat(TdegC, Pa)
   e <- pmax(0, esatval - VPD*1000)
   RH <- 100 * e/esatval
   return(RH)
@@ -43,7 +43,7 @@ esat <- function(TdegC, Pa=101){
 DewtoVPD <- function(Tdew, TdegC, Pa=101){
   
   # Actual vapor pressure.
-  e <- esat(Tdew)
+  e <- esat(Tdew, Pa)
   
   # saturated:
   esatval <- esat(TdegC)
@@ -51,34 +51,34 @@ DewtoVPD <- function(Tdew, TdegC, Pa=101){
   return((esatval - e)/1000)
 }
 #' @rdname Conversions
-VPDleafToAir <- function(VPD, Tleaf, Tair){
+VPDleafToAir <- function(VPD, Tleaf, Tair, Pa=101){
   
-  e <- esat(Tleaf) - VPD*1000
-  vpd <- esat(Tair) - e
-  
-  return(vpd/1000)
-}
-#' @rdname Conversions
-VPDairToLeaf <- function(VPD, Tair, Tleaf){
-  
-  e <- esat(Tair) - VPD*1000
-  vpd <- esat(Tleaf) - e
+  e <- esat(Tleaf, Pa) - VPD*1000
+  vpd <- esat(Tair, Pa) - e
   
   return(vpd/1000)
 }
 #' @rdname Conversions
-RHleafToAir <- function(RH, Tleaf, Tair){
+VPDairToLeaf <- function(VPD, Tair, Tleaf, Pa=101){
   
-  e <- (RH/100)*esat(Tleaf)
-  rh <- e/esat(Tair)
+  e <- esat(Tair, Pa) - VPD*1000
+  vpd <- esat(Tleaf, Pa) - e
+  
+  return(vpd/1000)
+}
+#' @rdname Conversions
+RHleafToAir <- function(RH, Tleaf, Tair, Pa=101){
+  
+  e <- (RH/100)*esat(Tleaf, Pa)
+  rh <- e/esat(Tair, Pa)
   
   return(rh*100)
 }
 #' @rdname Conversions
-RHairToLeaf <- function(RH, Tair, Tleaf){
+RHairToLeaf <- function(RH, Tair, Tleaf, Pa=101){
   
-  e <- (RH/100)*esat(Tair)
-  rh <- e/esat(Tleaf)
+  e <- (RH/100)*esat(Tair, Pa)
+  rh <- e/esat(Tleaf, Pa)
   
   return(rh*100)
 }
