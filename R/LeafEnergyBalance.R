@@ -47,7 +47,7 @@ PhotosynEB <- function(Tair=25,
       (newx - x)^2
     }
 
-    Tleaf <- optimize(fx, interval=c(Tair-15, Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
+    Tleaf <- optimize(fx, interval=c(max(1, Tair-15), Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
                      VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$minimum
 
     # Now run Photosyn

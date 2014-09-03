@@ -242,7 +242,8 @@ FARAO2 <- function(lambda=0.002, Ca=400, energybalance=FALSE, ...){
   faraofun <- function(lambda,Ca,energybalance,...){
     f <- function(x, ...)(getdAdE(x, energybalance=energybalance, ...) - lambda*1000)^2
     
-    CI <- optimize(f, c(80, Ca-0.1), ...)$minimum
+    CI <- try(optimize(f, c(80, Ca-0.1), ...)$minimum)
+    if(inherits(CI, "try-error"))return(NULL)
     
     if(energybalance)
       p <- PhotosynEB(Ci=CI, ...)
