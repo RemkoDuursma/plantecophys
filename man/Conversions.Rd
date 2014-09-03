@@ -18,13 +18,13 @@ esat(TdegC, Pa = 101)
 
 DewtoVPD(Tdew, TdegC, Pa = 101)
 
-VPDleafToAir(VPD, Tleaf, Tair)
+VPDleafToAir(VPD, Tleaf, Tair, Pa = 101)
 
-VPDairToLeaf(VPD, Tair, Tleaf)
+VPDairToLeaf(VPD, Tair, Tleaf, Pa = 101)
 
-RHleafToAir(RH, Tleaf, Tair)
+RHleafToAir(RH, Tleaf, Tair, Pa = 101)
 
-RHairToLeaf(RH, Tair, Tleaf)
+RHairToLeaf(RH, Tair, Tleaf, Pa = 101)
 }
 \arguments{
 \item{RH}{Relative humidity (\%)}

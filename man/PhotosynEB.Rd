@@ -4,8 +4,7 @@
 \title{Coupled leaf gas exchange model with energy balance}
 \usage{
 PhotosynEB(Tair = 25, VPD = 1.5, Wind = 2, Wleaf = 0.02,
-  StomatalRatio = 1, LeafAbs = 0.86, penmon = c("iso", "full"),
-  RH = NULL, ...)
+  StomatalRatio = 1, LeafAbs = 0.86, RH = NULL, ...)
 }
 \arguments{
 \item{Wind}{Wind speed (m s-1)}

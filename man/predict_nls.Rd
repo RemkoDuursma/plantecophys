@@ -8,9 +8,9 @@ predict_nls(object, from = NULL, to = NULL, x = NULL,
   interval = c("none", "confidence"), level = 0.95, n = 101,
   nboot = 999, add = TRUE, ...)
 
-\method{plot}{nls}(x, add = FALSE, lwd = c(1, 1), lty = c(1, 5),
-  col = c("black", "red"), xlim = NULL, ylim = NULL, xlab = NULL,
-  ylab = NULL, ...)
+\method{plot}{nls}(x, add = FALSE, interval = c("none", "confidence"),
+  lwd = c(1, 1), lty = c(1, 5), col = c("black", "red"), xlim = NULL,
+  ylim = NULL, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class 'nls'}

@@ -1,7 +1,7 @@
 Package: plantecophys
 Type: Package
 Title: Modelling and analysis of leaf gas exchange data
-Version: 0.3
+Version: 0.4
 Author: Remko Duursma
 Depends:
     nls2,mgcv,car

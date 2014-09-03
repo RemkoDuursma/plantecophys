@@ -12,7 +12,8 @@ fitaci(dat, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 
 \method{plot}{acifit}(x, what = c("data", "model"), xlim = NULL,
   ylim = NULL, whichA = c("Ac", "Aj", "Amin"), add = FALSE, pch = 19,
-  addzeroline = TRUE, addlegend = !add, transitionpoint = TRUE, ...)
+  addzeroline = TRUE, addlegend = !add, transitionpoint = TRUE,
+  lwd = c(1, 2), ...)
 
 fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
@@ -48,6 +49,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 \item{addzeroline}{If TRUE, the default, adds a dashed line at y=0}
 
 \item{addlegend}{If TRUE, adds a legend (by default does not add a legend if add=TRUE)}
+
+\item{lwd}{Line widths, can be a vector of length 2 (first element for both rates, second one for the limiting rate).}
 
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
 }

@@ -242,18 +242,20 @@ FARAO2 <- function(lambda=0.002, Ca=400, energybalance=FALSE, ...){
   faraofun <- function(lambda,Ca,energybalance,...){
     f <- function(x, ...)(getdAdE(x, energybalance=energybalance, ...) - lambda*1000)^2
     
-    CI <- optimize(f, c(80, Ca-0.1))$minimum
+    CI <- optimize(f, c(80, Ca-0.1), ...)$minimum
     
     if(energybalance)
       p <- PhotosynEB(Ci=CI, ...)
     else
       p <- Photosyn(Ci=CI, ...)
+  
+  return(p)
   }
-  m <- mapply(faraofun, lambda=lambda, Ca=Ca, energybalance=energybalance, ...)
+  
+  m <- mapply(faraofun, lambda=lambda, Ca=Ca, energybalance=energybalance, ..., SIMPLIFY=FALSE)
   
   
-return(as.data.frame(t(m)))
+return(do.call(rbind,m))
 }
-
 
 

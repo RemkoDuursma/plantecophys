@@ -15,13 +15,11 @@ PhotosynEB <- function(Tair=25,
                        Wleaf = 0.02, 
                        StomatalRatio = 1,   # 2 for amphistomatous
                        LeafAbs = 0.86, 
-                       penmon=c("iso","full"),
                        RH=NULL,
                        ...){
   
   
   if(!is.null(RH))VPD <- RHtoVPD(RH,Tair)
-  penmon <- match.arg(penmon)
   
   # Non-vectorized function declared here.
   PhotosynEBfun <- function(Tair,
@@ -30,7 +28,6 @@ PhotosynEB <- function(Tair=25,
                             Wleaf, 
                             StomatalRatio,   # 2 for amphistomatous
                             LeafAbs,
-                            penmon,
                             ...){   # passed to Photosyn
     
     
@@ -43,24 +40,24 @@ PhotosynEB <- function(Tair=25,
     
     # Find Tleaf. Here, we take into account that Tleaf as solved from
     # energy balance affects gs, so this is the second loop to solve for Tleaf.
-    fx <- function(x, Tair, Wind, VPD, Wleaf, StomatalRatio, LeafAbs, penmon, ...){
-      newx <- FindTleaf(Tair=Tair, gs=gsfun(Tleaf=x, VPD=VPDairToLeaf(VPD,Tair,x), ...), 
+    fx <- function(x, Tair, Wind, VPD, Wleaf, StomatalRatio, LeafAbs,  ...){
+      newx <- FindTleaf(Tair=Tair, gs=gsfun(Tleaf=x, VPD=VPD, ...), 
                         Wind=Wind, Wleaf=Wleaf, 
-                        StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, penmon=penmon)
+                        StomatalRatio=StomatalRatio, LeafAbs=LeafAbs)
       (newx - x)^2
     }
 
     Tleaf <- optimize(fx, interval=c(Tair-15, Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
-                     VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, penmon=penmon, ...)$minimum
+                     VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$minimum
 
     # Now run Photosyn
-    p <- Photosyn(Tleaf=Tleaf, VPD=VPDairToLeaf(VPD,Tair,Tleaf), ...)
+    p <- Photosyn(Tleaf=Tleaf, VPD=VPD, ...)
     
     # And energy balance components
     e <- LeafEnergyBalance(Tleaf=Tleaf, Tair=Tair, gs=p$GS, 
                            PPFD=p$PPFD, VPD=p$VPD, Patm=p$Patm, 
                            Wind=Wind, Wleaf=Wleaf, 
-                           StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, penmon=penmon,
+                           StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, 
                            returnwhat="fluxes")
     res <- cbind(p,e)
     
@@ -77,7 +74,7 @@ PhotosynEB <- function(Tair=25,
   m <- t(mapply(PhotosynEBfun, Tair=Tair, 
                 VPD=VPD, 
                 Wind=Wind, Wleaf=Wleaf, StomatalRatio=StomatalRatio, 
-                LeafAbs=LeafAbs, penmon=penmon, ..., SIMPLIFY=FALSE))
+                LeafAbs=LeafAbs,  ..., SIMPLIFY=FALSE))
   
   
   return(as.data.frame(do.call(rbind, m)))
@@ -89,13 +86,11 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
                               PPFD = 1500, VPD = 2, Patm = 101,
                               Wind = 2, Wleaf = 0.02, 
                               StomatalRatio = 1,   # 2 for amphistomatous
-                              LeafAbs = 0.86,
-                              penmon=c("iso","full"),
+                              LeafAbs = 0.5,   # in shortwave range, much less than PAR
                               returnwhat=c("balance","fluxes")){   # Leaf absorptance of total solar radiation
                               
   
   returnwhat <- match.arg(returnwhat)
-  penmon <- match.arg(penmon)
   
   # Constants
   Boltz <- 5.67 * 10^-8     # w M-2 K-4
@@ -143,10 +138,6 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   Gbw <- StomatalRatio * 1.075 * Gbh  # Leuning 1995
   gw <- gs*Gbw/(gs + Gbw)
   
-  # Sensible heat flux (W m-2)
-  # (positive flux is heat loss from leaf)
-  H <- -CPAIR * AIRDENS * (Gbh/CMOLAR) * (Tair - Tleaf)
-  
   # Longwave radiation
   # (positive flux is heat loss from leaf)
   Rlongup <- Emissivity*Boltz*Tk(Tleaf)^4
@@ -154,43 +145,51 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   # Rnet
   Rsol <- 2*PPFD/UMOLPERJ   # W m-2
   Rnet <- LeafAbs*Rsol - Rlongup   # full
-  Rnetiso <- LeafAbs*Rsol - Emissivity*Boltz*Tk(Tair)^4 # isothermal net radiation
   
-  # Transpiration rate
-  # Penman-Monteith
+  # Isothermal net radiation (Leuning et al. 1995, Appendix)
+  ea <- esat(Tair) - 1000*VPD
+  ema <- 0.642*(ea/Tk(Tair))^(1/7)
+  Rnetiso <- LeafAbs*Rsol - (1 - ema)*Boltz*Tk(Tair)^4 # isothermal net radiation
+  
+  # Isothermal version of the Penmon-Monteith equation
   GAMMA <- CPAIR*AIRMA*Patm*1000/LHV
-
-  # Standard Penmon-Monteith (5.23 in Jones 1992)
-  if(penmon=="full")ET <- (1/LHV) * (SLOPE * Rnet + 1000*VPD * Gbh * CPAIR * AIRMA) / (SLOPE + GAMMA * Gbh/gw)
-  
-  # iso-thermal version
-  if(penmon=="iso")ET <- (1/LHV) * (SLOPE * Rnetiso + 1000*VPD * Gbh * CPAIR * AIRMA) / (SLOPE + GAMMA * Gbhr/gw)
+  ET <- (1/LHV) * (SLOPE * Rnetiso + 1000*VPD * Gbh * CPAIR * AIRMA) / (SLOPE + GAMMA * Gbhr/gw)
 
   # Latent heat loss
   lambdaET <- LHV * ET
+
+  # Heat flux calculated using Gradiation (Leuning 1995, Eq. 11)
+  Y <- 1/(1 + Gradiation/Gbh)
+  H2 <- Y*(Rnetiso - lambdaET)
   
-  # Net energy balance for the leaf
-  #EnergyBal <- Rnet - lambdaET - H
-  EnergyBal <- (Rnet - lambdaET - H)^2
+  # Heat flux calculated from leaf-air T difference.
+  # (positive flux is heat loss from leaf)
+  H <- -CPAIR * AIRDENS * (Gbh/CMOLAR) * (Tair - Tleaf)
+  
+  # Leaf-air temperature difference recalculated from energy balance.
+  # (same equation as above!)
+  Tleaf2 <- Tair + H2/(CPAIR * AIRDENS * (Gbh/CMOLAR))
+  
+  # Difference between input Tleaf and calculated, this will be minimized.
+  EnergyBal <- Tleaf - Tleaf2
   
   if(returnwhat == "balance")return(EnergyBal)
   
   if(returnwhat == "fluxes"){
     
-    l <- data.frame(ELEAFeb=1000*ET, Rnet=Rnet, Rlongup=Rlongup, 
-                    H=H, lambdaET=lambdaET, gw=gw, Gbh=Gbh)
+    l <- data.frame(ELEAFeb=1000*ET, Gradiation=Gradiation, Rsol=Rsol, Rnetiso=Rnetiso, Rlongup=Rlongup, H=H, lambdaET=lambdaET, gw=gw, Gbh=Gbh, H2=H2, Tleaf2=Tleaf2)
     return(l)
   }
 }
   
   
 # Calculate Tleaf from energy balance, given that we know gs
-FindTleaf <- function(gs, Tair, penmon,  ...){
+FindTleaf <- function(gs, Tair, ...){
   
-#   Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
-#                    gs=gs, Tair=Tair, penmon=penmon, ...)$root)
-  Tleaf <- optimize(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
-                      gs=gs, Tair=Tair, penmon=penmon, ...)$minimum
+ Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
+                    gs=gs, Tair=Tair, ...)$root)
+#   Tleaf <- optimize(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
+#                       gs=gs, Tair=Tair,...)$minimum
   
 return(Tleaf)
 }
