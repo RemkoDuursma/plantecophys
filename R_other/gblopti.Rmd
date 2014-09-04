@@ -7,21 +7,27 @@ output:
     fig_caption: yes
 ---
 
+```{r, echo=FALSE}
+library(knitr)
+opts_chunk$set(echo=FALSE, warning=FALSE, error=FALSE, message=FALSE)
+```
+
+
 
 ### Exploring the Penman-Monteith equation
 
 Here, a couple of key figures using the Penman-Monteith equation. Leaf temperature is calculated by closing the energy balance (numerically), taking into all temperature effects. For the following figures, wind speed (and hence boundary layer conductance) and stomatal conductance were inputs, and transpiration and leaf temperature are simulated.
 
 
-```{r echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(plantecophys)
 library(magicaxis)
-
+library(pander)
 
 windlabel <- expression(Wind~speed~~(m~s^-1))
 
 
-gslow <- 0.02
+gslow <- 0.05
 gshigh <- 0.5
 
 Winds <- exp(seq(log(0.1), log(10), length=25))
@@ -122,81 +128,145 @@ $$\frac{dA}{dE} == \frac{dA / dC_i}{dE / dC_i}$$
 This was done by calculating A and E at a given Ci, then adding a very small number, and calculating $dA = A(C_i+d) - A(C_i)$. Then, the Ci at which the calculated lambda was equal to a preset value was found by optimization.
 
 
-```{r eval=TRUE, echo=FALSE, fig.cap="Figure 4. VPD response of GS at constant Tair, using the full numerical optimization with energy balance. At lower wind speed, a higher gs is achieved at a given VPD. This is the result of the higher calculated leaf temperature (and its positive effect on photosynthesis). Note that at high VPD, the numerical solution does not converge (this means there is no optimal gs in that region, cf. Buckley et al 2014)."}
+```{r eval=FALSE, echo=FALSE, fig.cap="Figure 4. VPD response of GS at constant Tair, using the full numerical optimization with energy balance. At lower wind speed, a higher gs is achieved at a given leaf-to-air VPD, but this VPD is also much higher because Tleaf is increased under low gbl. Note that at high VPD, the numerical solution does not converge (this means there is no optimal gs in that region, cf. Buckley et al 2014).",cache=F}
 vpds <- seq(1, 3.5, length=25)
 windlow <- 0.4
 windhigh <- 10
-runcon <- FARAO2(energybalance=FALSE, VPD=vpds)
-run1 <- FARAO2(energybalance=TRUE, VPD=vpds, Wind=windlow)
-run2 <- FARAO2(energybalance=TRUE, VPD=vpds, Wind=windhigh)
+runcon <- FARAO2(energybalance=FALSE, VPD=vpds, Tleaf=25)
+run1 <- FARAO2(energybalance=TRUE, VPD=vpds, Wind=windlow, Tair=25)
+run2 <- FARAO2(energybalance=TRUE, VPD=vpds, Wind=windhigh, Tair=25)
 
 run1 <- run1[is.finite(run1$ELEAF),]
 run2 <- run2[is.finite(run2$ELEAF),]
 
+f2 <- function(x)10^-3*x$ELEAF/(x$VPD/101)
+runcon$GSinf <- f2(runcon)
+run1$GSinf <- f2(run1)
+run2$GSinf <- f2(run2)
+
+f <- function(x, vpdname="VPD")x$ALEAF/(x$Ca*sqrt(x[,vpdname]))
+runcon$bb <- f(runcon)
+run1$bb <- f(run1)
+run2$bb <- f(run2)
+run1$bb2 <- f(run1,"VPDleaf")
+run2$bb2 <- f(run2, "VPDleaf")
+
 with(runcon, plot(VPD, GS, type='l', ylim=c(0,0.16),
+                  xlim=c(1,5),
                   xlab="VPD (air) (kPa)",
                   ylab=expression(g[s]~~(mol~m^-2~s^-1))))
-with(run1, points(VPD, GS, type='l', col="red"))
-with(run2, points(VPD, GS, type='l', col="blue"))
+with(run1, points(VPDleaf, GS, type='l', col="red"))
+with(run2, points(VPDleaf, GS, type='l', col="blue"))
 legend("bottomleft", c("No energy balance","Wind = 0.4", "Wind = 10"),
        lty=1, col=c("black","red","blue"))
+
+with(runcon, plot(VPD, ALEAF/ELEAF, type='l', ylim=c(0,10),
+                  xlim=c(1,5),
+                  xlab="VPD (air) (kPa)",
+                  ylab=expression(g[s]~~(mol~m^-2~s^-1))))
+with(run1, points(VPDleaf, ALEAF/ELEAF, type='l', col="red"))
+with(run2, points(VPDleaf, ALEAF/ELEAF, type='l', col="blue"))
+legend("bottomleft", c("No energy balance","Wind = 0.4", "Wind = 10"),
+       lty=1, col=c("black","red","blue"))
+
+
+
+with(runcon, plot(bb, GS, xlim=c(0,0.04), pch=19))
+with(run1, points(bb, GS, col="red", pch=19))
+with(run2, points(bb, GS, col="blue", pch=19))
+
+with(runcon, plot(bb, GS, xlim=c(0,0.04), pch=19))
+with(run1, points(bb, GSinf, col="red", pch=19))
+with(run2, points(bb, GSinf, col="blue", pch=19))
+
 
 ```
 
 
-```{r, warning=FALSE, error=FALSE,fig.cap="Figure 5. PPFD, Tair and VPD were varied randomly, gs was calculated with FARAO, either without energy balance (assuming Tleaf=Tair), or solving for Tleaf depending on wind speed. It appears that g0 increases with decreasing wind speed. This may be explained as in the above: at low wind speed (low boundary layer conductance), Tleaf increases, which increases A and hence gs at a given lambda."  }
+```{r, warning=FALSE, error=FALSE, echo=FALSE, fig.cap="Figure 5. PPFD, Tair, VPD and Ca were varied randomly, gs was calculated with FARAO, either without energy balance (assuming Tleaf=Tair), or solving for Tleaf depending on wind speed. Here solved gs is plotted against the simple index, using the leaf VPD (as we usually assume is most appropriate). Clearly, g1 has increased (see Table further below).", cache=F}
 
 n <- 101
 set.seed(1111)
 pars <- runif(n, 200,1000)
 vpds <- runif(n,1,3.5)
 tairs <- runif(n,15,28)
+cas <- runif(n, 380, 500)
 windlow <- 0.4
 windhigh <- 10
 
 
-runcon <- FARAO2(energybalance=FALSE, VPD=vpds, PPFD=pars, Tleaf=tairs)
-run1 <- FARAO2(energybalance=TRUE, VPD=vpds, Tair=tairs, PPFD=pars, Wind=windlow)
-run2 <- FARAO2(energybalance=TRUE, VPD=vpds, Tair=tairs, PPFD=pars, Wind=windhigh)
-run1 <- run1[is.finite(run1$ELEAF),]
-run2 <- run2[is.finite(run2$ELEAF),]
+rcon <- FARAO2(energybalance=FALSE, VPD=vpds, PPFD=pars, Tleaf=tairs, Ca=cas)
+r1 <- FARAO2(energybalance=TRUE, VPD=vpds, Tair=tairs, PPFD=pars, Ca=cas, Wind=windlow)
+r2 <- FARAO2(energybalance=TRUE, VPD=vpds, Tair=tairs, PPFD=pars, Ca=cas, Wind=windhigh)
+r1 <- r1[is.finite(r1$ELEAF),]
+r2 <- r2[is.finite(r2$ELEAF),]
 
-f <- function(x)x$ALEAF/(x$Ca*sqrt(x$VPD))
-runcon$bb <- f(runcon)
-run1$bb <- f(run1)
-run2$bb <- f(run2)
+f <- function(x, vpdname="VPD")x$ALEAF/(x$Ca*sqrt(x[,vpdname]))
+rcon$bb <- f(rcon)
+r1$bb <- f(r1)
+r2$bb <- f(r2)
+r1$bb2 <- f(r1,"VPDleaf")
+r2$bb2 <- f(r2, "VPDleaf")
 
-# inferred GS
+# inferred GS using air VPD (this is what we might do for eddy data or when gbl is unknown)
 f2 <- function(x)10^-3*x$ELEAF/(x$VPD/101)
-runcon$GSinf <- f2(runcon)
-run1$GSinf <- f2(run1)
-run2$GSinf <- f2(run2)
+rcon$GSinf <- f2(rcon)
+r1$GSinf <- f2(r1)
+r2$GSinf <- f2(r2)
 
 
-with(runcon, plot(bb, GS, pch=19, ylim=c(0,0.25), xlim=c(0,0.04),
+with(rcon, plot(bb, GS, pch=19, ylim=c(0,0.25), xlim=c(0,0.04),
+                  xlab=expression(A/C[a]*sqrt(D[leaf])), 
+                  ylab=expression(Optimized~g[s]~~(mol~m^-2~s^-1))))
+with(r1, points(bb2, GS, pch=19, col="red"))
+with(r2, points(bb2, GS, pch=19, col="blue"))
+legend("topleft", c("No energy balance","Wind = 0.4", "Wind = 10"),
+       lty=1, col=c("black","red","blue"))
+
+abline(lm(GS ~ bb, data=rcon))
+abline(lm(GS ~ bb2, data=r1), col="red")
+abline(lm(GS ~ bb2, data=r2), col="blue")
+
+```
+
+```{r eval=FALSE}
+with(rcon, plot(VPD, ALEAF/ ELEAF, xlim= c(0,5), ylim=c(0,15)))
+with(r1, points(VPD, ALEAF/ELEAF, col="red"))
+with(r2, points(VPD, ALEAF/ELEAF, col="blue"))
+
+with(rcon, plot(VPD, ALEAF/ ELEAF, xlim= c(0,5), ylim=c(0,15)))
+with(r1, points(VPDleaf, ALEAF/ELEAF, col="red"))
+with(r2, points(VPDleaf, ALEAF/ELEAF, col="blue"))
+```
+
+
+
+```{r, echo=FALSE, eval=FALSE, fig.cap="Figure 6. If we instead calculate the simple index using the air VPD, the differences are smaller. Still, at low wind speed, g0 and/or g1 is higher. This makes sense because with low gbl, E increases less quickly with gs, so that if lambda is constant, the stomata can open a bit more at the same cost of water."}
+
+with(rcon, plot(bb, GS, pch=19, ylim=c(0,0.25), xlim=c(0,0.04),
                   xlab=expression(A/C[a]*sqrt(D[air])), 
                   ylab=expression(g[s]~~(mol~m^-2~s^-1))))
-with(run1, points(bb, GS, pch=19, col="red"))
-with(run2, points(bb, GS, pch=19, col="blue"))
+with(r1, points(bb, GS, pch=19, col="red"))
+with(r2, points(bb, GS, pch=19, col="blue"))
 legend("topleft", c("No energy balance","Wind = 0.4", "Wind = 10"),
        lty=1, col=c("black","red","blue"))
 
-abline(lm(GS ~ bb, data=runcon))
-abline(lm(GS ~ bb, data=run1), col="red")
-abline(lm(GS ~ bb, data=run2), col="blue")
+abline(lm(GS ~ bb, data=rcon))
+abline(lm(GS ~ bb, data=r1), col="red")
+abline(lm(GS ~ bb, data=r2), col="blue")
 ```
 
 
-```{r, echo=FALSE, fig.cap="Figure 6. The previous figure is exactly opposite to what Yan-Shih has shown in comparisons of flux data to leaf data (where g1 was often lower for canopy scale fluxes). However, there, gs was inferred from evapotranspiration, not directly measured at the prevailing boundary layer conductance. This figure shows gs inferred from leaf transpiration, assuming infinite boundary layer conductance (gs = E/VPD), it shows that g0 nor g1 are affected by the boundary layer conductance, if VPD is the air VPD, and gs is inferred from transpiration. I think this means our theory is entirely valid regardless of what the boundary layer conductance is, because its effects somehow cancel out!"}
+```{r, echo=FALSE, fig.cap="Figure 7. This figure shows gs inferred from leaf transpiration, assuming infinite boundary layer conductance (gs = E/Dair), and Dair is used in the stomatal index. This is what we would do for field conditions when we don't know the boundary layer conductance and are happy to assume that 'the leaves are well-coupled'. It shows that the three relationships now almost collapse: the errors associated with assuming infinite boundary layer conductance cancel out."}
 
-with(runcon, plot(bb, GSinf, pch=19, xlim=c(0,0.04),  ylim=c(0,0.2), 
+with(rcon, plot(bb, GSinf, pch=19, xlim=c(0,0.04),  ylim=c(0,0.2), 
                   xlab=expression(A/C[a]*sqrt(D[air])), 
                   ylab=expression(Inferred~g[s]~~(mol~m^-2~s^-1))))
-with(run1, points(bb, GSinf, pch=19, col="red"))
-with(run2, points(bb, GSinf, pch=19, col="blue"))
-abline(lm(GSinf ~ bb, data=runcon))
-abline(lm(GSinf ~ bb, data=run1), col="red")
-abline(lm(GSinf ~ bb, data=run2), col="blue")
+with(r1, points(bb, GSinf, pch=19, col="red"))
+with(r2, points(bb, GSinf, pch=19, col="blue"))
+abline(lm(GSinf ~ bb, data=rcon))
+abline(lm(GSinf ~ bb, data=r1), col="red")
+abline(lm(GSinf ~ bb, data=r2), col="blue")
 
 legend("topleft", c("No energy balance","Wind = 0.4", "Wind = 10"),
        lty=1, col=c("black","red","blue"))
@@ -205,6 +275,51 @@ legend("topleft", c("No energy balance","Wind = 0.4", "Wind = 10"),
 
 
 
+I also fit g1 with the Medlyn et al. 2011 model using non-linear regression (and assuming g0=0). The table below shows two estimates: the first is using leaf-to-air VPD, and fitting *actual* optimized gs. The second estimate is using the air VPD, and using the *inferred* gs from Eleaf (by gs = E/VPD).
+
+
+```{r, echo=FALSE, results='asis'}
+
+
+fitg1 <- function(x, vpdname, gsname="GS", g0=TRUE ){
+  x$VPD <- x[,vpdname]
+  x$gs <- x[,gsname]
+  if(g0){
+    fit <- nls(gs ~ g0 + 1.6*(1+g1/sqrt(VPD))*ALEAF/Ca, data=x,
+             start=list(g0=0, g1=4))
+    return(coef(fit))
+  } else {
+    fit <- nls(gs ~ 1.6*(1+g1/sqrt(VPD))*ALEAF/Ca, data=x,
+             start=list(g1=4))
+    return(coef(fit))
+  }
+  
+}
+
+
+df <- data.frame(g1_estimate1=c(fitg1(rcon, "VPD", g0=F),
+                      fitg1(r2, "VPDleaf", g0=F),
+                      fitg1(r1, "VPDleaf", g0=F)),
+                 g1_estimate2=c(fitg1(rcon, "VPD", g0=F),
+                      fitg1(r2, "VPD", "GSinf", g0=F),
+                      fitg1(r1, "VPD", "GSinf", g0=F)))
+rownames(df) <- c("Infinite gbl","Wind = 10", "Wind = 0.4")
+
+pander(df)
+
+```
+
+
+
+
+
+
+
+### Caveats
+
+* I have not yet implemented the effect of boundary layer conductance on photosynthesis, but this is probably only a small correction.
+* The full coupled numerical optimization does not always find a solution, this is probably not because the code is bad, but because in quite a lot of cases there may not be an optimal solution (see Buckley et al. 2014). It especially does not converge when VPD is very high or low, or very high at lowish temperature. In the above, about 30-40% of the cases I could not find a solution, I hope this does not skew the results too much!
+* Another caveat is that I don't really understand why this comes out the way it does!
 
 
 
@@ -238,6 +353,109 @@ with(rhigh, points(Ci, Tleaf, type='l', col="blue"))
 
 
 
+```{r, eval=FALSE}
+
+
+w <- seq(0.2, 10, length=25)
+
+r <- FARAO2(energybalance=TRUE, Wind=w, Ca=400, Tair=25, VPD=2, Wleaf=0.05)
+
+f2 <- function(x)10^-3*x$ELEAF/(x$VPD/101)
+
+g1 <- function(x, vpdname="VPD", gsname="GS"){
+  with(x, sqrt(x[,vpdname])*((x[,gsname]/1.6)*(Ca/ALEAF) -1))
+}
+
+r$g1_VPD <- g1(r, "VPD")
+r$g1_VPDleaf <- g1(r, "VPDleaf")
+r$GSinf <- f2(r)
+r$g1_VPD_gsinf <- g1(r, "VPD", "GSinf")
+
+with(r, plot(Gbh, g1_VPD, type='l', xlim=c(0,6), ylim=c(0,5)))
+with(r, points(Gbh, g1_VPDleaf, type='l', lty=5))
+
+with(r, points(Gbh, g1_VPD_gsinf, type='l', lwd=2))
+
+
+
+
+
+getg1 <- function(w, dfr){
+  
+  rcontrol <- FARAO2(energybalance=FALSE, Ca=dfr$Ca, Tleaf=dfr$Tair, 
+              VPD=dfr$VPD, PPFD=dfr$PPFD)
+  r <- FARAO2(energybalance=TRUE, Wind=w, Ca=dfr$Ca, Tair=dfr$Tair, 
+              VPD=dfr$VPD, Wleaf=0.05, PPFD=dfr$PPFD)
+  
+  fitg1 <- function(x, vpdname, gsname="GS"){
+    x$VPD <- x[,vpdname]
+    x$gs <- x[,gsname]
+    fit <- nls(gs ~ 1.6*(1+g1/sqrt(VPD))*ALEAF/Ca, data=x,
+             start=list(g1=4))
+    return(coef(fit))
+  }
+  r$GSinf <- with(r, 10^-3*ELEAF/(VPD/101))
+
+  l <- list(data=r, datacontrol=rcontrol, g1=data.frame(g1_0=fitg1(rcontrol,"VPD"),
+                              g1_VPDair=fitg1(r, "VPD"),
+                              g1_VPDleaf=fitg1(r, "VPDleaf"),
+                              g1_VPDair_GSinf=fitg1(r, "VPD", "GSinf")
+                              ))
+  class(l) <- "gblrun"
+  return(l)
+  
+}
+
+plot.gblrun <- function(x,...){
+
+  
+  with(x$data, plot(ALEAF/(sqrt(VPD)*Ca), GS, pch=19,
+                    ylim=c(0, max(GS)), xlim=c(0,0.05)))
+  with(x$datacontrol, points(ALEAF/(sqrt(VPD)*Ca), GS, pch=19, col="darkgrey"))
+  
+  with(x$data, plot(ALEAF/(sqrt(VPDleaf)*Ca), GS, pch=19,col="blue",
+                    ylim=c(0, max(GS)), xlim=c(0,0.05)))
+  with(x$datacontrol, points(ALEAF/(sqrt(VPD)*Ca), GS, pch=19, col="darkgrey"))
+
+  with(x$data, plot(ALEAF/(sqrt(VPD)*Ca), GSinf, pch=19,col="forestgreen",
+                    ylim=c(0, max(GS)), xlim=c(0,0.05)))
+  with(x$datacontrol, points(ALEAF/(sqrt(VPD)*Ca), GS, pch=19, col="darkgrey"))
+  
+}
+  
+vpds <- c(seq(1, 3.5, by=0.5))
+rhs <- seq(20,60,by=5)
+cas <- c(380,600)
+tairs <- 22
+ppfds <- c(400,800,1200)
+dfr <- expand.grid(RH=rhs, Tair=tairs, Ca=cas, PPFD=ppfds)
+dfr$VPD <- RHtoVPD(dfr$RH,dfr$Tair)
+
+g <- getg1(0.8, dfr)
+
+
+w <- seq(0.5, 5, length=10)
+res <- lapply(w, function(x)getg1(x,dfr))
+
+g1df <- do.call(rbind, lapply(res, "[[", "g1"))
+g1df$Wind <- w
+
+with(g1df, plot(Wind, g1_0, type='l', lwd=2, ylim=c(1.5,4.2)))
+with(g1df, points(Wind, g1_VPDair, type='l', col="red"))
+with(g1df, points(Wind, g1_VPDleaf, type='l', col="blue"))
+with(g1df, points(Wind, g1_VPDair_GSinf, type='l', col="forestgreen"))
+
+d <- do.call(rbind, lapply(res, "[[", "data"))
+d$bb_VPD <- with(d, ALEAF / (sqrt(VPD)*Ca))
+d$bb_VPDleaf <- with(d, ALEAF / (sqrt(VPDleaf)*Ca))
+
+palette(rainbow(10))
+with(d, plot(bb_VPD, GS, pch=15, col=as.factor(Wind), ylim=c(0,0.2), xlim=c(0,0.05)))
+with(d, plot(bb_VPDleaf, GS, pch=15, col=as.factor(Wind), ylim=c(0,0.2), xlim=c(0,0.05)))
+with(d, plot(bb_VPD, GSinf, pch=15, col=as.factor(Wind), ylim=c(0,0.2), xlim=c(0,0.05)))
+
+
+```
 
 
 
