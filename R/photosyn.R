@@ -24,6 +24,7 @@
 #' @param EaV, EdVC, delsC Vcmax temperature response parameters
 #' @param EaJ, EdVJ, delsJ Jmax temperature response parameters
 #' @param Ci Optional, intercellular CO2 concentration (ppm). If not provided, calculated via gs model.
+#' @param Tcorrect If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, assumes the provided Vcmax and Jmax are at the Tleaf provided)
 #' @param whichA Which assimilation rate does gs respond to? 
 #' @seealso FARAO fitaci AciC4
 #' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model. 
@@ -127,7 +128,7 @@ Photosyn <- function(VPD=1.5,
                      delsJ = 641.3615,
                      
                      Ci = NULL,
-                     GS = NULL,
+                     #GS = NULL,
                      #AcCi=NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
@@ -137,8 +138,8 @@ Photosyn <- function(VPD=1.5,
   whichA <- match.arg(whichA)
   gsmodel <- match.arg(gsmodel)
   inputCi <- !is.null(Ci)
-  inputGS <- !is.null(GS)
-  if(inputCi & inputGS)stop("Cannot provide both Ci and GS")
+  #inputGS <- !is.null(GS)
+  #if(inputCi & inputGS)stop("Cannot provide both Ci and GS")
   
   #---- Constants; hard-wired parameters.
   Rgas <- .Rgas()

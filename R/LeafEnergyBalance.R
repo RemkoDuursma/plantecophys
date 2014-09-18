@@ -183,7 +183,8 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
 }
   
   
-# Calculate Tleaf from energy balance, given that we know gs
+#' Calculate Tleaf from energy balance, given that we know gs
+#' @export
 FindTleaf <- function(gs, Tair, ...){
   
  Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 
