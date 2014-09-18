@@ -64,8 +64,8 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"), ...){
   }
   
   if(how == "oneplot"){
-    amax <- max(sapply(fits, function(x)max(x$df$Amodel)))
-    amin <- max(sapply(fits, function(x)min(x$df$Amodel)))
+    amax <- max(sapply(x, function(x)max(x$df$Amodel)))
+    amin <- max(sapply(x, function(x)min(x$df$Amodel)))
     
     plot.acifit(x[[1]], what="model",ylim=c(amin,amax), whichA="Amin")
     for(i in seq_along(x))plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,...)
