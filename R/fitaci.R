@@ -8,6 +8,7 @@
 #' @param startValGrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
+#' @param \dots Further arguments passed to \code{\link{Photosyn}}
 #' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax (both at 25deg C) and Rd (at the measurement temperature).
 #' 
 #' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1.
@@ -23,6 +24,13 @@
 #' @examples
 #' # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. Here, we use the built-in example dataset 'acidata1'.
 #' f <- fitaci(acidata1)
+#' 
+#' # Note that the default behaviour is to correct Vcmax and Jmax for temperature, so the estimated values
+#' # are at 25C. To turn this off, 
+#' f2 <- fitaci(acidata1, Tcorrect=FALSE)
+#' 
+#' # To use different T response parameters (see ?Photosyn),
+#' f3 <- fitaci(acidata1, Tcorrect=TRUE, EaV=25000)
 #' 
 #' # Make a standard plot
 #' plot(f)
@@ -45,7 +53,8 @@
 #' summary(f$nlsfit)
 #' 
 #' # The curve generator is stored as f$Photosyn:
-#' # Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, PPFD for the dataset
+#' # Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, 
+#' # PPFD for the dataset.
 #' f$Photosyn(Ci=820)
 #' 
 #' # Photosynthetic rate at the transition point:

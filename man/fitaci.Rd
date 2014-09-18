@@ -53,6 +53,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
 
 \item{startValGrid}{If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.}
+
+\item{\dots}{Further arguments passed to \code{\link{Photosyn}}}
 }
 \value{
 A list of class 'acifit', with five components:
