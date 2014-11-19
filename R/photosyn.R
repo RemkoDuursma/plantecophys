@@ -128,8 +128,6 @@ Photosyn <- function(VPD=1.5,
                      delsJ = 641.3615,
                      
                      Ci = NULL,
-                     #GS = NULL,
-                     #AcCi=NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
                      whichA=c("Ah","Amin","Ac","Aj")){
@@ -138,13 +136,10 @@ Photosyn <- function(VPD=1.5,
   whichA <- match.arg(whichA)
   gsmodel <- match.arg(gsmodel)
   inputCi <- !is.null(Ci)
-  #inputGS <- !is.null(GS)
-  #if(inputCi & inputGS)stop("Cannot provide both Ci and GS")
   
   #---- Constants; hard-wired parameters.
   Rgas <- .Rgas()
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
-  
   
   #---- Functions
   # Non-rectangular hyperbola
@@ -263,12 +258,18 @@ Photosyn <- function(VPD=1.5,
       CIC <- x[2,]
     } else {
       
+      # Rare case where one Ci is provided, and multiple Tleaf (Jena bug).
+      if(length(Ci) == 1){
+        Ci <- rep(Ci, length(Km))
+      }
+      
       # Ci provided (A-Ci function mode)
       CIJ <- Ci
       
       CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
       
       CIC <- Ci
+      
     }
     
   
@@ -314,13 +315,6 @@ Photosyn <- function(VPD=1.5,
     # Hyperbolic minimum.
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape) - Rd
-#     
-#     # If Ci below some set minimum, A will always be Rubisco limited.
-#     # Used only for fitting stubborn A-Ci curves!
-#     if(!is.null(AcCi)){
-#       Am[Ci < AcCi] <- Ac[Ci < AcCi]
-#     }
-    
   
     # Calculate conductance to CO2
     if(!inputCi){
