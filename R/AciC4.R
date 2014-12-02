@@ -1,37 +1,45 @@
 #' C4 Photosynthesis
 #' 
-#' @description An implementation of the A-Ci curve for C4 plants, based on von Caemmerer et al. (1999)
+#' @description An implementation of the A-Ci curve for C4 plants, based on von Caemmerer et al. (2000)
 #' @author Rhys Whitley
-#' @param Ci
-#' @param PPFD
-#' @param Tleaf
-#' @param VPMAX25
-#' @param Vcmax
+#' @param Ci Intercellular CO2 concentration (ppm)
+#' @param PPFD Photosynthetic photon flux density (mu mol m-2 s-1)
+#' @param Tleaf Leaf temperature (C)
+#' @param VPMAX25 The maximum rate of PEP carboxylation (mu mol m-2 s-1)
+#' @param Vcmax Maximum rate of carboxylation (mu mol m-2 s-1) (at 25C)
+#' @param JMAX25 Maximum electron transport rate (at 25C)
 #' @param Vpr PEP regeneration (mu mol m-2 s-1)
-#' @param alpha Fraction of PSII activity in the bundle sheath
-#' @param gbs Bundle shead conductance (mol m-2 s-1)
+#' @param alpha Fraction of PSII activity in the bundle sheath (-)
+#' @param gbs Bundle sheath conductance (mol m-2 s-1)
 #' @param O2 Mesophyll O2 concentration
-#' @param JMAX25
 #' @param x Partitioning factor for electron transport
 #' @param THETA Shape parameter of the non-rectangular hyperbola
-#' @param Q10
-#' @param RD0
-#' @param RTEMP
-#' @param TBELOW
-#' @param DAYRESP
-#' @param Q10F
+#' @param Q10 T-dependence parameter for Michaelis-Menten coefficients.
+#' @param RD0 Respiration at base temperature (RTEMP) (mu mol m-2 s-1)
+#' @param RTEMP Base leaf temperature for respiration (C)
+#' @param TBELOW Below this T, respiration is zero.
+#' @param DAYRESP Fraction respiration in the light vs. that measured in the dark
+#' @param Q10F T-dependence parameter of respiration 
 #' @param FRM Fraction of dark respiration that is mesophyll respiration (Rm)
+#' @details Note that the temperature response parameters have been hardwired in this function, and are based on von Caemmerer (2000).
+#' 
+#' Note that it is not (yet) possible to fit this curve to observations of photosynthesis (see \code{\link{fitaci}} to fit the C3 model of photosynthesis).
+#' @references Caemmerer, S.V., 2000. Biochemical Models of Leaf Photosynthesis. Csiro Publishing.
+#' @examples
+#' # Simulate a C4 A-Ci curve. 
+#' aci <- AciC4(Ci=seq(5,600, length=101))
+#' with(aci, plot(Ci, ALEAF, type='l', ylim=c(0,max(ALEAF))))
 #' @export
 AciC4 <- function(Ci,
 	PPFD=1500, 
 	Tleaf = 25,
 	VPMAX25=120, 
-	Vcmax=60, 
+	JMAX25=400,
+  Vcmax=60, 
 	Vpr=80,         
 	alpha=0.0,		  
 	gbs=3e-3,		 
 	O2=210,			 
-	JMAX25=400,		
 	x=0.4, 			 
 	THETA=0.7,   
 	Q10 = 2.3,
@@ -66,10 +74,6 @@ AciC4 <- function(Ci,
 	Vpmax <- VPMAX25*Arrhenius(TK, 70373, 117910, 376)
 	Jmax <- JMAX25*Arrhenius(TK, 77900, 191929, 627)
 	
-	# # Dark and Mesophyll respiration
-	# Rd <- 0.01*Vcmax
-	# Rm <- 0.5*Rd
-	
 	# Day leaf respiration, umol m-2 s-1
   if (Tleaf > TBELOW) {
       Rd <- RD0 * exp(Q10F * (Tleaf - RTEMP)) * DAYRESP
@@ -90,8 +94,8 @@ AciC4 <- function(Ci,
 	A.enzyme <- (-b.c - sqrt(b.c^2 - 4*a.c*c.c)) / (2*a.c)
 
 	# Non-rectangular hyperbola describing light effect on electron transport rate (J)
-    Qp2 <- PPFD*(1-0.15)/2
-    J <- (1/(2*THETA))*(Qp2+Jmax - sqrt((Qp2+Jmax)^2-4*THETA*Qp2*Jmax))
+  Qp2 <- PPFD*(1-0.15)/2
+  J <- (1/(2*THETA))*(Qp2+Jmax - sqrt((Qp2+Jmax)^2-4*THETA*Qp2*Jmax))
 	
 	# Quadratic solution for light-limited C4 assimilation
 	a.j <- 1 - 7*low_gammastar*alpha/(3*0.047)
@@ -112,5 +116,5 @@ AciC4 <- function(Ci,
 	Ac <- Ac - Rd
 	Aj <- Aj - Rd
 		
-	return(list(ALEAF=Ad, An=An, Ac=Ac, Aj=Aj, Vp=Vp, Rd=Rd, Tleaf=Tleaf, PPFD=PPFD))
+	return(data.frame(Ci=Ci, ALEAF=Ad, An=An, Ac=Ac, Aj=Aj, Vp=Vp, Rd=Rd, Tleaf=Tleaf, PPFD=PPFD))
 }

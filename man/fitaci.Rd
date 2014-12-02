@@ -30,7 +30,11 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
 \item{quiet}{If TRUE, no messages are written to the screen.}
 
+\item{startValgrid}{If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.}
+
 \item{algorithm}{Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.}
+
+\item{x}{For plot.acifit, an object returned by \code{fitaci}}
 
 \item{what}{The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them.}
 
@@ -48,13 +52,13 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
 \item{addlegend}{If TRUE, adds a legend (by default does not add a legend if add=TRUE)}
 
+\item{transitionpoint}{For plot.acifit, whether to plot a symbol at the transition point.}
+
 \item{lwd}{Line widths, can be a vector of length 2 (first element for both rates, second one for the limiting rate).}
 
 \item{group}{For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.}
 
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
-
-\item{startValGrid}{If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.}
 
 \item{\dots}{Further arguments passed to \code{\link{Photosyn}}}
 }
