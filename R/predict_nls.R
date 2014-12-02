@@ -71,7 +71,7 @@ predict_nls <- function(object, from=NULL, to=NULL, x=NULL,interval = c("none", 
   
   if(interval == "confidence"){
     d <- (1-level)/2
-    b <- bootCase(object, B=nboot)
+    b <- car::bootCase(object, B=nboot)
     parnames <- names(coef(object))
     npars <- length(parnames)
     preds <- list()

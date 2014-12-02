@@ -5,10 +5,12 @@
 #' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.
 #' @param citransition If provided, fits the Vcmax and Jmax limited regions separately (see Details).
 #' @param quiet If TRUE, no messages are written to the screen.
-#' @param startValGrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
+#' @param startValgrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
 #' @param \dots Further arguments passed to \code{\link{Photosyn}}
+#' @param x For plot.acifit, an object returned by \code{fitaci}
+#' @param transitionpoint For plot.acifit, whether to plot a symbol at the transition point.
 #' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax and Rd. When \code{Tcorrect=TRUE} (the defualt), Jmax and Vcmax are re-scaled to 25C, using the temperature response parameters provided (but Rd is always at measurement temperature). When \code{Tcorrect=FALSE}, estimates of all parameters are at measurement temperature.
 #' 
 #' When \code{citransition} is set, it splits the data into a Vcmax-limited (where Ci < citransition), and Jmax-limited region (Ci > citransition). Both parameters are then estimated separately for each region (Rd is estimated only for the Vcmax-limited region). \bold{Note} that the actual transition point as shown in the standard plot of the fitted A-Ci curve may be quite different from that provided, since the fitting method simply decides which part of the dataset to use for which limitation, it does not constrain the actual estimated transition point directly. See the example below.
