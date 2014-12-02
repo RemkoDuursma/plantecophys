@@ -11,8 +11,8 @@
 #' @param Tair Air temperature (degrees C)
 #' @param Tleaf Leaf temperature (degrees C)
 #' @param VPD Vapour pressure deficit (kPa)
-#' @param Pa Atmospheric pressure
-#' @param Tdew Dewpoint temperature
+#' @param Pa Atmospheric pressure (kPa)
+#' @param Tdew Dewpoint temperature (degrees C)
 #' @export RHtoVPD VPDtoRH esat DewtoVPD VPDleafToAir VPDairToLeaf
 #' @rdname Conversions
 #' @references Jones, H.G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology. 2nd Edition., 2nd Edn. Cambridge University Press, Cambridge. 428 p.
