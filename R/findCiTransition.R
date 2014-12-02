@@ -1,5 +1,3 @@
-
-
 findCiTransition <- function(photofun){
   O <- function(Ci, photofun){
     x <- photofun(Ci=Ci)
