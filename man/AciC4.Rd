@@ -15,7 +15,7 @@ AciC4(Ci, PPFD = 1500, Tleaf = 25, VPMAX25 = 120, JMAX25 = 400,
 
 \item{Tleaf}{Leaf temperature (C)}
 
-\item{VPMAX25}{}
+\item{VPMAX25}{The maximum rate of PEP carboxylation (mu mol m-2 s-1)}
 
 \item{JMAX25}{Maximum electron transport rate (at 25C)}
 
@@ -23,9 +23,9 @@ AciC4(Ci, PPFD = 1500, Tleaf = 25, VPMAX25 = 120, JMAX25 = 400,
 
 \item{Vpr}{PEP regeneration (mu mol m-2 s-1)}
 
-\item{alpha}{Fraction of PSII activity in the bundle sheath}
+\item{alpha}{Fraction of PSII activity in the bundle sheath (-)}
 
-\item{gbs}{Bundle shead conductance (mol m-2 s-1)}
+\item{gbs}{Bundle sheath conductance (mol m-2 s-1)}
 
 \item{O2}{Mesophyll O2 concentration}
 
@@ -52,6 +52,13 @@ An implementation of the A-Ci curve for C4 plants, based on von Caemmerer et al.
 }
 \details{
 Note that the temperature response parameters have been hardwired in this function, and are based on von Caemmerer (2000).
+
+Note that it is not (yet) possible to fit this curve to observations of photosynthesis (see \code{\link{fitaci}} to fit the C3 model of photosynthesis).
+}
+\examples{
+# Simulate a C4 A-Ci curve.
+aci <- AciC4(Ci=seq(5,600, length=101))
+with(aci, plot(Ci, ALEAF, type='l', ylim=c(0,max(ALEAF))))
 }
 \author{
 Rhys Whitley
