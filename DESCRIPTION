@@ -1,10 +1,10 @@
 Package: plantecophys
 Type: Package
-Title: Modelling and analysis of leaf gas exchange data
+Title: Modelling and Analysis of Leaf Gas Exchange Data
 Version: 0.4
 Author: Remko Duursma
 Depends:
-    nls2,mgcv,car
+    nls2,car
 Maintainer: Remko Duursma <remkoduursma@gmail.com>
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
     fitting, Cowan-Farquhar optimization, unit conversions.
