@@ -7,8 +7,8 @@
 \title{Fit the Farquhar Berry von Caemmerer model of photosynthesis}
 \usage{
 fitaci(dat, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
-  = "PARi"), Tcorrect = TRUE, quiet = FALSE, startValgrid = TRUE,
-  algorithm = "default", debug = FALSE, ...)
+  = "PARi"), Tcorrect = TRUE, citransition = NULL, quiet = FALSE,
+  startValgrid = TRUE, algorithm = "default", ...)
 
 \method{plot}{acifit}(x, what = c("data", "model"), xlim = NULL,
   ylim = NULL, whichA = c("Ac", "Aj", "Amin"), add = FALSE, pch = 19,
@@ -25,6 +25,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 \item{varnames}{List of names of variables in the dataset (see Details).}
 
 \item{Tcorrect}{If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.}
+
+\item{citransition}{If provided, fits the Vcmax and Jmax limited regions separately (see Details).}
 
 \item{quiet}{If TRUE, no messages are written to the screen.}
 
@@ -70,13 +72,22 @@ A list of class 'acifit', with five components:
 Fits the Farquhar model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their (approximate) standard errors. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
 }
 \details{
-Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax (both at 25deg C) and Rd (at the measurement temperature).
+Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax and Rd. When \code{Tcorrect=TRUE} (the defualt), Jmax and Vcmax are re-scaled to 25C, using the temperature response parameters provided (but Rd is always at measurement temperature). When \code{Tcorrect=FALSE}, estimates of all parameters are at measurement temperature.
+
+When \code{citransition} is set, it splits the data into a Vcmax-limited (where Ci < citransition), and Jmax-limited region (Ci > citransition). Both parameters are then estimated separately for each region (Rd is estimated only for the Vcmax-limited region). \bold{Note} that the actual transition point as shown in the standard plot of the fitted A-Ci curve may be quite different from that provided, since the fitting method simply decides which part of the dataset to use for which limitation, it does not constrain the actual estimated transition point directly. See the example below.
 
 When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1.
 }
 \examples{
 # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. Here, we use the built-in example dataset 'acidata1'.
 f <- fitaci(acidata1)
+
+# Note that the default behaviour is to correct Vcmax and Jmax for temperature, so the estimated values
+# are at 25C. To turn this off,
+f2 <- fitaci(acidata1, Tcorrect=FALSE)
+
+# To use different T response parameters (see ?Photosyn),
+f3 <- fitaci(acidata1, Tcorrect=TRUE, EaV=25000)
 
 # Make a standard plot
 plot(f)
@@ -99,10 +110,18 @@ fitted(f)
 summary(f$nlsfit)
 
 # The curve generator is stored as f$Photosyn:
-# Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, PPFD for the dataset
+# Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf,
+# PPFD for the dataset.
 f$Photosyn(Ci=820)
 
 # Photosynthetic rate at the transition point:
 f$Photosyn(Ci=f$Ci_transition)$ALEAF
+
+# Set the transition point; this will fit Vcmax and Jmax separately. Note that the *actual*
+# transition is quite different from that provided, this is perfectly fine : in this case Jmax is
+# estimated from the latter 3 points only (Ci>800), but the actual transition point is at ca. 400ppm.
+g <- fitaci(acidata1, citransition=800)
+plot(g)
+g$Ci_transition
 }
 

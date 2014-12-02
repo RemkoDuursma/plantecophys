@@ -1,15 +1,17 @@
 #' Fit the Farquhar Berry von Caemmerer model of photosynthesis
-#' 
 #' @description Fits the Farquhar model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their (approximate) standard errors. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
 #' @param dat Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional).
 #' @param varnames List of names of variables in the dataset (see Details).
 #' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.
+#' @param citransition If provided, fits the Vcmax and Jmax limited regions separately (see Details).
 #' @param quiet If TRUE, no messages are written to the screen.
 #' @param startValGrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
 #' @param \dots Further arguments passed to \code{\link{Photosyn}}
-#' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax (both at 25deg C) and Rd (at the measurement temperature).
+#' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax and Rd. When \code{Tcorrect=TRUE} (the defualt), Jmax and Vcmax are re-scaled to 25C, using the temperature response parameters provided (but Rd is always at measurement temperature). When \code{Tcorrect=FALSE}, estimates of all parameters are at measurement temperature.
+#' 
+#' When \code{citransition} is set, it splits the data into a Vcmax-limited (where Ci < citransition), and Jmax-limited region (Ci > citransition). Both parameters are then estimated separately for each region (Rd is estimated only for the Vcmax-limited region). \bold{Note} that the actual transition point as shown in the standard plot of the fitted A-Ci curve may be quite different from that provided, since the fitting method simply decides which part of the dataset to use for which limitation, it does not constrain the actual estimated transition point directly. See the example below.
 #' 
 #' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1.
 #' @return A list of class 'acifit', with five components:
@@ -20,7 +22,6 @@
 #' \item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and PPFD are set to the mean value in the dataset.}
 #' \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax to Jmax limited photosynthesis.}
 #' }
-#' 
 #' @examples
 #' # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. Here, we use the built-in example dataset 'acidata1'.
 #' f <- fitaci(acidata1)
@@ -60,10 +61,19 @@
 #' # Photosynthetic rate at the transition point:
 #' f$Photosyn(Ci=f$Ci_transition)$ALEAF
 #' 
+#' # Set the transition point; this will fit Vcmax and Jmax separately. Note that the *actual* 
+#' # transition is quite different from that provided, this is perfectly fine : in this case Jmax is
+#' # estimated from the latter 3 points only (Ci>800), but the actual transition point is at ca. 400ppm.
+#' g <- fitaci(acidata1, citransition=800)
+#' plot(g)
+#' g$Ci_transition
 #' @export
 #' @rdname fitaci
 fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi"),
-                   Tcorrect=TRUE, quiet=FALSE, startValgrid=TRUE, algorithm="default",debug=FALSE, ...){
+                   Tcorrect=TRUE, 
+                   citransition=NULL,
+                   quiet=FALSE, startValgrid=TRUE, 
+                   algorithm="default", ...){
   
   # Set extra parameters if provided
   m <- as.list(match.call())
@@ -93,7 +103,9 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   if(!varnames$Tleaf %in% names(dat)){
     dat$Tleaf <- 25
     if(!quiet)warning("Tleaf not in dataset; assumed Tleaf = 25.")
-  } else dat$Tleaf <- dat[,varnames$Tleaf]
+  } else {
+    dat$Tleaf <- dat[,varnames$Tleaf]
+  }
   
   
   dat$Ci <- dat[,varnames$Ci]
@@ -103,38 +115,12 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   TcorrectVJ <- Tcorrect
   
   # Wrapper around Photosyn; this wrapper will be sent to nls2. 
-  acifun_wrap <- function(Ci,...){
+  acifun_wrap <- function(Ci,..., returnwhat="ALEAF"){
     r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,...)
-    r$ALEAF
+    if(returnwhat == "ALEAF")return(r$ALEAF)
+    if(returnwhat == "Ac")return(r$Ac - r$Rd)
+    if(returnwhat == "Aj")return(r$Aj - r$Rd)
   }
-  
-#   # Guess some initial values.
-#   # Here I assume, Jmax/Vcmax = 1.9, GammaStar=45, Rd/Vcmax=0.015.
-#   maxCi <- max(dat$Ci)
-#   maxPhoto <- dat$ALEAF[which.max(dat$Ci)]
-#   VJ <- maxPhoto / ((maxCi - 45) / (maxCi + 2*45))
-#   Jmax_guess <- VJ*4
-#   Vcmax_guess <- Jmax_guess/1.9
-#   Rd_guess <- 0.015*Vcmax_guess
-#  
-#   
-#   nlsfit <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
-#                 data=dat, algorithm=nlsmethod,
-#                 start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
-# 
-#   browser()
-#   
-#   # Pre-fit ; this finds the best starting values
-#   n <- 50
-#   nlsfit_pre <- nls2(Photo ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
-#                  data=dat, algorithm="plinear-brute",
-#                  start=data.frame(Vcmax=seq(5,350,length=n),
-#                                    Jmax=seq(5,350,length=n),
-#                                    Rd=seq(0.01, 11, length=n)))
-#   
-
-  
-  # Guess some initial values.
   
   # Guess Jmax from max A, T-corrected gammastar
   Rd_guess <- 1.5
@@ -172,13 +158,13 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
       Photo_mod <- acifun_wrap(dat$Ci, PPFD=dat$PPFD, 
                                Vcmax=Vcmax, Jmax=Jmax, 
                                Rd=Rd, Tleaf=dat$Tleaf)
+      
       SS <- sum((dat$ALEAF - Photo_mod)^2)
       return(SS)
     }
     d <- 0.3
     n <- 20
     gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
-                      #Jmax=seq(Jmax_guess*(1-d),Jmax_guess*(1+d),length=n),
                       Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
   
     m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
@@ -186,17 +172,60 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
     Vcmax_guess <- gg$Vcmax[ii]
     Rd_guess <- gg$Rd[ii]
   }
-  if(debug)browser()
   
   # Fit curve.
-  nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                    Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
-                algorithm=algorithm,
-                  data=dat, control=nls.control(maxiter=500, minFactor=1/10000),
-                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
+  if(is.null(citransition)){
+    nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                      Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+                    algorithm=algorithm,
+                    data=dat, control=nls.control(maxiter=500, minFactor=1/10000),
+                    start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
+    p <- coef(nlsfit)
+    pars <- summary(nlsfit)$coefficients[,1:2]
+  } else {
+    
+    # If citransition provided, fit twice.
+    dat_vcmax <- subset(dat, Ci < citransition)
+    dat_jmax <- subset(dat, Ci >= citransition)
+    
+    if(nrow(dat_vcmax) > 0){
+      nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                        Jmax=10000, Rd=Rd, Tleaf=Tleaf, returnwhat="Ac"),
+                    algorithm=algorithm,
+                    data=dat_vcmax, control=nls.control(maxiter=500, minFactor=1/10000),
+                    start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
+      p1 <- coef(nlsfit_vcmax)
+    } else {
+      nlsfit_vcmax <- NULL
+      p1 <- c(Vcmax=NA, Rd=NA)
+    }
+    
+    # Don't re-estimate Rd; it is better estimated from the Vcmax-limited region.
+    Rd_vcmaxguess <- if(!is.null(nlsfit_vcmax))coef(nlsfit_vcmax)[["Rd"]] else 1.5
+    
+    if(nrow(dat_jmax) > 0){
+      nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
+                                        Jmax=Jmax, Rd=Rd_vcmaxguess, 
+                                        Tleaf=Tleaf, returnwhat="Aj"),
+                    algorithm=algorithm,
+                    data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
+                    start=list(Jmax=Jmax_guess))
+      p2 <- coef(nlsfit_jmax)
+    } else { 
+      nlsfit_jmax <- NULL
+      p2 <- c(Jmax=NA)
+    }
+    
+    p <- c(p1[1],p2,p1[2])
+    pars1 <- if(!is.null(nlsfit_vcmax))summary(nlsfit_vcmax)$coefficients[,1:2] else matrix(rep(NA,4),ncol=2)
+    pars2 <- if(!is.null(nlsfit_jmax))summary(nlsfit_jmax)$coefficients[,1:2] else matrix(rep(NA,2),ncol=2)
+    pars <- rbind(pars1[1,],pars2,pars1[2,])
+    rownames(pars) <- c("Vcmax","Jmax","Rd")
+    nlsfit <- list(nlsfit_vcmax=nlsfit_vcmax,nlsfit_jmax=nlsfit_jmax)
+  }
+  
   
   # Using fitted coefficients, get predictions from model.
-  p <- coef(nlsfit)
   acirun <- Photosyn(Ci=dat$Ci, 
                      Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], 
                      PPFD=dat$PPFD, 
@@ -216,7 +245,7 @@ fitaci <- function(dat, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPF
   # Organize output
   l <- list()  
   l$df <- acirun[order(acirun$Ci),]
-  l$pars <- summary(nlsfit)$coefficients[,1:2]
+  l$pars <- pars
   l$nlsfit <- nlsfit
   l$Tcorrect <- Tcorrect
   
