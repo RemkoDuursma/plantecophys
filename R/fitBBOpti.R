@@ -1,5 +1,5 @@
 #' Fit the BBOpti stomatal conductance model.
-#'@description This function fits the stomatal conductance model of Medlyn et al. (2011) to leaf gas exchange data using non-linear regression. See Details (below) for instructions on how to organize your data, and how to interpret the output.
+#'@description This function fits the stomatal conductance model of Medlyn et al. (2011) to leaf gas exchange data using non-linear regression. See Details (below) for instructions on how to organize your data, and how to interpret the output. This is a very user-friendly interface to fitting the model, useful for novice R users. For more advanced users, it is probably best to fit the model with \code{\link{nls}} yourself (see Details).
 #'@param Name of the CSV file (optional).
 #'@details The following function is fit, using non-linear regression:
 #'
@@ -71,8 +71,7 @@ fitBBOpti <- function(filename=NULL){
 	}
 	
 	dat <- try(read.csv(filename))
-	# if(inherits(dat, "try-error"))stop("Please fix your dataset - it cannot be read using read.csv")
-
+  
 	A <- dat[,grep("^a$", tolower(names(dat)))]
 	g <- dat[,grep("^gs$", tolower(names(dat)))]
 	D <- dat[,grep("^d$", tolower(names(dat)))]
@@ -87,7 +86,6 @@ fitBBOpti <- function(filename=NULL){
 	}
 
 	# Options: fit with or without a g0.
-	# readline("Include g0 in the model fit (\'y\'), or assume g0 = 0.0 (\'n\')?")
 	if(win){
 		useg0 <- winDialog("yesno", "Include g0 in the model fit (\'Yes\'),\n or assume g0 = 0.0 (\'No\')?")
 	} else {
