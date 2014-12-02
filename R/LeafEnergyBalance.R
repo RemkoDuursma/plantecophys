@@ -2,12 +2,17 @@
 #' @description As \code{\link{Photosyn}}, but calculates the leaf temperature based on the leaf's energy balance. Including sensible and long-wave heat loss, latent heat loss from evaporation, and solar radiation input. 
 #' 
 #'@details Uses the Penman-Monteith equation to calculate the leaf transpiration rate, and finds Tleaf by solving the leaf energy balance iteratively. In the solution, it is accounted for that stomatal conductance and net radiation depend on Tleaf. There are no simplifications or approximations made to find the solution.
+#'
+#'Also included is the function \code{FindTleaf}, which calculates the leaf temperature if the stomatal conductance is known.
+#'@param Tair Air temperature (C)
+#'@param VPD The vapour pressure deficit of the air (i.e. not the leaf-to-air VPD) (kPa).
 #'@param Wind Wind speed (m s-1)
-#'@param VPD The vapour pressure deficit of the air (i.e. not the leaf-to-air VPD)
 #'@param Wleaf Leaf width (m)
-#'@param StomatalRatio The stomatal ratio (cf. Licor6400 terminology), if it is 1, leaves have stomata only on one side (hypostomatous), 2 for leaves with stomata on both sides (amphistomatous)
-#'@param LeafAbs Leaf absorptance of solar radiation
-#'@param RH The relative humidity of the air (i.e. not calculated with leaf temperature)
+#'@param StomatalRatio The stomatal ratio (cf. Licor6400 terminology), if it is 1, leaves have stomata only on one side (hypostomatous), 2 for leaves with stomata on both sides (amphistomatous).
+#'@param LeafAbs Leaf absorptance of solar radiation (0-1).
+#'@param RH The relative humidity of the air (i.e. not calculated with leaf temperature) (in percent).
+#'@param gs For \code{FindTleaf}, the stomatal conductance (mol m-2 s-1).
+#'@param \dots Further parameters passed to \code{\link{Photosyn}}. Note that Tleaf is not allowed as an input, since that is calculated by \code{PhotosynEB} from energy balance.
 #'@export PhotosynEB
 PhotosynEB <- function(Tair=25,
                        VPD=1.5,
@@ -87,7 +92,7 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
                               Wind = 2, Wleaf = 0.02, 
                               StomatalRatio = 1,   # 2 for amphistomatous
                               LeafAbs = 0.5,   # in shortwave range, much less than PAR
-                              returnwhat=c("balance","fluxes")){   # Leaf absorptance of total solar radiation
+                              returnwhat=c("balance","fluxes")){   
                               
   
   returnwhat <- match.arg(returnwhat)
