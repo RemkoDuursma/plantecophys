@@ -21,6 +21,7 @@
 #' @param DAYRESP Fraction respiration in the light vs. that measured in the dark
 #' @param Q10F T-dependence parameter of respiration 
 #' @param FRM Fraction of dark respiration that is mesophyll respiration (Rm)
+#' @param \dots Further arguments (currently ignored).
 #' @details Note that the temperature response parameters have been hardwired in this function, and are based on von Caemmerer (2000).
 #' 
 #' Note that it is not (yet) possible to fit this curve to observations of photosynthesis (see \code{\link{fitaci}} to fit the C3 model of photosynthesis).

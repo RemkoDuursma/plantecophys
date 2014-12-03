@@ -74,6 +74,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"), ...){
 
 
 #' @export coef.acifits
+#' @rdname fitaci
 coef.acifits <- function(object,...){
   
   f <- lapply(object, function(x)c(x$pars))

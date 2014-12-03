@@ -1,6 +1,6 @@
 #' Fit the BBOpti stomatal conductance model.
 #'@description This function fits the stomatal conductance model of Medlyn et al. (2011) to leaf gas exchange data using non-linear regression. See Details (below) for instructions on how to organize your data, and how to interpret the output. This is a very user-friendly interface to fitting the model, useful for novice R users. For more advanced users, it is probably best to fit the model with \code{\link{nls}} yourself (see Details).
-#'@param Name of the CSV file (optional).
+#'@param filename Name of the CSV file (optional).
 #'@details The following function is fit, using non-linear regression:
 #'
 #'\preformatted{

@@ -31,11 +31,11 @@ RHairToLeaf(RH, Tair, Tleaf, Pa = 101)
 
 \item{TdegC}{Temperature (degrees C) (either leaf or air)}
 
-\item{Pa}{Atmospheric pressure}
+\item{Pa}{Atmospheric pressure (kPa)}
 
 \item{VPD}{Vapour pressure deficit (kPa)}
 
-\item{Tdew}{Dewpoint temperature}
+\item{Tdew}{Dewpoint temperature (degrees C)}
 
 \item{Tleaf}{Leaf temperature (degrees C)}
 

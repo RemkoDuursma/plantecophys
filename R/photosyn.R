@@ -21,11 +21,13 @@
 #' @param Q10 Temperature sensitivity of Rd.
 #' @param TrefR Reference temperature for Rd (Celcius).
 #' @param Rdayfrac Ratio of Rd in the light vs. in the dark.
-#' @param EaV, EdVC, delsC Vcmax temperature response parameters
-#' @param EaJ, EdVJ, delsJ Jmax temperature response parameters
+#' @param EaV,EdVC,delsC Vcmax temperature response parameters
+#' @param EaJ,EdVJ,delsJ Jmax temperature response parameters
 #' @param Ci Optional, intercellular CO2 concentration (ppm). If not provided, calculated via gs model.
 #' @param Tcorrect If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, assumes the provided Vcmax and Jmax are at the Tleaf provided)
+#' @param returnParsOnly If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on leaf temperature.
 #' @param whichA Which assimilation rate does gs respond to? 
+#' @param \dots Further arguments passed to \code{Photosyn}
 #' @seealso FARAO fitaci AciC4
 #' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model. 
 #' 
@@ -55,7 +57,7 @@
 #'  
 #'  If the mesophyll conductance is provided, it is assumed that Vcmax and Jmax are the chloroplastic rates, and leaf photosynthesis is calculated following Ethier and Livingston (2004).
 #'  
-#'  If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). 
+#'  If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). The function \code{Aci} is also provided as a shorthand for \code{Photosyn(Ci=x)}.
 #'  
 #'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates!
 #' @references 
@@ -350,8 +352,9 @@ Photosyn <- function(VPD=1.5,
 return(df)
 }
 
-#' #'@rdname Photosyn
+
 #'@export
+#'@rdname Photosyn
 Aci <- function(Ci,...)Photosyn(Ci=Ci,...)
 
 

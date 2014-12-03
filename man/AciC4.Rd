@@ -46,6 +46,8 @@ AciC4(Ci, PPFD = 1500, Tleaf = 25, VPMAX25 = 120, JMAX25 = 400,
 \item{Q10F}{T-dependence parameter of respiration}
 
 \item{FRM}{Fraction of dark respiration that is mesophyll respiration (Rm)}
+
+\item{\dots}{Further arguments (currently ignored).}
 }
 \description{
 An implementation of the A-Ci curve for C4 plants, based on von Caemmerer et al. (2000)

@@ -6,10 +6,10 @@
 fitBBOpti(filename = NULL)
 }
 \arguments{
-\item{Name}{of the CSV file (optional).}
+\item{filename}{Name of the CSV file (optional).}
 }
 \description{
-This function fits the stomatal conductance model of Medlyn et al. (2011) to leaf gas exchange data using non-linear regression. See Details (below) for instructions on how to organize your data, and how to interpret the output.
+This function fits the stomatal conductance model of Medlyn et al. (2011) to leaf gas exchange data using non-linear regression. See Details (below) for instructions on how to organize your data, and how to interpret the output. This is a very user-friendly interface to fitting the model, useful for novice R users. For more advanced users, it is probably best to fit the model with \code{\link{nls}} yourself (see Details).
 }
 \details{
 The following function is fit, using non-linear regression:

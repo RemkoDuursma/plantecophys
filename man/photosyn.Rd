@@ -58,23 +58,25 @@ Aci(Ci, ...)
 
 \item{Rdayfrac}{Ratio of Rd in the light vs. in the dark.}
 
-\item{EaV,}{EdVC, delsC Vcmax temperature response parameters}
+\item{EaV,EdVC,delsC}{Vcmax temperature response parameters}
 
-\item{EaJ,}{EdVJ, delsJ Jmax temperature response parameters}
+\item{EaJ,EdVJ,delsJ}{Jmax temperature response parameters}
 
 \item{Ci}{Optional, intercellular CO2 concentration (ppm). If not provided, calculated via gs model.}
 
 \item{Tcorrect}{If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, assumes the provided Vcmax and Jmax are at the Tleaf provided)}
 
+\item{returnParsOnly}{If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on leaf temperature.}
+
 \item{whichA}{Which assimilation rate does gs respond to?}
+
+\item{\dots}{Further arguments passed to \code{Photosyn}}
 }
 \value{
 Returns a dataframe.
 }
 \description{
 A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance.
-
-#'
 }
 \details{
 The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model.
@@ -105,7 +107,7 @@ The model of Farquhar et al. (1980) is used to estimate the dependence of photos
 
  If the mesophyll conductance is provided, it is assumed that Vcmax and Jmax are the chloroplastic rates, and leaf photosynthesis is calculated following Ethier and Livingston (2004).
 
- If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011).
+ If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). The function \code{Aci} is also provided as a shorthand for \code{Photosyn(Ci=x)}.
 
  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates!
 }

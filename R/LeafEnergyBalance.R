@@ -14,6 +14,7 @@
 #'@param gs For \code{FindTleaf}, the stomatal conductance (mol m-2 s-1).
 #'@param \dots Further parameters passed to \code{\link{Photosyn}}. Note that Tleaf is not allowed as an input, since that is calculated by \code{PhotosynEB} from energy balance.
 #'@export PhotosynEB
+#'@rdname PhotosynEB
 PhotosynEB <- function(Tair=25,
                        VPD=1.5,
                        Wind = 2,   
@@ -190,6 +191,7 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
   
 #' Calculate Tleaf from energy balance, given that we know gs
 #' @export
+#' @rdname PhotosynEB
 FindTleaf <- function(gs, Tair, ...){
   
  Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 

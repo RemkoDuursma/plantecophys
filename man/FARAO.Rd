@@ -15,11 +15,15 @@ FARAO2(lambda = 0.002, Ca = 400, energybalance = FALSE, ...)
 
 \item{Ca}{The CO2 concentration.}
 
+\item{VPD}{Vapor pressure deficit (kPa)}
+
 \item{photo}{Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. the minimum of Vcmax and Jmax limited rates.}
 
-\item{energybalance}{If TRUE (Default = FALSE), calculates leaf temperature from energy balance (and its effects on photosynthesis as well as leaf transpiration).}
+\item{energybalance}{If TRUE (Default = FALSE), calculates leaf temperature from energy balance (and its effects on photosynthesis as well as leaf transpiration), using \code{\link{PhotosynEB}}.}
 
-\item{C4}{If TRUE, uses the C4 photosynthesis routine (\code{\link{AciC4}})Tair=25,}
+\item{C4}{If TRUE, uses the C4 photosynthesis routine (\code{\link{AciC4}})}
+
+\item{Tair}{Air temperature (deg C)}
 
 \item{Wind}{Wind speed (m s-1) (only used if energybalance=TRUE)}
 
@@ -35,12 +39,14 @@ FARAO2(lambda = 0.002, Ca = 400, energybalance = FALSE, ...)
 The numerical solution of the optimal stomatal conductance model, coupled with the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation to this full numeric solution.
 }
 \details{
-This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably more stable) implementation, based on Buckley et al. 2014 (P,C&E). It will replace FARAO in due course, but at the moment misses a couple of options.
+This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably more stable) implementation, based on Buckley et al. 2014 (P,C&E). Both functions are provided, as FARAO has a few more options than FARAO2, at the moment.
 }
 \author{
 Remko Duursma
 }
 \references{
+Buckley, T.N., Martorell, S., Diaz-Espejo, A., Tomas, M., Medrano, H., 2014. Is stomatal conductance optimized over both time and space in plant crowns? A field test in grapevine (Vitis vinifera). Plant Cell Environ doi:10.1111/pce.12343
+
 Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabolism and environment. Symposia of the Society for Experimental Biology. 31:471-505.
 
 Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.

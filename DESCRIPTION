@@ -3,10 +3,8 @@ Type: Package
 Title: Modelling and Analysis of Leaf Gas Exchange Data
 Version: 0.5
 Author: Remko Duursma
-Depends:
-    nls2,car
 Maintainer: Remko Duursma <remkoduursma@gmail.com>
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
-    fitting, Cowan-Farquhar optimization, unit conversions.
+    fitting, leaf energy balance using Penman-Monteith, Cowan-Farquhar optimization, unit conversions.
 License: GPL
 LazyData: yes
