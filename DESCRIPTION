@@ -5,6 +5,7 @@ Version: 0.5
 Author: Remko Duursma
 Maintainer: Remko Duursma <remkoduursma@gmail.com>
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
-    fitting, leaf energy balance using Penman-Monteith, Cowan-Farquhar optimization, unit conversions.
+    fitting, leaf energy balance using Penman-Monteith, Cowan-Farquhar
+    optimization, unit conversions.
 License: GPL
 LazyData: yes

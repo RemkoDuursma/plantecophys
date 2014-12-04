@@ -2,7 +2,7 @@ The plantecophys R package
 ==========================
 
 
-Welcome to the home of *plantecophys*, an R package that bundles a number of tools to analyze and visualize plant ecophysiological data, particularly leaf gas exchange data.
+Welcome to the home of *plantecophys*, an R package that bundles a number of tools to analyze and model leaf gas exchange data.
 
 The following functions are the core of the package:
 
@@ -19,18 +19,13 @@ The following functions are the core of the package:
 * The functions `RHtoVPD`, `VPDtoRH`, and `DewtoVPD`convert between relative humidity, vapour pressure deficit (VPD) and the dewpoint. 
 
 
-**Visualization**
-
-* `gamplot` is a simple wrapper to produce smoothed regressions with confidence intervals, using generalized additive model fits. This is a useful function to visualize many types of quantitative relationships for which no model can be easily specified.
-* `adderrorbars` is yet another function to add simple error bars to a plot.
-
 ### Installation
 
 The package is not hosted on CRAN yet, so use the following command to install it. Windows users must have Rtools installed (http://cran.r-project.org/bin/windows/Rtools/)
 
 ```
 library(devtools)
-install_bitbucket("plantecophys","remkoduursma")
+install_bitbucket("remkoduursma/plantecophys")
 ```
 
 
