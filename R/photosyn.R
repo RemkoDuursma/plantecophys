@@ -28,7 +28,7 @@
 #' @param returnParsOnly If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on leaf temperature.
 #' @param whichA Which assimilation rate does gs respond to? 
 #' @param \dots Further arguments passed to \code{Photosyn}
-#' @seealso FARAO fitaci AciC4
+#' @seealso \code{\link{FARAO}}, \code{\link{fitaci}}, \code{\link{AciC4}}
 #' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model. 
 #' 
 #' The model of Farquhar et al. (1980) is used to estimate the dependence of photosynthesis rate on Ci.
