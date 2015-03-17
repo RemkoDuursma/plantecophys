@@ -108,6 +108,7 @@ Photosyn <- function(VPD=1.5,
                      gk=0.5,
                      vpdmin=0.5,
                      D0=5,
+                     GS=NULL,
                       
                      alpha=0.24, 
                      theta=0.85, 
@@ -138,6 +139,9 @@ Photosyn <- function(VPD=1.5,
   whichA <- match.arg(whichA)
   gsmodel <- match.arg(gsmodel)
   inputCi <- !is.null(Ci)
+  inputGS <- !is.null(GS)
+  
+  if(inputCi & inputGS)stop("Cannot provide both Ci and GS.")
   
   #---- Constants; hard-wired parameters.
   Rgas <- .Rgas()
@@ -150,16 +154,16 @@ Photosyn <- function(VPD=1.5,
        sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
   }
   
-  
   #---- Do all calculations that can be vectorized
   
-  # g1 and g0 are ALWAYS IN UNITS OF H20
+  # g1 and g0 are input ALWAYS IN UNITS OF H20
   # G0 must be converted to CO2 (but not G1, see below)
   g0 <- g0/GCtoGW
   
   # Leaf respiration
-  if(is.null(Rd))
+  if(is.null(Rd)){
     Rd <- Rdayfrac*Rd0*Q10^((Tleaf-TrefR)/10)
+  }
   
   # CO2 compensation point in absence of photorespiration
   GammaStar <- TGammaStar(Tleaf)
@@ -199,81 +203,101 @@ Photosyn <- function(VPD=1.5,
     GSDIVA <- g1 * RH / Ca
     GSDIVA <- GSDIVA / GCtoGW   # convert to conductance to CO2
   }  
-    
-  # If CI not provided, calculate from intersection between supply and demand
-  if(!inputCi){
   
-    #--- non-vectorized workhorse
-    #! This can be vectorized, if we exclude Zero PPFD first,
-    #! move whichA to somewhere else (at the end), and don't take minimum
-      #! of Ac, Aj (calc both, return pmin at the end).
-      getCI <- function(VJ,GSDIVA,PPFD,VPD,Ca,Tleaf,vpdmin,g0,Rd,
-                            Vcmax,Jmax,Km,GammaStar){
+  
+  if(inputGS){
+    GC <- GS / GCtoGW
+    
+    # Solution when Rubisco activity is limiting
+    A <- 1./GC
+    B <- (Rd - Vcmax)/GC - Ca - Km
+    C <- Vcmax * (Ca - GammaStar) - Rd * (Ca + Km)
+    Ac <- (- B - sqrt(B*B - 4*A*C)) / (2*A)
+    
+    # Photosynthesis when electron transport is limiting
+    B <- (Rd - VJ)/GC - Ca - 2*GammaStar
+    C <- VJ * (Ca - GammaStar) - Rd * (Ca + 2*GammaStar)
+    Aj <- (- B - sqrt(B*B - 4*A*C)) / (2*A)
+    
+    # NOTE: this solution gives net photosynthesis (see old Maestra code).
+    Ac <- Ac + Rd
+    Aj <- Aj + Rd
+    
+  } else {
+    
+    # If CI not provided, calculate from intersection between supply and demand
+    if(!inputCi){
+    
+      #--- non-vectorized workhorse
+      #! This can be vectorized, if we exclude Zero PPFD first,
+      #! move whichA to somewhere else (at the end), and don't take minimum
+        #! of Ac, Aj (calc both, return pmin at the end).
+        getCI <- function(VJ,GSDIVA,PPFD,VPD,Ca,Tleaf,vpdmin,g0,Rd,
+                              Vcmax,Jmax,Km,GammaStar){
+          
+          if(PPFD == 0){
+            vec <- c(Ca,Ca)
+            return(vec)
+          }
+          
+          # Taken from MAESTRA.
+          # Following calculations are used for both BB & BBL models.
+          # Solution when Rubisco activity is limiting
+          A <- g0 + GSDIVA * (Vcmax - Rd)
+          B <- (1. - Ca*GSDIVA) * (Vcmax - Rd) + g0 * 
+            (Km - Ca)- GSDIVA * (Vcmax*GammaStar + Km*Rd)
+          C <- -(1. - Ca*GSDIVA) * (Vcmax*GammaStar + Km*Rd) - g0*Km*Ca
+          
+          CIC <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+          
+          # Solution when electron transport rate is limiting
+          A <- g0 + GSDIVA * (VJ - Rd)
+          B <- (1 - Ca*GSDIVA) * (VJ - Rd) + g0 * (2.*GammaStar - Ca)- 
+            GSDIVA * (VJ*GammaStar + 2.*GammaStar*Rd)
+          C <- -(1 - Ca*GSDIVA) * GammaStar * (VJ + 2*Rd) - 
+            g0*2*GammaStar*Ca
+          
+          if(A == 0)
+            CIJ <- -C/B
+          else
+            CIJ <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+          
+          return(c(CIJ,CIC))
+        }
+      
+      # get Ci
+      x <- mapply(getCI, 
+                  VJ=VJ,
+                  GSDIVA = GSDIVA,
+                  PPFD=PPFD,
+                  VPD=VPD,
+                  Ca=Ca,
+                  Tleaf=Tleaf,
+                  vpdmin=vpdmin,
+                  g0=g0,
+                  Rd=Rd,
+                  Vcmax=Vcmax,
+                  Jmax=Jmax,
+                  Km=Km,
+                  GammaStar=GammaStar)
         
-        if(PPFD == 0){
-          vec <- c(Ca,Ca)
-          return(vec)
+        CIJ <- x[1,]
+        CIC <- x[2,]
+      } else {
+        
+        # Rare case where one Ci is provided, and multiple Tleaf (Jena bug).
+        if(length(Ci) == 1){
+          Ci <- rep(Ci, length(Km))
         }
         
-        # Taken from MAESTRA.
-        # Following calculations are used for both BB & BBL models.
-        # Solution when Rubisco activity is limiting
-        A <- g0 + GSDIVA * (Vcmax - Rd)
-        B <- (1. - Ca*GSDIVA) * (Vcmax - Rd) + g0 * 
-          (Km - Ca)- GSDIVA * (Vcmax*GammaStar + Km*Rd)
-        C <- -(1. - Ca*GSDIVA) * (Vcmax*GammaStar + Km*Rd) - g0*Km*Ca
+        # Ci provided (A-Ci function mode)
+        CIJ <- Ci
         
-        CIC <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+        CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
         
-        # Solution when electron transport rate is limiting
-        A <- g0 + GSDIVA * (VJ - Rd)
-        B <- (1 - Ca*GSDIVA) * (VJ - Rd) + g0 * (2.*GammaStar - Ca)- 
-          GSDIVA * (VJ*GammaStar + 2.*GammaStar*Rd)
-        C <- -(1 - Ca*GSDIVA) * GammaStar * (VJ + 2*Rd) - 
-          g0*2*GammaStar*Ca
+        CIC <- Ci
         
-        if(A == 0)
-          CIJ <- -C/B
-        else
-          CIJ <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
-        
-        return(c(CIJ,CIC))
       }
-    
-    # get Ci
-    x <- mapply(getCI, 
-                VJ=VJ,
-                GSDIVA = GSDIVA,
-                PPFD=PPFD,
-                VPD=VPD,
-                Ca=Ca,
-                Tleaf=Tleaf,
-                vpdmin=vpdmin,
-                g0=g0,
-                Rd=Rd,
-                Vcmax=Vcmax,
-                Jmax=Jmax,
-                Km=Km,
-                GammaStar=GammaStar)
-      
-      CIJ <- x[1,]
-      CIC <- x[2,]
-    } else {
-      
-      # Rare case where one Ci is provided, and multiple Tleaf (Jena bug).
-      if(length(Ci) == 1){
-        Ci <- rep(Ci, length(Km))
-      }
-      
-      # Ci provided (A-Ci function mode)
-      CIJ <- Ci
-      
-      CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
-      
-      CIC <- Ci
-      
-    }
-    
   
     # Photosynthetic rates, without or with mesophyll limitation
     if(is.null(gmeso)){
@@ -296,41 +320,49 @@ Photosyn <- function(VPD=1.5,
       Aj <- Aj + Rd
       
     }
-    
+      
+      # When below light-compensation points, assume Ci=Ca.
+      if(!inputCi){
+        lesslcp <- vector("logical", length(Aj))
+        lesslcp <- Aj-Rd < 0
+        
+        if(length(Ca) == 1)Ca <- rep(Ca, length(CIJ))
+        if(length(GammaStar) == 1)GammaStar <- rep(GammaStar, length(CIJ))
+        if(length(VJ) == 1)VJ <- rep(VJ, length(CIJ))
+        
+        CIJ[lesslcp] <- Ca[lesslcp]
+        Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / 
+          (CIJ[lesslcp] + 2*GammaStar[lesslcp])
   
-    # When below light-compensation points, assume Ci=Ca.
-    if(!inputCi){
-      lesslcp <- vector("logical", length(Aj))
-      lesslcp <- Aj-Rd < 0
-      
-      if(length(Ca) == 1)Ca <- rep(Ca, length(CIJ))
-      if(length(GammaStar) == 1)GammaStar <- rep(GammaStar, length(CIJ))
-      if(length(VJ) == 1)VJ <- rep(VJ, length(CIJ))
-      
-      CIJ[lesslcp] <- Ca[lesslcp]
-      Aj[lesslcp] <- VJ[lesslcp] * (CIJ[lesslcp] - GammaStar[lesslcp]) / 
-        (CIJ[lesslcp] + 2*GammaStar[lesslcp])
-
-      Ci <- ifelse(Aj < Ac, CIJ, CIC)
-    }
-
+        Ci <- ifelse(Aj < Ac, CIJ, CIC)
+      }
+  }
+  
     # Hyperbolic minimum.
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape) - Rd
   
     # Calculate conductance to CO2
-    if(!inputCi){
+    if(!inputCi && !inputGS){
       if(whichA == "Ah")GS <- g0 + GSDIVA*Am
       if(whichA == "Aj")GS <- g0 + GSDIVA*(Aj-Rd)
       if(whichA == "Ac")GS <- g0 + GSDIVA*(Ac-Rd)
-    } else {
+    } 
+    if(inputCi) {
       if(whichA == "Ah")GS <- Am/(Ca - Ci)
       if(whichA == "Aj")GS <- (Aj-Rd)/(Ca - Ci)
       if(whichA == "Ac")GS <- (Ac-Rd)/(Ca - Ci)
     }
 
     # Output conductance to H2O
-    GS <- GS*GCtoGW
+    if(!inputGS){
+      GS <- GS*GCtoGW
+    }
+  
+    # Calculate Ci if GS was provided as input.
+    if(inputGS){
+      Ci <- Ca - Am/GC
+    }
     
     # Transpiration rate assuming perfect coupling.
     # Output units are mmol m-2 s-1
