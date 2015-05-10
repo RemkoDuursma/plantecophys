@@ -25,11 +25,12 @@
 #' \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax to Jmax limited photosynthesis.}
 #' }
 #' @examples
-#' # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. Here, we use the built-in example dataset 'acidata1'.
+#' # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. 
+#' # Here, we use the built-in example dataset 'acidata1'.
 #' f <- fitaci(acidata1)
 #' 
-#' # Note that the default behaviour is to correct Vcmax and Jmax for temperature, so the estimated values
-#' # are at 25C. To turn this off, 
+#' # Note that the default behaviour is to correct Vcmax and Jmax for temperature, 
+#' # so the estimated values are at 25C. To turn this off:
 #' f2 <- fitaci(acidata1, Tcorrect=FALSE)
 #' 
 #' # To use different T response parameters (see ?Photosyn),
@@ -64,8 +65,9 @@
 #' f$Photosyn(Ci=f$Ci_transition)$ALEAF
 #' 
 #' # Set the transition point; this will fit Vcmax and Jmax separately. Note that the *actual* 
-#' # transition is quite different from that provided, this is perfectly fine : in this case Jmax is
-#' # estimated from the latter 3 points only (Ci>800), but the actual transition point is at ca. 400ppm.
+#' # transition is quite different from that provided, this is perfectly fine : 
+#' # in this case Jmax is estimated from the latter 3 points only (Ci>800), but the actual 
+#' # transition point is at ca. 400ppm.
 #' g <- fitaci(acidata1, citransition=800)
 #' plot(g)
 #' g$Ci_transition
@@ -275,6 +277,7 @@ return(l)
 
 
 #' @export print.acifit
+#' @S3method print acifit
 #' @rdname fitaci
 print.acifit <- function(x,...){
   
@@ -302,6 +305,7 @@ print.acifit <- function(x,...){
 }
 
 #' @export summary.acifit
+#' @S3method summary acifit
 #' @rdname fitaci
 summary.acifit <- function(object,...){
   
@@ -311,6 +315,7 @@ summary.acifit <- function(object,...){
 
 
 #' @export coef.acifit
+#' @S3method coef acifit
 #' @rdname fitaci
 coef.acifit <- function(object, ...){
  v <- unname(object$pars[,1])
@@ -319,6 +324,7 @@ return(v)
 }
 
 #' @export fitted.acifit
+#' @S3method fitted acifit
 #' @rdname fitaci
 fitted.acifit <- function(object,...){
   
@@ -328,6 +334,7 @@ fitted.acifit <- function(object,...){
 
 
 #' @export plot.acifit
+#' @S3method plot acifit
 #' @param x For plot.acifit, an object returned by \code{fitaci}
 #' @param xlim Limits for the X axis, if left blank estimated from data
 #' @param ylim Limits for the Y axis, if left blank estimated from data

@@ -11,6 +11,7 @@
 #' @param gk Optional, exponent of VPD in gs model (Duursma et al. 2013)
 #' @param vpdmin Below vpdmin, VPD=vpdmin, to avoid very high gs.
 #' @param D0 Parameter for the BBLeuning stomatal conductance model.
+#' @param GS Optionally, stomatal conductance (to H2O). If provided, \code{Photosyn} calculates Ci and photosynthesis. See Details.
 #' @param alpha Quantum yield of electron transport (mol mol-1)
 #' @param theta Shape of light response curve.
 #' @param Jmax Maximum rate of electron transport at 25 degrees C (mu mol m-2 s-1)
@@ -37,19 +38,19 @@
 #'  
 #'  At the moment, two stomatal conductance models are implemented, both are Ball-Berry type models. The 'BBOpti' model is a slightly more general form of the model of Medlyn et al. 2011 (see Duursma et al. 2013). It is given by (in notation of the parameters and output variables of \code{Photosyn}),
 #'  
-#'  GS = G0 + 1.6*(1 + G1/D^GK)*ALEAF/CA
+#'  \deqn{GS = G0 + 1.6*(1 + G1/D^GK)*ALEAF/CA}
 #'  
 #'  where GK = 0.5 if stomata behave optimally (cf. Medlyn et al. 2011).
 #'  
 #'  The 'BBLeuning' model is that of Leuning (1995). It is given by,
 #'  
-#'  GS = G0 + g1*ALEAF/(Ca * (1 + VPD/D0))
+#'  \deqn{GS = G0 + g1*ALEAF/(Ca * (1 + VPD/D0))}
 #'  
 #'  Note that this model also uses the g1 parameter, but it needs to be set to a much higher value to be comparable in magnitude to the BBOpti model.
 #'  
 #'  The 'BallBerry' model is that of Ball et al. (1987). It is given by,
 #'  
-#'  GS = G0 + g1*RH*ALEAF/Ca
+#'  \deqn{GS = G0 + g1*RH*ALEAF/Ca}
 #'  
 #'  Where RH is relative humidity.
 #'  
@@ -57,9 +58,11 @@
 #'  
 #'  If the mesophyll conductance is provided, it is assumed that Vcmax and Jmax are the chloroplastic rates, and leaf photosynthesis is calculated following Ethier and Livingston (2004).
 #'  
-#'  If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand' relationships, using the stomatal conductance model of Medlyn et al. (2011). The function \code{Aci} is also provided as a shorthand for \code{Photosyn(Ci=x)}.
+#'  If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand', where 'demand' is given by the Farquhar model of photosynthesis (A=f(Ci)), and supply by the stomatal conductance. The latter is, by default, estimated using the stomatal conductance model of Medlyn et al. (2011), but two other models are provided as well (Ball-Berry and Leuning, see \code{gsmodel} argument). Otherwise, stomatal conductance may be directly provided via the \code{GS} argument. 
 #'  
-#'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates!
+#' Note that the function \code{Aci} is provided as a shorthand for \code{Photosyn(Ci=x)}.
+#'  
+#'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates (leaf respiration has to be subtracted to give net leaf photosynthesis).
 #' @references 
 #' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
 #'
@@ -88,11 +91,38 @@
 #' run1 <- Photosyn(PPFD=seq(50,1000,length=25), gmeso=0.15, Vcmax=40, Jmax=85)
 #' with(run1, plot(PPFD, GS, type='l'))
 #' 
-#' # Run A-Ci curve only.
+#' # Run A-Ci curve only (provide Ci instead of calculating it).
 #' arun1 <- Aci(Ci=seq(50, 1200, length=101), Vcmax=40, Jmax=85)
 #' arun2 <- Aci(Ci=seq(50, 1200, length=101), Vcmax=30, Jmax=70)
 #' with(arun1, plot(Ci, ALEAF, type='l'))
 #' with(arun2, points(Ci, ALEAF, type='l', lty=5))
+#' 
+#' # Find the intersection between supply of CO2 and demand for CO2 (cf. Farquhar and Sharkey 1982).
+#' 
+#' # Set some parameters
+#' gs <- 0.2  # stomatal conductance to H2O
+#' Ca <- 400  # ambient CO2
+#' gctogw <- 1.57  # conversion
+#' gc <- gs / gctogw  # stomatal conductance to CO2
+#'
+#' # Demand curve (Farquhar model)
+#' p <- Aci(seq(60,500,length=101), Ca=400)
+#'
+#' # Provide stomatal conductance as input, gives intersection point.
+#' g <- Photosyn(GS=gs, Ca=Ca)
+#'
+#' # Intersection point visualized
+#' par(yaxs="i")
+#' with(p, plot(Ci, ALEAF, type='l', ylim=c(0,max(ALEAF))))
+#' with(g, points(Ci, ALEAF, pch=19, col="red"))
+#' abline(gc * Ca, -gc, lty=5)
+#' 
+#' legend("topleft", c(expression("Demand:"~~A==f(C[i])),
+#'                     expression("Supply:"~~A==g[c]*(C[a]-C[i])),
+#'                     "Operating point"),
+#'        lty=c(1,5,-1),pch=c(-1,-1,19),
+#'        col=c("black","black","red"),
+#'        bty='n', cex=0.9)
 #' @export
 #' @rdname Photosyn
 Photosyn <- function(VPD=1.5, 
