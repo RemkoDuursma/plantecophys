@@ -1,4 +1,4 @@
-The plantecophys R package
+The `plantecophys` R package
 ==========================
 
 
@@ -21,7 +21,13 @@ The following functions are the core of the package:
 
 ### Installation
 
-The package is not hosted on CRAN yet, so use the following command to install it. Windows users must have Rtools installed (http://cran.r-project.org/bin/windows/Rtools/)
+The package is now on CRAN, so just do:
+
+```
+install.packages("plantecophys")
+```
+
+To install the development version, use the following command. Windows users must have Rtools installed (http://cran.r-project.org/bin/windows/Rtools/)
 
 ```
 library(devtools)
