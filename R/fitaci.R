@@ -7,6 +7,7 @@
 #' @param quiet If TRUE, no messages are written to the screen.
 #' @param startValgrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
+#' @param useRd If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in fit, instead of estimating it from the A-Ci curve.
 #' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
 #' @param object For coef.acifit, and print.acifit, the object returned by \code{fitaci}
 #' @param progressbar For \code{fitacis}, whether to display a progress bar (default is TRUE).
@@ -71,13 +72,19 @@
 #' g <- fitaci(acidata1, citransition=800)
 #' plot(g)
 #' g$Ci_transition
+#' 
+#' # Use measured Rd instead of estimating it from the A-Ci curve. The Rd measurement must be added to the
+#' # dataset used in fitting, and you must set useRd=TRUE.
+#' acidata1$Rd <- 2
+#' f2 <- fitaci(acidata1, useRd=TRUE)
+#' f2
 #' @export
 #' @rdname fitaci
-fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi"),
+fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi", Rd="Rd"),
                    Tcorrect=TRUE, 
                    citransition=NULL,
                    quiet=FALSE, startValgrid=TRUE, 
-                   algorithm="default", ...){
+                   algorithm="default", useRd=FALSE,  ...){
   
   # Set extra parameters if provided
   m <- as.list(match.call())
@@ -111,9 +118,28 @@ fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PP
     data$Tleaf <- data[,varnames$Tleaf]
   }
   
-  
-  data$Ci <- data[,varnames[["Ci"]]]
-  data$ALEAF <- data[,varnames[["ALEAF"]]]
+  # Check if Rd is provided and whether we want to set it as known.
+  haveRd <- FALSE
+  if(!is.null(varnames$Rd)){ # to avoid breakage with older versions when varnames provided.
+    if(varnames$Rd %in% names(data) && useRd){
+      
+      # Has to be a single unique value for this dataset
+      Rd_meas <- data[,varnames$Rd]
+      Rd_meas <- unique(Rd_meas)
+      if(length(Rd_meas) > 1)
+        stop("If Rd provided as measured, it must be a single unique value for an A-Ci curve.")
+      
+      if(Rd_meas < 0)Rd_meas <- -Rd_meas
+      haveRd <- TRUE
+      
+      if(!is.null(citransition))stop("At the moment cannot provide citransition as well as measured Rd.")
+    }
+    if(varnames$Rd %in% names(data) && !useRd){
+      warning("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
+    }
+  }
+  data$Ci <- data[,varnames$Ci]
+  data$ALEAF <- data[,varnames$ALEAF]
   
   # Needed to avoid apparent recursion below.
   TcorrectVJ <- Tcorrect
@@ -127,7 +153,11 @@ fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PP
   }
   
   # Guess Jmax from max A, T-corrected gammastar
-  Rd_guess <- 1.5
+  if(haveRd){
+    Rd_guess <- Rd_meas
+  } else {
+    Rd_guess <- 1.5
+  }
   
   maxCi <- max(data$Ci)
   mi <- which.max(data$Ci)
@@ -158,34 +188,75 @@ fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PP
   
   # Fine-tune starting values; try grid of values around initial estimates.
   if(startValgrid){
-    aciSS <- function(Vcmax, Jmax, Rd){
-      Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
-                               Vcmax=Vcmax, Jmax=Jmax, 
-                               Rd=Rd, Tleaf=data$Tleaf)
+    if(!haveRd){
+      aciSS <- function(Vcmax, Jmax, Rd){
+        Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
+                                 Vcmax=Vcmax, Jmax=Jmax, 
+                                 Rd=Rd, Tleaf=data$Tleaf)
+        
+        SS <- sum((data$ALEAF - Photo_mod)^2)
+        return(SS)
+      }
+      d <- 0.3
+      n <- 20
+      gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
+                        Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
+    
+      m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
+      ii <- which.min(m)
+      Vcmax_guess <- gg$Vcmax[ii]
+      Rd_guess <- gg$Rd[ii]
+    } else {
       
-      SS <- sum((data$ALEAF - Photo_mod)^2)
-      return(SS)
+      aciSS <- function(Vcmax, Jmax, Rd){
+        Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
+                                 Vcmax=Vcmax, Jmax=Jmax, 
+                                 Rd=Rd, Tleaf=data$Tleaf)
+        SS <- sum((data$ALEAF - Photo_mod)^2)
+        return(SS)
+      }
+      d <- 0.3
+      n <- 20
+      gg <- data.frame(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n))
+      
+      m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd_meas))
+      ii <- which.min(m)
+      Vcmax_guess <- gg$Vcmax[ii]
+      # Rd_guess already set to Rd_meas above
+      
     }
-    d <- 0.3
-    n <- 20
-    gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
-                      Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
-  
-    m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
-    ii <- which.min(m)
-    Vcmax_guess <- gg$Vcmax[ii]
-    Rd_guess <- gg$Rd[ii]
+    
   }
   
   # Fit curve.
   if(is.null(citransition)){
-    nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                      Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+    
+    if(!haveRd){
+      nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                        Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+                      algorithm=algorithm,
+                      data=data, control=nls.control(maxiter=500, minFactor=1/10000),
+                      start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
+      p <- coef(nlsfit)
+      pars <- summary(nlsfit)$coefficients[,1:2]
+    } else {
+      
+      nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                        Jmax=Jmax, Rd=Rd_meas, Tleaf=Tleaf),
                     algorithm=algorithm,
                     data=data, control=nls.control(maxiter=500, minFactor=1/10000),
-                    start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
-    p <- coef(nlsfit)
-    pars <- summary(nlsfit)$coefficients[,1:2]
+                    start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess))
+      p <- coef(nlsfit)
+      p[[3]] <- Rd_meas
+      names(p)[3] <- "Rd"
+      
+      pars <- summary(nlsfit)$coefficients[,1:2]
+      pars <- rbind(pars, c(Rd_meas, NA))
+      rownames(pars)[3] <- "Rd"
+    }
+    
+    
+    
   } else {
     
     # If citransition provided, fit twice.
@@ -269,6 +340,7 @@ fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PP
   l$Vcmax_guess <- Vcmax_guess
   l$Jmax_guess <- Jmax_guess
   l$Rd_guess <- Rd_guess
+  l$Rd_measured <- haveRd
   
   class(l) <- "acifit"
   
@@ -290,11 +362,14 @@ print.acifit <- function(x,...){
   
   print(x$pars)
   if(x$Tcorrect)
-    cat("Note: Vcmax, Jmax are at 25C, Rd is at measurement T.")
+    cat("Note: Vcmax, Jmax are at 25C, Rd is at measurement T.\n")
   else
-    cat("Note: Vcmax, Jmax, Rd are at measurement T.")
+    cat("Note: Vcmax, Jmax, Rd are at measurement T.\n")
   
-  cat("\n\n")
+  if(x$Rd_measured)
+    cat("Note: measured Rd was provided, only Vcmax and Jmax were fit.\n")
+  
+  cat("\n")
   
   cat("Parameter settings:\n")
   fm <- formals(x$Photosyn)

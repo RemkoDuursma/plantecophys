@@ -13,8 +13,9 @@
 \title{Fit the Farquhar-Berry-von Caemmerer model of leaf photosynthesis}
 \usage{
 fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
-  = "PARi"), Tcorrect = TRUE, citransition = NULL, quiet = FALSE,
-  startValgrid = TRUE, algorithm = "default", ...)
+  = "PARi", Rd = "Rd"), Tcorrect = TRUE, citransition = NULL,
+  quiet = FALSE, startValgrid = TRUE, algorithm = "default",
+  useRd = FALSE, ...)
 
 \method{print}{acifit}(x, ...)
 
@@ -49,6 +50,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 \item{startValgrid}{If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.}
 
 \item{algorithm}{Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.}
+
+\item{useRd}{If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in fit, instead of estimating it from the A-Ci curve.}
 
 \item{x}{For plot.acifit, an object returned by \code{fitaci}}
 
@@ -149,5 +152,11 @@ f$Photosyn(Ci=f$Ci_transition)$ALEAF
 g <- fitaci(acidata1, citransition=800)
 plot(g)
 g$Ci_transition
+
+# Use measured Rd instead of estimating it from the A-Ci curve. The Rd measurement must be added to the
+# dataset used in fitting, and you must set useRd=TRUE.
+acidata1$Rd <- 2
+f2 <- fitaci(acidata1, useRd=TRUE)
+f2
 }
 
