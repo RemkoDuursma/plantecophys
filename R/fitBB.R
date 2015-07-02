@@ -1,3 +1,14 @@
+#' Fit Ball-Berry type models of stomatal conductance
+#' @description Fits one of three versions of the Ball-Berry type stomatal conductance models to 
+#' observations of stomatal conductance (gs), photosynthesis (A), atmospheric CO2 concentration (Ca) 
+#' and vapour pressure deficit (VPD).
+#' @param df Input dataframe, containing all variables needed to fit the model.
+#' @param varnames List of names of variables in the input dataframe. Relative humidity (RH) is only 
+#' needed when the original Ball-Berry model is to be fit.
+#' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball and Berry 1987).
+#' @param fitg0 If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.
+#' @export
+#' @importFrom stats nls
 fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO2S",RH="RH"),
                   gsmodel=c("BBOpti","BBLeuning","BallBerry"),
                   fitg0=FALSE){
