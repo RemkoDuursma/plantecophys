@@ -55,7 +55,7 @@ Aci(Ci, ...)
 
 \item{Q10}{Temperature sensitivity of Rd.}
 
-\item{Rd}{Dark respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf)}
+\item{Rd}{Dark respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)}
 
 \item{TrefR}{Reference temperature for Rd (Celcius).}
 
@@ -79,7 +79,7 @@ Aci(Ci, ...)
 Returns a dataframe.
 }
 \description{
-A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance.
+A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes options for temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance.
 }
 \details{
 The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model.

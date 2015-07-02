@@ -41,26 +41,42 @@ fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO
   
   if(gsmodel == "BBOpti"){
   if(!fitg0){
-    fit <- nls(gs ~ 1.6*(1 + g1/VPD)*(aleaf/ca), start=list(g1=2)) 
+    fit <- try(nls(gs ~ 1.6*(1 + g1/vpd)*(aleaf/ca), start=list(g1=4)) )
   } else {
-    fit <- nls(gs ~ g0 + 1.6*(1 + g1/VPD)*(aleaf/ca), start=list(g1=2)) 
+    fit <- try(nls(gs ~ g0 + 1.6*(1 + g1/vpd)*(aleaf/ca), start=list(g1=4, g0=0.005)) )
   }
   }
   if(gsmodel == "BBLeuning"){
   if(!fitg0){
-    fit <- nls(gs ~ 1.6*aleaf*g1/Ca/(1 + vpd/D0), start=list(g1=2, D0=1.5))
+    fit <- try(nls(gs ~ 1.6*aleaf*g1/Ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
   } else {
-    fit <- nls(gs ~ g0 + 1.6*aleaf*g1/Ca/(1 + vpd/D0), start=list(g1=2, D0=1.5))
+    fit <- try(nls(gs ~ g0 + 1.6*aleaf*g1/Ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
   }
   }
   if(gsmodel == "BallBerry"){
     if(!fitg0){
-      fit <- nls(gs ~ 1.6*g1*aleaf/(rh*Ca), start=list(g1=2))
+      fit <- try(nls(gs ~ 1.6*g1*aleaf/(rh*Ca), start=list(g1=4)))
     } else {
-      fit <- nls(gs ~ g0 + 1.6*g1*aleaf/(rh*Ca), start=list(g1=2))
+      fit <- try(nls(gs ~ g0 + 1.6*g1*aleaf/(rh*Ca), start=list(g1=4, g0=0.005)))
     }
   }
 
-return(fit)  
+l <- list()
+l$gsmodel <- gsmodel
+l$varnames <- varnames
+l$fitg0 <- fitg0
+l$data <- df
+l$success <- !inherits(fit, "try-error")
+l$coef <- if(l$success)coef(fit) else NA
+l$fit <- fit
+l$n <- length(residuals(fit))
+class(l) <- "BBfit"
 
+return(l)  
 }
+
+
+
+
+
+

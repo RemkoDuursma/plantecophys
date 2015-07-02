@@ -23,4 +23,9 @@ Fits one of three versions of the Ball-Berry type stomatal conductance models to
 observations of stomatal conductance (gs), photosynthesis (A), atmospheric CO2 concentration (Ca)
 and vapour pressure deficit (VPD).
 }
+\references{
+#' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
+
+Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
+}
 
