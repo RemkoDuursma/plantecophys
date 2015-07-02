@@ -8,6 +8,10 @@
 #' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball and Berry 1987).
 #' @param fitg0 If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.
 #' @export
+#' @references 
+#' #' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
+#'
+#' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @importFrom stats nls
 fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO2S",RH="RH"),
                   gsmodel=c("BBOpti","BBLeuning","BallBerry"),
