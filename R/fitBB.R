@@ -7,7 +7,7 @@
 #' Note that all models use atmospheric CO2 concentration (Ca) instead of, as sometimes argued, intercellular CO2 concentration (Ci). Using the latter makes these models far more difficult to use in practice, and we have found no benefit of using Ci instead of Ca (and Ca arises from an optimization argument, see Medlyn et al. 2011). The idea that we should use Ci because 'stomata sense Ci, not Ca' is probably not valid (or at least, not sufficient), and note that Ci plays a central role in the steady-state solution to stomatal conductance anyway (see \code{\link{Photosyn}}). 
 #' 
 #' At the moment no batch utility is includes (like \code{\link{fitacis}}), but this will likely appear in a future version of this package.
-#' @return A list with several components, most notably \code{fit}, the object returned by \code{nls}. If the user needs more information on the goodness of fit etc, please further analyze this object. For example, use the \pkg{broom} package for quick summaries.
+#' @return A list with several components, most notably \code{fit}, the object returned by \code{nls}. If the user needs more information on the goodness of fit etc, please further analyze this object. For example, use the \pkg{broom} package for quick summaries. Or use \code{\link{confint}} to calculate confidence intervals on the fitted parameters.
 #' 
 #' @param df Input dataframe, containing all variables needed to fit the model.
 #' @param varnames List of names of variables in the input dataframe. Relative humidity (RH) is only 
@@ -16,12 +16,25 @@
 #' @param fitg0 If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.
 #' @export
 #' @references 
-#' Ball, J.T., Woodrow, I.E., Berry, J.A., 1987. A model predicting stomatal conductance and its contribution to the control of photosynthesis under different environmental conditions., in: Biggins, J. (Ed.), Progress in Photosynthesis Research. Martinus-Nijhoff Publishers, Dordrecht, the Netherlands, pp. 221–224.
+#' Ball, J.T., Woodrow, I.E., Berry, J.A., 1987. A model predicting stomatal conductance and its contribution to the control of photosynthesis under different environmental conditions., in: Biggins, J. (Ed.), Progress in Photosynthesis Research. Martinus-Nijhoff Publishers, Dordrecht, the Netherlands, pp. 221-224.
 #' 
-#' #' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
+#' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
 #'
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @importFrom stats nls
+#' @rdname fitBB
+#' @examples 
+#' 
+#' \dontrun{
+#' # If 'mydfr' is a dataframe with 'Photo', 'Cond', 'VpdL' and 'CO2S', you can do:
+#' myfit <- fitBB(mydfr, gsmodel = "BBOpti")
+#' 
+#' # Coefficients and a message:
+#' myfit
+#' 
+#' # Coefficients only
+#' coef(myfit)
+#' }
 fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO2S",RH="RH"),
                   gsmodel=c("BBOpti","BBLeuning","BallBerry"),
                   fitg0=FALSE){
@@ -46,6 +59,9 @@ fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO
       message("RH provided in % converted to relative units.")
       rh <- rh / 100
     }
+  } else {
+    if(gsmodel == "BallBerry")
+      stop("To fit Ball-Berry you must first add RH to the dataset, and specify the name with varnames (unless it is RH.")
   }
   
   if(gsmodel == "BBOpti"){
@@ -57,16 +73,16 @@ fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO
   }
   if(gsmodel == "BBLeuning"){
   if(!fitg0){
-    fit <- try(nls(gs ~ 1.6*aleaf*g1/Ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
+    fit <- try(nls(gs ~ 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
   } else {
-    fit <- try(nls(gs ~ g0 + 1.6*aleaf*g1/Ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
+    fit <- try(nls(gs ~ g0 + 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
   }
   }
   if(gsmodel == "BallBerry"){
     if(!fitg0){
-      fit <- try(nls(gs ~ 1.6*g1*aleaf/(rh*Ca), start=list(g1=4)))
+      fit <- try(nls(gs ~ 1.6*g1*aleaf/(rh*ca), start=list(g1=4)))
     } else {
-      fit <- try(nls(gs ~ g0 + 1.6*g1*aleaf/(rh*Ca), start=list(g1=4, g0=0.005)))
+      fit <- try(nls(gs ~ g0 + 1.6*g1*aleaf/(rh*ca), start=list(g1=4, g0=0.005)))
     }
   }
 
@@ -78,7 +94,7 @@ l$data <- df
 l$success <- !inherits(fit, "try-error")
 l$coef <- if(l$success){
   if(fitg0){
-    coef(fit) 
+    rev(coef(fit))
   } else {
     c(g0=0, coef(fit))
   }
@@ -95,18 +111,18 @@ return(l)
 
 
 
-#' @export coef.BBfit
+#' @S3method coef BBfit
 coef.BBfit <- function(object, ...){
   
   object$coef
   
 }
 
-#' @export print.BBfit
+#' @S3method print BBfit
 print.BBfit <- function(x, ...){
   
-  cat("Result of fitBB.\n\n")
-  
+  cat("Result of fitBB.\n")
+  cat("Model : ", x$gsmodel, "\n")
   if(x$fitg0){
     cat("Both g0 and g1 were estimated.\n\n")
   } else {
@@ -114,7 +130,8 @@ print.BBfit <- function(x, ...){
   }
   
   cat("Coefficients:\n")
-  print(round(coef(x),2))
+  cat("g0  g1\n")
+  cat(signif(coef(x)[1],3), signif(coef(x)[2],3), "\n")
   
   cat("\nFor more details of the fit, look at summary(myfit$fit)\n")
   cat("To return coefficients, do coef(myfit).\n")

@@ -97,7 +97,7 @@ return(as.data.frame(do.call(rbind,f)))
 OPTfun <- function(Ci,              # mu mol mol-1
                     lambda=0.002,   # mol mol-1
                     Ca=400,         # mu mol mol-1
-                    VPD=1.5,        # kPa
+                    VPD=1,        # kPa
 					          Patm=101,         # ambient pressure, kPa
 					          photo=c("BOTH","VCMAX","JMAX"),
                     energybalance=FALSE,

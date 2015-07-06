@@ -15,3 +15,9 @@ l <- lapply(dfs, fitBB, varnames=.varnames)
 
 
 fitBB(dr, varnames=.varnames)
+f <- fitBB(dr, varnames=.varnames, fitg0=TRUE)
+
+
+dr$RH <- VPDtoRH(dr$VPD, dr$Tleaf)
+.varnames$RH <- "RH"
+f <- fitBB(dr, varnames=.varnames, fitg0=TRUE, gsmodel="BallBerry")
