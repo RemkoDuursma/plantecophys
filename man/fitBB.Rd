@@ -14,16 +14,26 @@ fitBB(df, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL", Ca =
 \item{varnames}{List of names of variables in the input dataframe. Relative humidity (RH) is only
 needed when the original Ball-Berry model is to be fit.}
 
-\item{gsmodel}{One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball and Berry 1987).}
+\item{gsmodel}{One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball et al. 1987).}
 
 \item{fitg0}{If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.}
+}
+\value{
+A list with several components, most notably \code{fit}, the object returned by \code{nls}. If the user needs more information on the goodness of fit etc, please further analyze this object. For example, use the \pkg{broom} package for quick summaries.
 }
 \description{
 Fits one of three versions of the Ball-Berry type stomatal conductance models to
 observations of stomatal conductance (gs), photosynthesis (A), atmospheric CO2 concentration (Ca)
 and vapour pressure deficit (VPD).
 }
+\details{
+Note that unlike in some publications (e.g. Leuning et al. 1995), the models fit here do not include the CO2 compensation point. This correction may be necessary but can be added by the user (by replacing Ca with the corrected term).
+
+Note that all models use atmospheric CO2 concentration (Ca) instead of, as sometimes argued, intercellular CO2 concentration (Ci). Using the latter makes these models far more difficult to use in practice, and we have found no benefit of using Ci instead of Ca (and Ca arises from an optimization argument, see Medlyn et al. 2011). The idea that we should use Ci because 'stomata sense Ci, not Ca' is probably not valid, and note that Ci occurs as part of the steady-state solution anyway (see \code{\link{Photosyn}}).
+}
 \references{
+Ball, J.T., Woodrow, I.E., Berry, J.A., 1987. A model predicting stomatal conductance and its contribution to the control of photosynthesis under different environmental conditions., in: Biggins, J. (Ed.), Progress in Photosynthesis Research. Martinus-Nijhoff Publishers, Dordrecht, the Netherlands, pp. 221–224.
+
 #' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
 
 Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.

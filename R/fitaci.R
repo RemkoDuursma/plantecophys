@@ -7,7 +7,7 @@
 #' @param quiet If TRUE, no messages are written to the screen.
 #' @param startValgrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
-#' @param useRd If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in fit, instead of estimating it from the A-Ci curve.
+#' @param useRd If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in fit. Otherwise it is estimatied from the fit to the A-Ci curve.
 #' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
 #' @param object For coef.acifit, and print.acifit, the object returned by \code{fitaci}
 #' @param progressbar For \code{fitacis}, whether to display a progress bar (default is TRUE).
@@ -73,8 +73,9 @@
 #' plot(g)
 #' g$Ci_transition
 #' 
-#' # Use measured Rd instead of estimating it from the A-Ci curve. The Rd measurement must be added to the
-#' # dataset used in fitting, and you must set useRd=TRUE.
+#' # Use measured Rd instead of estimating it from the A-Ci curve. 
+#' # The Rd measurement must be added to the dataset used in fitting, 
+#' # and you must set useRd=TRUE.
 #' acidata1$Rd <- 2
 #' f2 <- fitaci(acidata1, useRd=TRUE)
 #' f2

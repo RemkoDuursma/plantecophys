@@ -1,14 +1,23 @@
 #' Fit Ball-Berry type models of stomatal conductance
 #' @description Fits one of three versions of the Ball-Berry type stomatal conductance models to 
 #' observations of stomatal conductance (gs), photosynthesis (A), atmospheric CO2 concentration (Ca) 
-#' and vapour pressure deficit (VPD).
+#' and vapour pressure deficit (VPD). 
+#' @details Note that unlike in some publications (e.g. Leuning et al. 1995), the models fit here do not include the CO2 compensation point. This correction may be necessary but can be added by the user (by replacing Ca with the corrected term).
+#' 
+#' Note that all models use atmospheric CO2 concentration (Ca) instead of, as sometimes argued, intercellular CO2 concentration (Ci). Using the latter makes these models far more difficult to use in practice, and we have found no benefit of using Ci instead of Ca (and Ca arises from an optimization argument, see Medlyn et al. 2011). The idea that we should use Ci because 'stomata sense Ci, not Ca' is probably not valid (or at least, not sufficient), and note that Ci plays a central role in the steady-state solution to stomatal conductance anyway (see \code{\link{Photosyn}}). 
+#' 
+#' At the moment no batch utility is includes (like \code{\link{fitacis}}), but this will likely appear in a future version of this package.
+#' @return A list with several components, most notably \code{fit}, the object returned by \code{nls}. If the user needs more information on the goodness of fit etc, please further analyze this object. For example, use the \pkg{broom} package for quick summaries.
+#' 
 #' @param df Input dataframe, containing all variables needed to fit the model.
 #' @param varnames List of names of variables in the input dataframe. Relative humidity (RH) is only 
 #' needed when the original Ball-Berry model is to be fit.
-#' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball and Berry 1987).
+#' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball et al. 1987).
 #' @param fitg0 If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.
 #' @export
 #' @references 
+#' Ball, J.T., Woodrow, I.E., Berry, J.A., 1987. A model predicting stomatal conductance and its contribution to the control of photosynthesis under different environmental conditions., in: Biggins, J. (Ed.), Progress in Photosynthesis Research. Martinus-Nijhoff Publishers, Dordrecht, the Netherlands, pp. 221–224.
+#' 
 #' #' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
 #'
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
@@ -67,7 +76,16 @@ l$varnames <- varnames
 l$fitg0 <- fitg0
 l$data <- df
 l$success <- !inherits(fit, "try-error")
-l$coef <- if(l$success)coef(fit) else NA
+l$coef <- if(l$success){
+  if(fitg0){
+    coef(fit) 
+  } else {
+    c(g0=0, coef(fit))
+  }
+}
+else {
+  NA
+}
 l$fit <- fit
 l$n <- length(residuals(fit))
 class(l) <- "BBfit"
@@ -77,6 +95,30 @@ return(l)
 
 
 
+#' @export coef.BBfit
+coef.BBfit <- function(object, ...){
+  
+  object$coef
+  
+}
 
+#' @export print.BBfit
+print.BBfit <- function(x, ...){
+  
+  cat("Result of fitBB.\n\n")
+  
+  if(x$fitg0){
+    cat("Both g0 and g1 were estimated.\n\n")
+  } else {
+    cat("Only g1 was estimated (g0 = 0).\n\n")
+  }
+  
+  cat("Coefficients:\n")
+  print(round(coef(x),2))
+  
+  cat("\nFor more details of the fit, look at summary(myfit$fit)\n")
+  cat("To return coefficients, do coef(myfit).\n")
+  cat("(where myfit is the name of the object returned by fitBB)\n")
+}
 
 

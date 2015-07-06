@@ -12,3 +12,6 @@ fitBB(pa, varnames=.varnames, fitg0=T)
 
 dfs <- split(df, df$Species)
 l <- lapply(dfs, fitBB, varnames=.varnames)
+
+
+fitBB(dr, varnames=.varnames)
