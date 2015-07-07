@@ -444,7 +444,7 @@ plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL,
                     ylim=ylim,
                     xlim=xlim,
                     xlab=expression(italic(C)[i]~~(ppm)),
-                    ylab=expression(italic(A)[net]~~(mu*mol~m^-2~s^-1)),
+                    ylab=expression(italic(A)[n]~~(mu*mol~m^-2~s^-1)),
                     ...
     ))
   }
