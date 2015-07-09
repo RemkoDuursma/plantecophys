@@ -24,6 +24,7 @@
 #' @param Rdayfrac Ratio of Rd in the light vs. in the dark.
 #' @param EaV,EdVC,delsC Vcmax temperature response parameters
 #' @param EaJ,EdVJ,delsJ Jmax temperature response parameters
+#' @param Km,GammaStar Optionally, provide Michaelis-Menten coefficient for Farquhar model, and Gammastar. If not provided, they are calculated with a built-in function of leaf temperature.
 #' @param Ci Optional, intercellular CO2 concentration (ppm). If not provided, calculated via gs model.
 #' @param Tcorrect If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, assumes the provided Vcmax and Jmax are at the Tleaf provided)
 #' @param returnParsOnly If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on leaf temperature.
@@ -160,6 +161,9 @@ Photosyn <- function(VPD=1.5,
                      EdVJ = 200000,
                      delsJ = 641.3615,
                      
+                     GammaStar = NULL,
+                     Km = NULL,
+                     
                      Ci = NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
@@ -196,10 +200,10 @@ Photosyn <- function(VPD=1.5,
   }
   
   # CO2 compensation point in absence of photorespiration
-  GammaStar <- TGammaStar(Tleaf)
+  if(is.null(GammaStar))GammaStar <- TGammaStar(Tleaf)
   
   # Michaelis-Menten coefficient
-  Km <- TKm(Tleaf)
+  if(is.null(Km))Km <- TKm(Tleaf)
   
   #-- Vcmax, Jmax T responses
   if(Tcorrect){
