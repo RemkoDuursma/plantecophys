@@ -423,6 +423,9 @@ fitted.acifit <- function(object,...){
 #' @param transitionpoint For plot.acifit, whether to plot a symbol at the transition point.
 #' @param lwd Line widths, can be a vector of length 2 (first element for both rates, second one for the limiting rate).
 #' @rdname fitaci
+#' @importFrom graphics points
+#' @importFrom graphics abline
+#' @importFrom graphics legend
 plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, 
                         whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, 
                         addzeroline=TRUE, addlegend=!add, 

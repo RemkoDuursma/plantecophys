@@ -192,6 +192,7 @@ LeafEnergyBalance <- function(Tleaf = 21.5, Tair = 20,
 #' Calculate Tleaf from energy balance, given that we know gs
 #' @export
 #' @rdname PhotosynEB
+#' @importFrom stats uniroot
 FindTleaf <- function(gs, Tair, ...){
   
  Tleaf <- try(uniroot(LeafEnergyBalance, interval=c(Tair-15, Tair+15), 

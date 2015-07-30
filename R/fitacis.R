@@ -1,5 +1,7 @@
 #' @export
 #' @rdname fitaci
+#' @importFrom utils setTxtProgressBar
+#' @importFrom utils txtProgressBar
 fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
   
   if(!group %in% names(data))

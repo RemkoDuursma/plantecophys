@@ -22,6 +22,10 @@
 #'
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @importFrom stats nls
+#' @importFrom stats coef
+#' @importFrom stats residuals
+#' @importFrom stats median
+#' @importFrom stats nls.control
 #' @rdname fitBB
 #' @examples 
 #' 
@@ -49,19 +53,15 @@ fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO
   if(is.null(aleaf))stop("ALEAF data missing - check varnames.")
   ca <- df[,varnames$Ca]
   if(is.null(ca))stop("Ca data missing - check varnames.")
-  if("RH" %in% names(varnames)){
+  if(gsmodel == "BallBerry"){
+    
+    if(!("RH" %in% names(varnames)))stop("To fit Ball-Berry you must include RH and specify it in varnames.")
     
     rh <- df[,varnames$RH]
-    if(is.null(rh) & gsmodel == "BallBerry"){
-      stop("To fit Ball-Berry you must first add RH to the dataset.")
-    }
     if(max(rh, na.rm=TRUE) > 1){
       message("RH provided in % converted to relative units.")
       rh <- rh / 100
     }
-  } else {
-    if(gsmodel == "BallBerry")
-      stop("To fit Ball-Berry you must first add RH to the dataset, and specify the name with varnames (unless it is RH.")
   }
   
   if(gsmodel == "BBOpti"){
