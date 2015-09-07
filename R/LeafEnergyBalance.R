@@ -53,8 +53,14 @@ PhotosynEB <- function(Tair=25,
       (newx - x)^2
     }
 
-    Tleaf <- optimize(fx, interval=c(max(1, Tair-15), Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
-                     VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$minimum
+    Tleaf <- try(optimize(fx, interval=c(max(1, Tair-15), Tair+15), Tair=Tair, Wind=Wind, Wleaf=Wleaf, 
+                     VPD=VPD, StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$minimum)
+    
+    failed <- FALSE
+    if(inherits(Tleaf, "try-error")){
+      Tleaf <- Tair
+      failed <- TRUE
+    }
 
     # Now run Photosyn
     p <- Photosyn(Tleaf=Tleaf, VPD=VPD, ...)
@@ -73,6 +79,7 @@ PhotosynEB <- function(Tair=25,
     res$VPDleaf <- VPDairToLeaf(res$VPD, Tair, res$Tleaf)
     res$Tair <- Tair
     res$Wind <- Wind
+    res$failed <- failed
     
     return(res)
   }
