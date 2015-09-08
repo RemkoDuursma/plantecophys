@@ -25,14 +25,15 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 
 \method{fitted}{acifit}(object, ...)
 
-\method{plot}{acifit}(x, what = c("data", "model"), xlim = NULL,
+\method{plot}{acifit}(x, what = c("data", "model", "none"), xlim = NULL,
   ylim = NULL, whichA = c("Ac", "Aj", "Amin"), add = FALSE, pch = 19,
   addzeroline = TRUE, addlegend = !add, transitionpoint = TRUE,
-  lwd = c(1, 2), ...)
+  linecols = c("black", "blue", "red"), lwd = c(1, 2), ...)
 
 fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
-\method{plot}{acifits}(x, how = c("manyplots", "oneplot"), ...)
+\method{plot}{acifits}(x, how = c("manyplots", "oneplot"), highlight = NULL,
+  ...)
 
 \method{coef}{acifits}(object, ...)
 }
@@ -57,7 +58,7 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
 \item{object}{For coef.acifit, and print.acifit, the object returned by \code{fitaci}}
 
-\item{what}{The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them.}
+\item{what}{The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them, or 'none' for neither (only the plot region is set up)}
 
 \item{xlim}{Limits for the X axis, if left blank estimated from data}
 
@@ -75,7 +76,9 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
 \item{transitionpoint}{For plot.acifit, whether to plot a symbol at the transition point.}
 
-\item{lwd}{Line widths, can be a vector of length 2 (first element for both rates, second one for the limiting rate).}
+\item{linecols}{Vector of three colours for the lines (limiting rate, Ac, Aj), if one value provided it is used for all three.}
+
+\item{lwd}{Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).}
 
 \item{group}{For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.}
 
@@ -84,6 +87,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
 
 \item{\dots}{Further arguments passed to \code{\link{Photosyn}}}
+
+\item{type}{Either 'o' (data and fitted curve),'l' (fitted curve only), 'p' (data only), 'n' (neither; sets up plot region only)}
 }
 \value{
 A list of class 'acifit', with five components:

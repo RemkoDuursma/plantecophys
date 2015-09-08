@@ -415,31 +415,36 @@ fitted.acifit <- function(object,...){
 #' @param xlim Limits for the X axis, if left blank estimated from data
 #' @param ylim Limits for the Y axis, if left blank estimated from data
 #' @param whichA By default all three photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)). Or, specify one or two of them. 
-#' @param what The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them.
+#' @param what The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them, or 'none' for neither (only the plot region is set up)
 #' @param add If TRUE, adds to the current plot
 #' @param pch The plotting symbol for the data
 #' @param addzeroline If TRUE, the default, adds a dashed line at y=0
 #' @param addlegend If TRUE, adds a legend (by default does not add a legend if add=TRUE)
 #' @param transitionpoint For plot.acifit, whether to plot a symbol at the transition point.
-#' @param lwd Line widths, can be a vector of length 2 (first element for both rates, second one for the limiting rate).
+#' @param linecols Vector of three colours for the lines (limiting rate, Ac, Aj), if one value provided it is used for all three.
+#' @param lwd Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).
+#' @param type Either 'o' (data and fitted curve),'l' (fitted curve only), 'p' (data only), 'n' (neither; sets up plot region only)
 #' @rdname fitaci
 #' @importFrom graphics points
 #' @importFrom graphics abline
 #' @importFrom graphics legend
-plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL, 
+plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL, 
                         whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, 
                         addzeroline=TRUE, addlegend=!add, 
-                        transitionpoint=TRUE, 
+                        transitionpoint=TRUE, linecols=c("black","blue","red"),
                         lwd=c(1,2),
                         ...){
   
   if(is.null(ylim))ylim <- with(x$df, c(min(Ameas), 1.1*max(Ameas)))
   if(is.null(xlim))xlim <- with(x$df,c(0, max(Ci)))
   if(length(lwd)==1)lwd <- c(lwd,lwd)
+  if(length(linecols)==1)linecols <- rep(linecols,3)
   
+  # Vector of Ci values at which to evaluate fitted ACi curve.
   Ci <- with(x$df, seq(min(Ci), max(Ci), length=101))
   
   # Exact model used to fit the A-Ci curve was saved in the object.
+  # (parameter settings etc. are preserved)
   pred <- x$Photosyn(Ci=Ci)
   
   if(!add){
@@ -454,12 +459,12 @@ plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL,
   if("data" %in% what)with(x$df, points(Ci, Ameas, pch=pch,...))
   
   if("model" %in% what){
-    if("Aj" %in% whichA)with(pred, points(Ci, Aj-Rd, type='l', col="blue",lwd=lwd[1]))
-    if("Ac" %in% whichA)with(pred, points(Ci, Ac-Rd, type='l', col="red",lwd=lwd[1]))
-    if("Amin" %in% whichA)with(pred, points(Ci, ALEAF, type='l', col="black", lwd=lwd[2]))
+    if("Aj" %in% whichA)with(pred, points(Ci, Aj-Rd, type='l', col=linecols[2],lwd=lwd[1]))
+    if("Ac" %in% whichA)with(pred, points(Ci, Ac-Rd, type='l', col=linecols[3],lwd=lwd[1]))
+    if("Amin" %in% whichA)with(pred, points(Ci, ALEAF, type='l', col=linecols[1], lwd=lwd[2]))
   }
   
-  if(transitionpoint)
+  if(transitionpoint && "model" %in% what)
     points(x$Ci_transition, x$Photosyn(Ci=x$Ci_transition)$ALEAF, pch=21, bg="lightgrey", cex=0.8)
   
   if(addzeroline)
@@ -468,7 +473,8 @@ plot.acifit <- function(x, what=c("data","model"), xlim=NULL, ylim=NULL,
   if(addlegend){
     legend("bottomright", c(expression(italic(A)[c]),
                             expression(italic(A)[j]),
-                            "Limiting rate"), lty=1, lwd=c(1,1,2), col=c("red","blue","black"))
+                            "Limiting rate"), lty=1, lwd=c(lwd[1],lwd[1],lwd[2]), 
+           col=linecols[3:1])
   }
   
 }
