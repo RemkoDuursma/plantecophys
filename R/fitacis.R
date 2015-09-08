@@ -56,8 +56,11 @@ return(fits)
 #' @export plot.acifits
 #' @S3method plot acifits
 #' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
+#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
 #' @rdname fitaci
-plot.acifits <- function(x, how=c("manyplots","oneplot"), ...){
+plot.acifits <- function(x, how=c("manyplots","oneplot"),
+                         highlight=NULL,
+                         ...){
   
   how <- match.arg(how)
   
@@ -67,11 +70,33 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"), ...){
   }
   
   if(how == "oneplot"){
+    
     amax <- max(sapply(x, function(x)max(x$df$Amodel)))
     amin <- max(sapply(x, function(x)min(x$df$Amodel)))
     
-    plot.acifit(x[[1]], what="model",ylim=c(amin,amax), whichA="Amin")
-    for(i in seq_along(x))plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,...)
+    
+    if(!is.null(highlight)){
+      if(!highlight %in% names(x))
+          stop("Curve ID not found.")
+      
+      hi <- which(names(x) == highlight)
+      
+      plot.acifit(x[[1]], what="none",ylim=c(amin,amax), whichA="Amin", ...)
+      for(i in seq_along(x)){
+        plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,
+                    linecols="grey",...)  
+      }
+      plot.acifit(x[[hi]], what="model", whichA="Amin", add=TRUE,
+                  linecols="black",...)  
+      
+    } else {
+      plot.acifit(x[[1]], what="none",ylim=c(amin,amax), whichA="Amin", ...)
+      for(i in seq_along(x))
+        plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,...)  
+    }
+    
+    
+    
   }
 }
 
