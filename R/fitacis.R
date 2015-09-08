@@ -56,6 +56,7 @@ return(fits)
 #' @export plot.acifits
 #' @S3method plot acifits
 #' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
+#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
 #' @rdname fitaci
 plot.acifits <- function(x, how=c("manyplots","oneplot"),
                          highlight=NULL,

@@ -86,6 +86,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
 
+\item{highlight}{If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.}
+
 \item{\dots}{Further arguments passed to \code{\link{Photosyn}}}
 
 \item{type}{Either 'o' (data and fitted curve),'l' (fitted curve only), 'p' (data only), 'n' (neither; sets up plot region only)}
