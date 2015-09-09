@@ -12,7 +12,7 @@
 #' @param df Input dataframe, containing all variables needed to fit the model.
 #' @param varnames List of names of variables in the input dataframe. Relative humidity (RH) is only 
 #' needed when the original Ball-Berry model is to be fit.
-#' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball et al. 1987).
+#' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), BallBerry (Ball et al. 1987), or BBOptiFull (Medlyn et al. 2011 but with an extra parameter gk, see Duursma et al. 2013)
 #' @param fitg0 If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.
 #' @export
 #' @references 
@@ -21,6 +21,9 @@
 #' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
 #'
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
+#' 
+#' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D.T., 2013. Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168, 168–176. doi:10.1016/j.agrformet.2012.09.005
+#' 
 #' @importFrom stats nls
 #' @importFrom stats coef
 #' @importFrom stats residuals
@@ -40,7 +43,7 @@
 #' coef(myfit)
 #' }
 fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO2S",RH="RH"),
-                  gsmodel=c("BBOpti","BBLeuning","BallBerry"),
+                  gsmodel=c("BBOpti","BBLeuning","BallBerry","BBOptiFull"),
                   fitg0=FALSE){
   
   gsmodel <- match.arg(gsmodel)
@@ -65,18 +68,25 @@ fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO
   }
   
   if(gsmodel == "BBOpti"){
-  if(!fitg0){
-    fit <- try(nls(gs ~ 1.6*(1 + g1/vpd)*(aleaf/ca), start=list(g1=4)) )
-  } else {
-    fit <- try(nls(gs ~ g0 + 1.6*(1 + g1/vpd)*(aleaf/ca), start=list(g1=4, g0=0.005)) )
+    if(!fitg0){
+      fit <- try(nls(gs ~ 1.6*(1 + g1/sqrt(vpd))*(aleaf/ca), start=list(g1=4)) )
+    } else {
+      fit <- try(nls(gs ~ g0 + 1.6*(1 + g1/sqrt(vpd))*(aleaf/ca), start=list(g1=4, g0=0.005)) )
+    }
   }
+  if(gsmodel == "BBOptiFull"){
+    if(!fitg0){
+      fit <- try(nls(gs ~ 1.6*(1 + g1/vpd^gk)*(aleaf/ca), start=list(g1=4, gk=0.5)) )
+    } else {
+      fit <- try(nls(gs ~ g0 + 1.6*(1 + g1/vpd^gk)*(aleaf/ca), start=list(g1=4, g0=0.005, gk=0.5)) )
+    }
   }
   if(gsmodel == "BBLeuning"){
-  if(!fitg0){
-    fit <- try(nls(gs ~ 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
-  } else {
-    fit <- try(nls(gs ~ g0 + 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
-  }
+    if(!fitg0){
+      fit <- try(nls(gs ~ 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
+    } else {
+      fit <- try(nls(gs ~ g0 + 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
+    }
   }
   if(gsmodel == "BallBerry"){
     if(!fitg0){
@@ -129,10 +139,15 @@ print.BBfit <- function(x, ...){
     cat("Only g1 was estimated (g0 = 0).\n\n")
   }
   
-  cat("Coefficients:\n")
-  cat("g0  g1\n")
-  cat(signif(coef(x)[1],3), signif(coef(x)[2],3), "\n")
-  
+  if(x$gsmodel != "BBOptiFull"){
+    cat("Coefficients:\n")
+    cat("g0  g1\n")
+    cat(signif(coef(x)[1],3), signif(coef(x)[2],3), "\n")
+  } else {
+    cat("Coefficients:\n")
+    cat("g0  g1  gk\n")
+    cat(signif(coef(x)[1],3), signif(coef(x)[2],3), signif(coef(x)[3],3), "\n")
+  }
   cat("\nFor more details of the fit, look at summary(myfit$fit)\n")
   cat("To return coefficients, do coef(myfit).\n")
   cat("(where myfit is the name of the object returned by fitBB)\n")

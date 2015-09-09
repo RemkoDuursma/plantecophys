@@ -59,7 +59,7 @@ return(fits)
 #' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
 #' @rdname fitaci
 plot.acifits <- function(x, how=c("manyplots","oneplot"),
-                         highlight=NULL,
+                         highlight=NULL, ylim=NULL,xlim=NULL,
                          ...){
   
   how <- match.arg(how)
@@ -71,9 +71,16 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
   
   if(how == "oneplot"){
     
-    amax <- max(sapply(x, function(x)max(x$df$Amodel)))
-    amin <- max(sapply(x, function(x)min(x$df$Amodel)))
-    
+    if(is.null(ylim)){
+      amax <- max(sapply(x, function(x)max(x$df$Amodel)))
+      amin <- max(sapply(x, function(x)min(x$df$Amodel)))
+      ylim <- c(amin,amax)
+    }
+    if(is.null(xlim)){
+      cimax <- max(sapply(x, function(x)max(x$df$Ci)))
+      cimin <- min(sapply(x, function(x)min(x$df$Ci)))
+      xlim <- c(cimin,cimax)
+    }
     
     if(!is.null(highlight)){
       if(!highlight %in% names(x))
@@ -81,7 +88,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
       
       hi <- which(names(x) == highlight)
       
-      plot.acifit(x[[1]], what="none",ylim=c(amin,amax), whichA="Amin", ...)
+      plot.acifit(x[[1]], what="none", ylim=ylim, xlim=xlim, whichA="Amin", ...)
       for(i in seq_along(x)){
         plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,
                     linecols="grey",...)  

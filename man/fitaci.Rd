@@ -27,13 +27,14 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 
 \method{plot}{acifit}(x, what = c("data", "model", "none"), xlim = NULL,
   ylim = NULL, whichA = c("Ac", "Aj", "Amin"), add = FALSE, pch = 19,
-  addzeroline = TRUE, addlegend = !add, transitionpoint = TRUE,
-  linecols = c("black", "blue", "red"), lwd = c(1, 2), ...)
+  addzeroline = TRUE, addlegend = !add, legendbty = "o",
+  transitionpoint = TRUE, linecols = c("black", "blue", "red"), lwd = c(1,
+  2), ...)
 
 fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
 \method{plot}{acifits}(x, how = c("manyplots", "oneplot"), highlight = NULL,
-  ...)
+  ylim = NULL, xlim = NULL, ...)
 
 \method{coef}{acifits}(object, ...)
 }
@@ -73,6 +74,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 \item{addzeroline}{If TRUE, the default, adds a dashed line at y=0}
 
 \item{addlegend}{If TRUE, adds a legend (by default does not add a legend if add=TRUE)}
+
+\item{legendbty}{Box type for the legend, passed to argument bty in \code{\link{legend}}.}
 
 \item{transitionpoint}{For plot.acifit, whether to plot a symbol at the transition point.}
 

@@ -420,6 +420,7 @@ fitted.acifit <- function(object,...){
 #' @param pch The plotting symbol for the data
 #' @param addzeroline If TRUE, the default, adds a dashed line at y=0
 #' @param addlegend If TRUE, adds a legend (by default does not add a legend if add=TRUE)
+#' @param legendbty Box type for the legend, passed to argument bty in \code{\link{legend}}.
 #' @param transitionpoint For plot.acifit, whether to plot a symbol at the transition point.
 #' @param linecols Vector of three colours for the lines (limiting rate, Ac, Aj), if one value provided it is used for all three.
 #' @param lwd Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).
@@ -430,7 +431,7 @@ fitted.acifit <- function(object,...){
 #' @importFrom graphics legend
 plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL, 
                         whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, 
-                        addzeroline=TRUE, addlegend=!add, 
+                        addzeroline=TRUE, addlegend=!add, legendbty='o',
                         transitionpoint=TRUE, linecols=c("black","blue","red"),
                         lwd=c(1,2),
                         ...){
@@ -474,7 +475,7 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
     legend("bottomright", c(expression(italic(A)[c]),
                             expression(italic(A)[j]),
                             "Limiting rate"), lty=1, lwd=c(lwd[1],lwd[1],lwd[2]), 
-           col=linecols[3:1])
+           col=linecols[3:1], bty=legendbty)
   }
   
 }

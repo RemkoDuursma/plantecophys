@@ -5,8 +5,8 @@
 \title{Fit Ball-Berry type models of stomatal conductance}
 \usage{
 fitBB(df, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL", Ca =
-  "CO2S", RH = "RH"), gsmodel = c("BBOpti", "BBLeuning", "BallBerry"),
-  fitg0 = FALSE)
+  "CO2S", RH = "RH"), gsmodel = c("BBOpti", "BBLeuning", "BallBerry",
+  "BBOptiFull"), fitg0 = FALSE)
 }
 \arguments{
 \item{df}{Input dataframe, containing all variables needed to fit the model.}
@@ -14,7 +14,7 @@ fitBB(df, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL", Ca =
 \item{varnames}{List of names of variables in the input dataframe. Relative humidity (RH) is only
 needed when the original Ball-Berry model is to be fit.}
 
-\item{gsmodel}{One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball et al. 1987).}
+\item{gsmodel}{One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), BallBerry (Ball et al. 1987), or BBOptiFull (Medlyn et al. 2011 but with an extra parameter gk, see Duursma et al. 2013)}
 
 \item{fitg0}{If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.}
 }
@@ -51,5 +51,7 @@ Ball, J.T., Woodrow, I.E., Berry, J.A., 1987. A model predicting stomatal conduc
 Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
 
 Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
+
+Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D.T., 2013. Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168, 168–176. doi:10.1016/j.agrformet.2012.09.005
 }
 
