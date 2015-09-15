@@ -87,6 +87,9 @@ fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PP
                    quiet=FALSE, startValgrid=TRUE, 
                    algorithm="default", useRd=FALSE,  ...){
   
+  # Make sure data is a dataframe; stuff returned by dplyr is no good
+  data <- as.data.frame(data)
+  
   # Set extra parameters if provided
   m <- as.list(match.call())
   a <- as.list(formals(fitaci))
