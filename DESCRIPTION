@@ -7,5 +7,6 @@ Maintainer: Remko Duursma <remkoduursma@gmail.com>
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
     fitting, leaf energy balance using Penman-Monteith, Cowan-Farquhar
     optimization, unit conversions.
+Suggests: nlstools
 License: GPL
 LazyData: yes

@@ -17,6 +17,8 @@
 #' When \code{citransition} is set, it splits the data into a Vcmax-limited (where Ci < citransition), and Jmax-limited region (Ci > citransition). Both parameters are then estimated separately for each region (Rd is estimated only for the Vcmax-limited region). \bold{Note} that the actual transition point as shown in the standard plot of the fitted A-Ci curve may be quite different from that provided, since the fitting method simply decides which part of the dataset to use for which limitation, it does not constrain the actual estimated transition point directly. See the example below.
 #' 
 #' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1.
+#' 
+#' Because fitaci returns the fitted nls object (see next section), more details on statistics of the fit can be extracted with standard tools. The Examples below shows the use of the \pkg{nlstools} to extract many details at once.
 #' @return A list of class 'acifit', with five components:
 #' \describe{
 #' \item{df}{A dataframe with the original data, the fitted photosynthetic rate (Amodel), Jmax and Vcmax-limited gross rates (Aj, Ac)}
@@ -57,6 +59,10 @@
 #' # The non-linear regression (nls) fit is stored as well,
 #' summary(f$nlsfit)
 #' 
+#' # Many more details can be extracted with the nlstools package
+#' library(nlstools)
+#' overview(f$nlsfit)
+#'  
 #' # The curve generator is stored as f$Photosyn:
 #' # Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, 
 #' # PPFD for the dataset.
