@@ -87,8 +87,10 @@
 #' f2
 #' @export
 #' @rdname fitaci
-fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi", Rd="Rd"),
+fitaci <- function(data, 
+                   varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi", Rd="Rd"),
                    Tcorrect=TRUE, 
+                   Patm=100,
                    citransition=NULL,
                    quiet=FALSE, startValgrid=TRUE, 
                    algorithm="default", useRd=FALSE,  ...){
@@ -173,7 +175,7 @@ fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PP
   mi <- which.max(data$Ci)
   maxPhoto <- data$ALEAF[mi]
   Tl <- data$Tleaf[mi]
-  gammastar <- TGammaStar(Tl)
+  gammastar <- TGammaStar(Tl,Patm)
   VJ <- (maxPhoto+Rd_guess) / ((maxCi - gammastar) / (maxCi + 2*gammastar))
   Jmax_guess <- VJ*4
   if(Tcorrect){
@@ -184,8 +186,8 @@ fitaci <- function(data, varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PP
   # Guess Vcmax, from section of curve that is definitely Vcmax-limited
   dato <- data[data$Ci < 150 & data$Ci > 60 & data$ALEAF > 0,]
   if(nrow(dato) > 0){
-    Km <- TKm(dato$Tleaf)
-    gammastar <- TGammaStar(dato$Tleaf)
+    Km <- TKm(dato$Tleaf,Patm)
+    gammastar <- TGammaStar(dato$Tleaf,Patm)
     vcmax <- with(dato, (ALEAF + Rd_guess) / ((Ci - gammastar)/(Ci + Km)))
     Vcmax_guess <- median(vcmax)
   } else {

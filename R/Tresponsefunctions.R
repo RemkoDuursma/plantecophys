@@ -6,20 +6,22 @@ arrh <- function(Tleaf, Ea){
   exp((Ea * (Tk(Tleaf) - 298.15)) / (298.15 * .Rgas() * Tk(Tleaf))) 
 }
 
-TGammaStar <- function(Tleaf, 
+TGammaStar <- function(Tleaf, Patm,
                        Egamma=37830.0, 
                        value25=42.75){  
 
-  value25*arrh(Tleaf,Egamma)
+  value25*arrh(Tleaf,Egamma)*Patm/100
 }
 
-TKm <- function(Tleaf,
-                Oi = 210,      # O2 concentration
-                Ec = 79430.0,  # activation energy for Kc
+TKm <- function(Tleaf, Patm,
+                Oi = 210,      # O2 concentration (mmol mol-1)
+                Ec = 79430.0,  # activation energy for Kc 
                 Eo = 36380.0,  # activation energy for Ko
                 Kc25 = 404.9,  # Kc at 25C
                 Ko25 = 278.4  # Ko at 25C
                 ){
+  
+  Oi <- Oi * Patm / 100
   
   Ko <- Ko25*arrh(Tleaf, Eo)
   Kc <- Kc25*arrh(Tleaf, Ec)

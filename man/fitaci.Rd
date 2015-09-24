@@ -13,7 +13,7 @@
 \title{Fit the Farquhar-Berry-von Caemmerer model of leaf photosynthesis}
 \usage{
 fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
-  = "PARi", Rd = "Rd"), Tcorrect = TRUE, citransition = NULL,
+  = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100, citransition = NULL,
   quiet = FALSE, startValgrid = TRUE, algorithm = "default",
   useRd = FALSE, ...)
 

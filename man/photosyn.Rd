@@ -5,7 +5,7 @@
 \alias{Photosyn}
 \title{Coupled leaf gas exchange model}
 \usage{
-Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25, Patm = 101,
+Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25, Patm = 100,
   RH = NULL, gsmodel = c("BBOpti", "BBLeuning", "BallBerry"), g1 = 4,
   g0 = 0, gk = 0.5, vpdmin = 0.5, D0 = 5, GS = NULL, alpha = 0.24,
   theta = 0.85, Jmax = 100, Vcmax = 50, gmeso = NULL, Rd0 = 0.92,

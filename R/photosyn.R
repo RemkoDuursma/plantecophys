@@ -130,7 +130,7 @@ Photosyn <- function(VPD=1.5,
                      Ca=400, 
                      PPFD=1500,
                      Tleaf=25,
-                     Patm=101,
+                     Patm=100,
                      RH=NULL,
                      
                      gsmodel=c("BBOpti","BBLeuning","BallBerry"),
@@ -200,10 +200,10 @@ Photosyn <- function(VPD=1.5,
   }
   
   # CO2 compensation point in absence of photorespiration
-  if(is.null(GammaStar))GammaStar <- TGammaStar(Tleaf)
+  if(is.null(GammaStar))GammaStar <- TGammaStar(Tleaf,Patm)
   
   # Michaelis-Menten coefficient
-  if(is.null(Km))Km <- TKm(Tleaf)
+  if(is.null(Km))Km <- TKm(Tleaf,Patm)
   
   #-- Vcmax, Jmax T responses
   if(Tcorrect){
@@ -337,7 +337,7 @@ Photosyn <- function(VPD=1.5,
     if(is.null(gmeso)){
       # Get photosynthetic rate  
       Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
-      Aj <- VJ * (CIJ-GammaStar)/(CIJ + 2*GammaStar)
+      Aj <- VJ * (CIJ - GammaStar)/(CIJ + 2*GammaStar)
     
     } else {
     # Ethier and Livingston (2004) (Equation 10).
