@@ -45,6 +45,8 @@ fitacis(data, group, progressbar = TRUE, quiet = FALSE, ...)
 
 \item{Tcorrect}{If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.}
 
+\item{Patm}{Atmospheric pressure (kPa)}
+
 \item{citransition}{If provided, fits the Vcmax and Jmax limited regions separately (see Details).}
 
 \item{quiet}{If TRUE, no messages are written to the screen.}

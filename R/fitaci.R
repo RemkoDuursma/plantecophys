@@ -3,6 +3,7 @@
 #' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
 #' @param varnames List of names of variables in the dataset (see Details).
 #' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.
+#' @param Patm Atmospheric pressure (kPa)
 #' @param citransition If provided, fits the Vcmax and Jmax limited regions separately (see Details).
 #' @param quiet If TRUE, no messages are written to the screen.
 #' @param startValgrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
@@ -150,7 +151,9 @@ fitaci <- function(data,
       warning("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
     }
   }
-  data$Ci <- data[,varnames$Ci]
+  
+  # Extract Ci and apply pressure correction
+  data$Ci <- data[,varnames$Ci] * Patm/100
   data$ALEAF <- data[,varnames$ALEAF]
   
   # Needed to avoid apparent recursion below.
@@ -204,7 +207,7 @@ fitaci <- function(data,
       aciSS <- function(Vcmax, Jmax, Rd){
         Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
                                  Vcmax=Vcmax, Jmax=Jmax, 
-                                 Rd=Rd, Tleaf=data$Tleaf)
+                                 Rd=Rd, Tleaf=data$Tleaf, Patm=Patm)
         
         SS <- sum((data$ALEAF - Photo_mod)^2)
         return(SS)
@@ -223,7 +226,7 @@ fitaci <- function(data,
       aciSS <- function(Vcmax, Jmax, Rd){
         Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
                                  Vcmax=Vcmax, Jmax=Jmax, 
-                                 Rd=Rd, Tleaf=data$Tleaf)
+                                 Rd=Rd, Tleaf=data$Tleaf, Patm=Patm)
         SS <- sum((data$ALEAF - Photo_mod)^2)
         return(SS)
       }
@@ -245,7 +248,7 @@ fitaci <- function(data,
     
     if(!haveRd){
       nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                        Jmax=Jmax, Rd=Rd, Tleaf=Tleaf),
+                                        Jmax=Jmax, Rd=Rd, Tleaf=Tleaf, Patm=Patm),
                       algorithm=algorithm,
                       data=data, control=nls.control(maxiter=500, minFactor=1/10000),
                       start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
@@ -254,7 +257,7 @@ fitaci <- function(data,
     } else {
       
       nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                        Jmax=Jmax, Rd=Rd_meas, Tleaf=Tleaf),
+                                        Jmax=Jmax, Rd=Rd_meas, Tleaf=Tleaf, Patm=Patm),
                     algorithm=algorithm,
                     data=data, control=nls.control(maxiter=500, minFactor=1/10000),
                     start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess))
@@ -277,7 +280,7 @@ fitaci <- function(data,
     
     if(nrow(dat_vcmax) > 0){
       nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                        Jmax=10000, Rd=Rd, Tleaf=Tleaf, returnwhat="Ac"),
+                                        Jmax=10000, Rd=Rd, Tleaf=Tleaf, Patm=Patm, returnwhat="Ac"),
                     algorithm=algorithm,
                     data=dat_vcmax, control=nls.control(maxiter=500, minFactor=1/10000),
                     start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
@@ -293,7 +296,7 @@ fitaci <- function(data,
     if(nrow(dat_jmax) > 0){
       nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
                                         Jmax=Jmax, Rd=Rd_vcmaxguess, 
-                                        Tleaf=Tleaf, returnwhat="Aj"),
+                                        Tleaf=Tleaf, Patm=Patm, returnwhat="Aj"),
                     algorithm=algorithm,
                     data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
                     start=list(Jmax=Jmax_guess))
@@ -317,6 +320,7 @@ fitaci <- function(data,
                      Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], 
                      PPFD=data$PPFD, 
                      Tleaf=data$Tleaf,
+                     Patm=Patm,
                      Tcorrect=Tcorrect)
   
   acirun$Ameas <- data$ALEAF
@@ -339,6 +343,7 @@ fitaci <- function(data,
   # Save function itself, the formals contain the parameters used to fit the A-Ci curve.
   # First save Tleaf, PPFD in the formals (as the mean of the dataset)
   formals(Photosyn)$Tleaf <- mean(data$Tleaf)
+  formals(Photosyn)$Patm <- Patm
   formals(Photosyn)$PPFD <- mean(data$PPFD)
   formals(Photosyn)$Vcmax <- l$pars[1]
   formals(Photosyn)$Jmax <- l$pars[2]
@@ -353,6 +358,22 @@ fitaci <- function(data,
   l$Jmax_guess <- Jmax_guess
   l$Rd_guess <- Rd_guess
   l$Rd_measured <- haveRd
+  
+  # Store GammaStar and Km
+  if("GammaStar" %in% extrapars) {
+    l$GammaStar <- formals(Photosyn)$GammaStar
+    l$gstarinput <- TRUE
+  } else {
+    l$GammaStar <- TGammaStar(mean(data$Tleaf),Patm)
+    l$gstarinput <- FALSE
+  }
+  if("Km" %in% extrapars){
+    l$Km <- formals(Photosyn)$Km
+    l$kminput <- TRUE
+  } else {
+    l$Km <- TKm(mean(data$Tleaf),Patm)
+    l$kminput <- FALSE
+  }
   
   class(l) <- "acifit"
   
@@ -385,9 +406,21 @@ print.acifit <- function(x,...){
   
   cat("Parameter settings:\n")
   fm <- formals(x$Photosyn)
-  pars <- c("alpha","theta","EaV","EdVC","delsC","EaJ","EdVJ","delsJ")
-  fm <- fm[pars]
-  cat(paste0(names(fm)," = ", unlist(fm),"\n"))
+  pars <- c("Patm","alpha","theta","EaV","EdVC","delsC","EaJ","EdVJ","delsJ")
+  fm <- unlist(fm[pars])
+  cat(paste0(pars," = ", fm,"\n"))
+  
+  if(!x$gstarinput | !x$kminput){
+    cat("\nEstimated from Tleaf (shown at mean Tleaf):\n")
+    if(!x$gstarinput)cat("GammaStar = ",x$GammaStar,"\n")
+    if(!x$kminput)cat("Km = ",x$Km,"\n")
+  }
+  
+  if(x$gstarinput | x$kminput){
+    cat("\nSet by user:\n")
+    if(x$gstarinput)cat("GammaStar = ",x$GammaStar,"\n")
+    if(x$kminput)cat("Km = ",x$Km,"\n")
+  }
   
 }
 
