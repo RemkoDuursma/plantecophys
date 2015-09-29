@@ -39,7 +39,7 @@
 #'  
 #'  At the moment, two stomatal conductance models are implemented, both are Ball-Berry type models. The 'BBOpti' model is a slightly more general form of the model of Medlyn et al. 2011 (see Duursma et al. 2013). It is given by (in notation of the parameters and output variables of \code{Photosyn}),
 #'  
-#'  \deqn{GS = G0 + 1.6*(1 + G1/D^GK)*ALEAF/CA}
+#'  \deqn{GS = G0 + 1.6*(1 + G1/D^(1-GK))*ALEAF/CA}
 #'  
 #'  where GK = 0.5 if stomata behave optimally (cf. Medlyn et al. 2011).
 #'  
