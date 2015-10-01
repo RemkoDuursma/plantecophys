@@ -26,7 +26,7 @@ Aci(Ci, ...)
 
 \item{Tleaf}{Leaf temperature (degrees C)}
 
-\item{Patm}{Atmospheric pressure (kPa)}
+\item{Patm}{Atmospheric pressure (kPa) (but see warning below!)}
 
 \item{RH}{Relative humidity (in \%)}
 
@@ -118,6 +118,13 @@ The model of Farquhar et al. (1980) is used to estimate the dependence of photos
 Note that the function \code{Aci} is provided as a shorthand for \code{Photosyn(Ci=x)}.
 
  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates (leaf respiration has to be subtracted to give net leaf photosynthesis).
+}
+\section{Atmospheric pressure}{
+
+
+A correction for atmospheric pressure (Patm) is implemented in \code{\link{fitaci}}, but \strong{not in Photosyn}. In \code{fitaci}, the necessary corrections are applied so that estimated Vcmax and Jmax are at standard pressure. In Photosyn, however, it is yet unknown to us how we should apply all corrections, since Patm affects more than just partial pressure of CO2 (and O2) in the chloroplast. It also affects diffusitivity, which affects stomatal conductance (and possibly, mesophyll conductance?).
+
+Note that Patm is an argument, but it only affects calculations of Km and GammaStar (as used by fitaci), and transpiration rate. Setting only Patm \strong{does not correct for atmospheric pressure effects}.
 }
 \examples{
 # Run the coupled leaf gas exchange model, set only a couple of parameters

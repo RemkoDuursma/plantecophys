@@ -4,7 +4,7 @@
 #' @param Ca Atmospheric CO2 concentration (ppm)
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
 #' @param Tleaf Leaf temperature (degrees C)
-#' @param Patm Atmospheric pressure (kPa)
+#' @param Patm Atmospheric pressure (kPa) (but see warning below!)
 #' @param RH Relative humidity (in \%)
 #' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball et al. 1987)
 #' @param g0,g1 Parameters of Ball-Berry type stomatal conductance models.
@@ -64,6 +64,12 @@
 #' Note that the function \code{Aci} is provided as a shorthand for \code{Photosyn(Ci=x)}.
 #'  
 #'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates (leaf respiration has to be subtracted to give net leaf photosynthesis).
+#' @section Atmospheric pressure:
+#' 
+#' A correction for atmospheric pressure (Patm) is implemented in \code{\link{fitaci}}, but \strong{not in Photosyn}. In \code{fitaci}, the necessary corrections are applied so that estimated Vcmax and Jmax are at standard pressure. In Photosyn, however, it is yet unknown to us how we should apply all corrections, since Patm affects more than just partial pressure of CO2 (and O2) in the chloroplast. It also affects diffusitivity, which affects stomatal conductance (and possibly, mesophyll conductance?). 
+#' 
+#' Note that Patm is an argument, but it only affects calculations of Km and GammaStar (as used by fitaci), and transpiration rate. Setting only Patm \strong{does not correct for atmospheric pressure effects}.
+#' 
 #' @references 
 #' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
 #'
