@@ -66,9 +66,9 @@
 #'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates. This is to avoid the discontinuity at the transition between the two rates. Both Ac and Aj are also returned should they be needed. Note that those rates are output as gross photosynthetic rates (leaf respiration has to be subtracted to give net leaf photosynthesis).
 #' @section Atmospheric pressure:
 #' 
-#' A correction for atmospheric pressure (Patm) is implemented in \code{\link{fitaci}}, but \strong{not in Photosyn}. In \code{fitaci}, the necessary corrections are applied so that estimated Vcmax and Jmax are at standard pressure. In Photosyn, however, it is yet unknown to us how we should apply all corrections, since Patm affects more than just partial pressure of CO2 (and O2) in the chloroplast. It also affects diffusitivity, which affects stomatal conductance (and possibly, mesophyll conductance?). 
+#' A correction for atmospheric pressure (Patm) is implemented in \code{\link{fitaci}}, but \strong{not in Photosyn}. In \code{fitaci}, the necessary corrections are applied so that estimated Vcmax and Jmax are expressed at standard pressure (Patm=100kPa). In Photosyn, however, the corrections are much more complicated and tend to be very small, because effects of Patm on partial pressures are largely offset by increases in diffusivity (Terashima et al. 1995, Gale 1973). 
 #' 
-#' Note that Patm is an argument, but it only affects calculations of Km and GammaStar (as used by fitaci), and transpiration rate. Setting only Patm \strong{does not correct for atmospheric pressure effects}.
+#' Note that Patm is an argument to the Photosyn function, but it only affects calculations of Km and GammaStar (as used by fitaci), and transpiration rate. Setting only Patm \strong{does not correct for atmospheric pressure effects on photosynthesis rates}.
 #' 
 #' @references 
 #' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
@@ -79,11 +79,15 @@
 #' 
 #' Farquhar, G. D., & Sharkey, T. D. (1982). Stomatal conductance and photosynthesis. Annual review of plant physiology, 33(1), 317-345.
 #' 
+#' Gale, J., 1972. Availability of Carbon Dioxide for Photosynthesis at High Altitudes: Theoretical Considerations. Ecology 53, 494–497. doi:10.2307/1934239
+#' 
 #' Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
 #'
 #' Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter, P.C. Harley, M.U.F. Kirschbaum, X. Le Roux, P. Montpied, J. Strassemeyer, A. Walcroft, K. Wang and D. Loustau. 2002. Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. Plant Cell and Environment. 25:1167-1179.
 #' 
 #' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
+#' 
+#' Terashima, I., Masuzawa, T., Ohba, H., Yokoi, Y., 1995. Is Photosynthesis Suppressed at Higher Elevations Due to Low CO2 Pressure? Ecology 76, 2663–2668. doi:10.2307/2265838
 #' @aliases Photosyn Aci
 #' @return Returns a dataframe.
 #' @examples
