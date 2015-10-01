@@ -473,7 +473,6 @@ fitted.acifit <- function(object,...){
 #' @param transitionpoint For plot.acifit, whether to plot a symbol at the transition point.
 #' @param linecols Vector of three colours for the lines (limiting rate, Ac, Aj), if one value provided it is used for all three.
 #' @param lwd Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).
-#' @param type Either 'o' (data and fitted curve),'l' (fitted curve only), 'p' (data only), 'n' (neither; sets up plot region only)
 #' @rdname fitaci
 #' @importFrom graphics points
 #' @importFrom graphics abline
