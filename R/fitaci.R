@@ -19,6 +19,8 @@
 #' 
 #' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1.
 #' 
+#' Note that atmospheric pressure (Patm) is taken into account, assuming the original data are in molar units (Ci in mu mol mol-1, or ppm). During the fit, Ci is converted to mu bar, and Km and Gammastar are recalculated accounting for the effects of Patm on the partial pressure of oxygen. When plotting the fit, though, molar units are shown on the X-axis. Thus, you should get (nearly) the same fitted curve when Patm was set to a value lower than 100kPa, but the fitted Vcmax and Jmax will be higher. This is because at low Patm, photosynthetic capacity has to be higher to achieve the same measured photosynthesis rate.
+#' 
 #' Because fitaci returns the fitted nls object (see next section), more details on statistics of the fit can be extracted with standard tools. The Examples below shows the use of the \pkg{nlstools} to extract many details at once.
 #' @return A list of class 'acifit', with five components:
 #' \describe{
@@ -153,7 +155,9 @@ fitaci <- function(data,
   }
   
   # Extract Ci and apply pressure correction
+  data$Ci_original <- data[,varnames$Ci]
   data$Ci <- data[,varnames$Ci] * Patm/100
+  
   data$ALEAF <- data[,varnames$ALEAF]
   
   # Needed to avoid apparent recursion below.
@@ -327,6 +331,7 @@ fitaci <- function(data,
   acirun$ELEAF <- NULL
   acirun$GS <- NULL
   acirun$Ca <- NULL
+  acirun$Ci_original <- data$Ci_original
   names(acirun)[names(acirun) == "ALEAF"] <- "Amodel"
   
   # shuffle
@@ -480,20 +485,23 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
                         lwd=c(1,2),
                         ...){
   
+  # Note that Ci on the X-axis is in molar units!
   if(is.null(ylim))ylim <- with(x$df, c(min(Ameas), 1.1*max(Ameas)))
-  if(is.null(xlim))xlim <- with(x$df,c(0, max(Ci)))
+  if(is.null(xlim))xlim <- with(x$df,c(0, max(Ci_original)))
   if(length(lwd)==1)lwd <- c(lwd,lwd)
   if(length(linecols)==1)linecols <- rep(linecols,3)
   
   # Vector of Ci values at which to evaluate fitted ACi curve.
-  Ci <- with(x$df, seq(min(Ci), max(Ci), length=101))
+  Ci <- with(x$df, seq(min(Ci_original), max(Ci_original), length=101))
   
   # Exact model used to fit the A-Ci curve was saved in the object.
   # (parameter settings etc. are preserved)
-  pred <- x$Photosyn(Ci=Ci)
+  pcor <- mean(x$df$Patm)/100
+  pred <- x$Photosyn(Ci=Ci * pcor)
+  pred$Ci_original <- pred$Ci / pcor
   
   if(!add){
-    with(x$df, plot(Ci, Ameas, type='n',
+    with(x$df, plot(Ci_original, Ameas, type='n',
                     ylim=ylim,
                     xlim=xlim,
                     xlab=expression(italic(C)[i]~~(ppm)),
@@ -501,16 +509,16 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
                     ...
     ))
   }
-  if("data" %in% what)with(x$df, points(Ci, Ameas, pch=pch,...))
+  if("data" %in% what)with(x$df, points(Ci_original, Ameas, pch=pch,...))
   
   if("model" %in% what){
-    if("Aj" %in% whichA)with(pred, points(Ci, Aj-Rd, type='l', col=linecols[2],lwd=lwd[1]))
-    if("Ac" %in% whichA)with(pred, points(Ci, Ac-Rd, type='l', col=linecols[3],lwd=lwd[1]))
-    if("Amin" %in% whichA)with(pred, points(Ci, ALEAF, type='l', col=linecols[1], lwd=lwd[2]))
+    if("Aj" %in% whichA)with(pred, points(Ci_original, Aj-Rd, type='l', col=linecols[2],lwd=lwd[1]))
+    if("Ac" %in% whichA)with(pred, points(Ci_original, Ac-Rd, type='l', col=linecols[3],lwd=lwd[1]))
+    if("Amin" %in% whichA)with(pred, points(Ci_original, ALEAF, type='l', col=linecols[1], lwd=lwd[2]))
   }
   
   if(transitionpoint && "model" %in% what)
-    points(x$Ci_transition, x$Photosyn(Ci=x$Ci_transition)$ALEAF, pch=21, bg="lightgrey", cex=0.8)
+    points(x$Ci_transition / pcor, x$Photosyn(Ci=x$Ci_transition)$ALEAF, pch=21, bg="lightgrey", cex=0.8)
   
   if(addzeroline)
     abline(h=0, lty=3)
