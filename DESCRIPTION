@@ -6,6 +6,8 @@ Authors@R: person("Remko", "Duursma", role = c("aut", "cre"),email = "remkoduurs
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
     fitting, leaf energy balance using Penman-Monteith, Cowan-Farquhar
     optimization, unit conversions.
+URL: https://www.bitbucket.org/remkoduursma/plantecophys 
+BugReports: https://www.bitbucket.org/remkoduursma/plantecophys/issues
 Suggests: nlstools
 License: GPL
 LazyData: yes
