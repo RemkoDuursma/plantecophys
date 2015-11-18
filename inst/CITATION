@@ -1,0 +1,10 @@
+bibentry(bibtype = "article",
+         title = "{Plantecophys - {An} {R} {Package} for {Analysing} and {Modelling} {Leaf} {Gas} {Exchange} {Data}}",
+         volume = "10",
+         doi = "10.1371/journal.pone.0143346",
+         number = {11},
+         journal = "{PLoS ONE}",
+         author = "Remko A. Duursma",
+         year = "2015",
+         pages = "e0143346")
+         
