@@ -60,13 +60,18 @@ return(fits)
 #' @rdname fitaci
 plot.acifits <- function(x, how=c("manyplots","oneplot"),
                          highlight=NULL, ylim=NULL,xlim=NULL,
+                         add=FALSE, what=c("model","data","none"),
                          ...){
   
   how <- match.arg(how)
+  what <- match.arg(what)
   
   if(how == "manyplots"){
-  for(i in seq_along(x))
-    plot.acifit(x[[i]],main=names(x)[i],...)
+    if(add)warning("Argument 'add' ignored when making multiple plots.")  
+    
+    for(i in seq_along(x)){
+      plot.acifit(x[[i]],main=names(x)[i],...)
+    }
   }
   
   if(how == "oneplot"){
@@ -88,18 +93,21 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
       
       hi <- which(names(x) == highlight)
       
-      plot.acifit(x[[1]], what="none", ylim=ylim, xlim=xlim, whichA="Amin", ...)
+      if(!add){
+        plot.acifit(x[[1]], what="none", ylim=ylim, xlim=xlim, whichA="Amin", ...)
+      }
+      
       for(i in seq_along(x)){
-        plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,
+        plot.acifit(x[[i]], what=what, whichA="Amin", add=TRUE,
                     linecols="grey",...)  
       }
-      plot.acifit(x[[hi]], what="model", whichA="Amin", add=TRUE,
+      plot.acifit(x[[hi]], what=what, whichA="Amin", add=TRUE,
                   linecols="black",...)  
       
     } else {
-      plot.acifit(x[[1]], what="none",ylim=c(amin,amax), whichA="Amin", ...)
+      if(!add)plot.acifit(x[[1]], what="none",ylim=c(amin,amax), whichA="Amin", ...)
       for(i in seq_along(x))
-        plot.acifit(x[[i]], what="model", whichA="Amin", add=TRUE,...)  
+        plot.acifit(x[[i]], what=what, whichA="Amin", add=TRUE,...)  
     }
     
     
