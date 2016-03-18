@@ -1,7 +1,7 @@
 #' Coupled leaf gas exchange model with energy balance
 #' @description As \code{\link{Photosyn}}, but calculates the leaf temperature based on the leaf's energy balance. Including sensible and long-wave heat loss, latent heat loss from evaporation, and solar radiation input. 
 #' 
-#'@details Uses the Penman-Monteith equation to calculate the leaf transpiration rate, and finds Tleaf by solving the leaf energy balance iteratively. In the solution, it is accounted for that stomatal conductance and net radiation depend on Tleaf. There are no simplifications or approximations made to find the solution.
+#'@details Uses the Penman-Monteith equation to calculate the leaf transpiration rate, and finds Tleaf by solving the leaf energy balance iteratively. In the solution, it is accounted for that stomatal conductance (via the dependence of photosynthesis on Tleaf) and net radiation depend on Tleaf.
 #'
 #'Also included is the function \code{FindTleaf}, which calculates the leaf temperature if the stomatal conductance is known.
 #'@param Tair Air temperature (C)
