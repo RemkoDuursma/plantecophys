@@ -1,13 +1,15 @@
 Package: plantecophys
 Type: Package
 Title: Modelling and Analysis of Leaf Gas Exchange Data
-Version: 1.0-2
+Version: 1.0-3
 Authors@R: person("Remko", "Duursma", role = c("aut", "cre"),email = "remkoduursma@gmail.com")
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
     fitting, leaf energy balance using Penman-Monteith, Cowan-Farquhar
     optimization, unit conversions.
-URL: https://www.bitbucket.org/remkoduursma/plantecophys 
+URL: https://www.bitbucket.org/remkoduursma/plantecophys
 BugReports: https://www.bitbucket.org/remkoduursma/plantecophys/issues
-Suggests: nlstools
+Suggests:
+    nlstools
 License: GPL
 LazyData: yes
+RoxygenNote: 5.0.1
