@@ -113,7 +113,7 @@ fitaci <- function(data,
       val <- eval(m[[extrapars[i]]])
       formals(Photosyn)[extrapars[i]] <- val
     } else {
-      warning("Parameter ", extrapars[i]," not recognized.")
+      Warning("Parameter ", extrapars[i]," not recognized.")
     }
   }
   photpars <- formals(Photosyn)
@@ -123,13 +123,13 @@ fitaci <- function(data,
   # Check if PAR is provided
   if(!varnames$PPFD %in% names(data)){
     data$PPFD <- 1800
-    if(!quiet)warning("PARi not in dataset; assumed PARi = 1800.")
+    if(!quiet)Warning("PARi not in dataset; assumed PARi = 1800.")
   } else data$PPFD <- data[,varnames$PPFD]
   
   # Check if Tleaf is provided
   if(!varnames$Tleaf %in% names(data)){
     data$Tleaf <- 25
-    if(!quiet)warning("Tleaf not in dataset; assumed Tleaf = 25.")
+    if(!quiet)Warning("Tleaf not in dataset; assumed Tleaf = 25.")
   } else {
     data$Tleaf <- data[,varnames$Tleaf]
   }
@@ -143,15 +143,15 @@ fitaci <- function(data,
       Rd_meas <- data[,varnames$Rd]
       Rd_meas <- unique(Rd_meas)
       if(length(Rd_meas) > 1)
-        stop("If Rd provided as measured, it must be a single unique value for an A-Ci curve.")
+        Stop("If Rd provided as measured, it must be a single unique value for an A-Ci curve.")
       
       if(Rd_meas < 0)Rd_meas <- -Rd_meas
       haveRd <- TRUE
       
-      if(!is.null(citransition))stop("At the moment cannot provide citransition as well as measured Rd.")
+      if(!is.null(citransition))Stop("At the moment cannot provide citransition as well as measured Rd.")
     }
     if(varnames$Rd %in% names(data) && !useRd){
-      warning("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
+      Warning("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
     }
   }
   
@@ -172,13 +172,14 @@ fitaci <- function(data,
     if(returnwhat == "Aj")return(r$Aj - r$Rd)
   }
   
-  # Guess Jmax from max A, T-corrected gammastar
+  # Guess Rd (starting value)
   if(haveRd){
     Rd_guess <- Rd_meas
   } else {
     Rd_guess <- 1.5
   }
   
+  # Guess Jmax from max A, T-corrected gammastar (starting value)
   maxCi <- max(data$Ci)
   mi <- which.max(data$Ci)
   maxPhoto <- data$ALEAF[mi]

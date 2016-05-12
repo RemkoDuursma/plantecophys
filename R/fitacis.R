@@ -67,7 +67,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
   what <- match.arg(what)
   
   if(how == "manyplots"){
-    if(add)warning("Argument 'add' ignored when making multiple plots.")  
+    if(add)Warning("Argument 'add' ignored when making multiple plots.")  
     
     for(i in seq_along(x)){
       plot.acifit(x[[i]],main=names(x)[i],...)
