@@ -399,7 +399,7 @@ Photosyn <- function(VPD=1.5,
     }
     
     # Extra step here; GS can be negative
-    if(GS < g0)GS <- g0
+    GS[GS < g0] <- g0
     
     # Output conductance to H2O
     if(!inputGS){
