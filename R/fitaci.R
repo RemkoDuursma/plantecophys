@@ -97,7 +97,9 @@ fitaci <- function(data,
                    Patm=100,
                    citransition=NULL,
                    quiet=FALSE, startValgrid=TRUE, 
-                   algorithm="default", useRd=FALSE,
+                   fitmethod=c("default","gulike"),
+                   algorithm="default", 
+                   useRd=FALSE,
                    PPFD=NULL,
                    Tleaf=NULL,
                    
@@ -115,7 +117,7 @@ fitaci <- function(data,
                    Km = NULL,
                    ...){
   
-  
+  fitmethod <- match.arg(fitmethod)
   gstarinput <- !is.null(GammaStar)
   kminput <- !is.null(Km)
   if(is.null(gmeso))gmeso <- -999  # cannot pass NULL value to nls
@@ -145,39 +147,56 @@ fitaci <- function(data,
   TcorrectVJ <- Tcorrect
   
   # Choose method (to be refined)
-  if(is.null(citransition)){
-    f <- do_fit_method1(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm,
-                        alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
-  } else {
-    f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
-                        alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
+  if(fitmethod == "default"){
+    if(is.null(citransition)){
+      f <- do_fit_method1(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm,
+                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
+    } else {
+      f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
+                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
+    }
   }
-    
+  
+  if(fitmethod == "gulike"){
 
-  # Using fitted coefficients, get predictions from model.
-  acirun <- Photosyn(Ci=data$Ci, 
-                     Vcmax=f$pars[1], Jmax=f$pars[2], Rd=f$pars[3], 
-                     PPFD=data$PPFD, 
-                     Tleaf=data$Tleaf,
-                     Patm=Patm,
-                     Tcorrect=Tcorrect,
-                     alpha=alpha,theta=theta,
-                     gmeso=gmeso,EaV=EaV,
-                     EdVC=EdVC,delsC=delsC,
-                     EaJ=EaJ,EdVJ=EdVJ,
-                     delsJ=delsJ)
+    if(!is.null(citransition) && !quiet)Warning("citransition ignored when using gulike fitmethod.")
+
+    ci <- data$Ci
+    nci <- length(data$Ci)
+    citransitions <- diff(ci)/2 + ci[-nci]
+
+    # at least two on each side, so delete first and last
+    citransitions <- citransitions[-c(1,nci-1)]
+    
+    fs <- list()
+    runs <- list()
+    
+    for(i in seq_along(citransitions)){
+
+      fs[[i]] <- do_fit_method3(data, haveRd, Rd_meas, Patm, citransitions[i], Tcorrect, algorithm,
+                                 alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                                GammaStar, Km)
+
+      runs[[i]] <- do_acirun(data,fs[[i]],Patm,Tcorrect,
+                             alpha=alpha,theta=theta,
+                             gmeso=gmeso,EaV=EaV,
+                             EdVC=EdVC,delsC=delsC,
+                             EaJ=EaJ,EdVJ=EdVJ,
+                             delsJ=delsJ)
+      
+    }
+    return(list(fs=fs, runs=runs))
+      
+  }
   
-  acirun$Ameas <- data$ALEAF
-  acirun$ELEAF <- NULL
-  acirun$GS <- NULL
-  acirun$Ca <- NULL
-  acirun$Ci_original <- data$Ci_original
-  names(acirun)[names(acirun) == "ALEAF"] <- "Amodel"
-  
-  # shuffle
-  avars <- match(c("Ci","Ameas","Amodel"),names(acirun))
-  acirun <- acirun[,c(avars, setdiff(1:ncol(acirun), avars))]
-  
+  # Only used to add 'Amodel' to the output
+  acirun <- do_acirun(data,f,Patm,Tcorrect,
+                      alpha=alpha,theta=theta,
+                      gmeso=gmeso,EaV=EaV,
+                      EdVC=EdVC,delsC=delsC,
+                      EaJ=EaJ,EdVJ=EdVJ,
+                      delsJ=delsJ)
+
   # Organize output
   l <- list()  
   l$df <- acirun[order(acirun$Ci),]
@@ -656,6 +675,62 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   return(list(pars=pars, fit=nlsfit))      
 }
 
+
+do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
+                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                           GammaStar, Km){
+  
+  
+  ppar <- Photosyn(Tleaf=data$Tleaf, Patm=Patm, Tcorrect=Tcorrect,
+                   alpha=alpha,theta=theta,
+                   gmeso=gmeso,EaV=EaV,
+                   EdVC=EdVC,delsC=delsC,
+                   EaJ=EaJ,EdVJ=EdVJ,
+                   delsJ=delsJ,
+                   returnParsOnly=TRUE)
+  if(!is.null(GammaStar))ppar$GammaStar <- GammaStar
+  if(!is.null(Km))ppar$Km <- Km
+  
+  
+  # Linearize
+  if(Tcorrect){
+    data$vcmax_pred <- TVcmax(data$Tleaf,EaV, delsC, EdVC) * (data$Ci - ppar$GammaStar)/(data$Ci + ppar$Km)
+  } else {
+    data$vcmax_pred <- (data$Ci - ppar$GammaStar)/(data$Ci + ppar$Km)
+  }
+  
+  # Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
+  # Aj <- VJ * (CIJ - GammaStar)/(CIJ + 2*GammaStar)
+  
+  # Vcmax
+  datv <- data[data$Ci < citransition,]
+  if(nrow(datv) == 0)Stop("No data for Vcmax - use higher citransition")
+  fitv <- lm(ALEAF ~ vcmax_pred, data=datv)
+  
+  Rd_fit <- coef(fitv)[[1]]
+  Vcmax_fit <- coef(fitv)[[2]]
+  
+  if(Tcorrect){
+    data$Jmax_pred <- 0.25*TJmax(data$Tleaf, EaJ, delsJ, EdVJ) * 
+                        Jfun(data$PPFD, alpha, 1, theta) * 
+                        (data$Ci - ppar$GammaStar)/(data$Ci + 2*ppar$GammaStar)
+  } else {
+    data$Jmax_pred <- 0.25*Jfun(data$PPFD, alpha, 1, theta) * 
+                    (data$Ci - ppar$GammaStar)/(data$Ci + 2*ppar$GammaStar)
+  }
+  data$Aleaf_gross <- data$ALEAF + Rd_fit
+  
+  # Jmax
+  datj <- data[data$Ci > citransition,]
+  if(nrow(datj) == 0)Stop("No data for Jmax - use lower citransition")
+  fitj <- lm(Aleaf_gross ~ Jmax_pred-1, data=datj)
+  Jmax_fit <- coef(fitj)[[1]]
+  browser()
+  
+return(list(pars=c(Vcmax=Vcmax_fit, Jmax=Jmax_fit, Rd=-Rd_fit), fit=list(fitj=fitj, fitv=fitv)))
+}
+
+
 # Wrapper around Photosyn; this wrapper will be sent to nls. 
 acifun_wrap <- function(Ci,..., TcorrectVJ, returnwhat="ALEAF"){
   r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,...)
@@ -663,4 +738,31 @@ acifun_wrap <- function(Ci,..., TcorrectVJ, returnwhat="ALEAF"){
   if(returnwhat == "Ac")return(r$Ac - r$Rd)
   if(returnwhat == "Aj")return(r$Aj - r$Rd)
 }
+
+
+# Using fitted coefficients, get predictions from model.
+do_acirun <- function(data,f,Patm,Tcorrect,...){
+  
+  acirun <- Photosyn(Ci=data$Ci, 
+                     Vcmax=unname(f$pars[1]), Jmax=unname(f$pars[2]), 
+                     Rd=unname(f$pars[3]), 
+                     PPFD=data$PPFD, 
+                     Tleaf=data$Tleaf,
+                     Patm=Patm,
+                     Tcorrect=Tcorrect,...)
+  
+  acirun$Ameas <- data$ALEAF
+  acirun$ELEAF <- NULL
+  acirun$GS <- NULL
+  acirun$Ca <- NULL
+  acirun$Ci_original <- data$Ci_original
+  names(acirun)[names(acirun) == "ALEAF"] <- "Amodel"
+  
+  # shuffle
+  avars <- match(c("Ci","Ameas","Amodel"),names(acirun))
+  acirun <- acirun[,c(avars, setdiff(1:ncol(acirun), avars))]
+  
+  return(acirun)
+}
+
 

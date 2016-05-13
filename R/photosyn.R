@@ -191,12 +191,6 @@ Photosyn <- function(VPD=1.5,
   Rgas <- .Rgas()
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
   
-  #---- Functions
-  # Non-rectangular hyperbola
-  Jfun <- function(PPFD, alpha, Jmax, theta){
-    (alpha*PPFD + Jmax - 
-       sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
-  }
   
   #---- Do all calculations that can be vectorized
   
@@ -435,6 +429,14 @@ return(df)
 #'@export
 #'@rdname Photosyn
 Aci <- function(Ci,...)Photosyn(Ci=Ci,...)
+
+
+
+# Non-rectangular hyperbola
+Jfun <- function(PPFD, alpha, Jmax, theta){
+  (alpha*PPFD + Jmax - 
+     sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
+}
 
 
 
