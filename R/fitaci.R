@@ -97,233 +97,69 @@ fitaci <- function(data,
                    Patm=100,
                    citransition=NULL,
                    quiet=FALSE, startValgrid=TRUE, 
-                   algorithm="default", useRd=FALSE,  ...){
+                   algorithm="default", useRd=FALSE,
+                   PPFD=NULL,
+                   Tleaf=NULL,
+                   alpha=0.24,
+                   theta=0.85,
+                   gmeso=NULL,
+                   Rd0 = 0.92,
+                   Q10 = 1.92,
+                   Rd=NULL,
+                   TrefR = 25,
+                   Rdayfrac = 1.0,
+                   EaV = 82620.87,
+                   EdVC = 0,
+                   delsC = 645.1013,
+                   
+                   EaJ = 39676.89,
+                   EdVJ = 200000,
+                   delsJ = 641.3615,
+                   
+                   GammaStar = NULL,
+                   Km = NULL,
+                   ...){
+  
+  
+  gstarinput <- !is.null(GammaStar)
+  kminput <- !is.null(Km)
   
   # Make sure data is a dataframe; stuff returned by dplyr is no good
   data <- as.data.frame(data)
   
-  # Set extra parameters if provided
-  m <- as.list(match.call())
-  a <- as.list(formals(fitaci))
-  f <- names(formals(Photosyn))
+  # no more extra parameters allowed 
+  #chkDots(...)   # depends on R 3.3.0, so wait for it...
   
-  extrapars <- setdiff(names(m), c(names(a),""))
-  for(i in seq_along(extrapars)){
-    if(extrapars[i] %in% f){
-      val <- eval(m[[extrapars[i]]])
-      formals(Photosyn)[extrapars[i]] <- val
-    } else {
-      Warning("Parameter ", extrapars[i]," not recognized.")
-    }
-  }
-  photpars <- formals(Photosyn)
-  removevars <- c("whichA")
-  photpars <- photpars[-which(names(photpars) %in% removevars)]
+  # Add PPFD and Tleaf to data, if needed (uses default values, or input values)
+  data <- set_PPFD(varnames, data, PPFD, quiet)
+  data <- set_Tleaf(varnames, data, Tleaf, quiet)
   
-  # Check if PAR is provided
-  if(!varnames$PPFD %in% names(data)){
-    data$PPFD <- 1800
-    if(!quiet)Warning("PARi not in dataset; assumed PARi = 1800.")
-  } else data$PPFD <- data[,varnames$PPFD]
-  
-  # Check if Tleaf is provided
-  if(!varnames$Tleaf %in% names(data)){
-    data$Tleaf <- 25
-    if(!quiet)Warning("Tleaf not in dataset; assumed Tleaf = 25.")
-  } else {
-    data$Tleaf <- data[,varnames$Tleaf]
-  }
-  
-  # Check if Rd is provided and whether we want to set it as known.
-  haveRd <- FALSE
-  if(!is.null(varnames$Rd)){ # to avoid breakage with older versions when varnames provided.
-    if(varnames$Rd %in% names(data) && useRd){
-      
-      # Has to be a single unique value for this dataset
-      Rd_meas <- data[,varnames$Rd]
-      Rd_meas <- unique(Rd_meas)
-      if(length(Rd_meas) > 1)
-        Stop("If Rd provided as measured, it must be a single unique value for an A-Ci curve.")
-      
-      if(Rd_meas < 0)Rd_meas <- -Rd_meas
-      haveRd <- TRUE
-      
-      if(!is.null(citransition))Stop("At the moment cannot provide citransition as well as measured Rd.")
-    }
-    if(varnames$Rd %in% names(data) && !useRd){
-      Warning("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
-    }
-  }
+  # Set measured Rd if provided (or warn when provided but not used)
+  Rd_meas <- set_Rdmeas(varnames, data, useRd, citransition)
+  haveRd <- !is.na(Rd_meas)
   
   # Extract Ci and apply pressure correction
   data$Ci_original <- data[,varnames$Ci]
   data$Ci <- data[,varnames$Ci] * Patm/100
   
+  # Extract measured net leaf photosynthesis
   data$ALEAF <- data[,varnames$ALEAF]
   
   # Needed to avoid apparent recursion below.
   TcorrectVJ <- Tcorrect
   
-  # Wrapper around Photosyn; this wrapper will be sent to nls. 
-  acifun_wrap <- function(Ci,..., returnwhat="ALEAF"){
-    r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,...)
-    if(returnwhat == "ALEAF")return(r$ALEAF)
-    if(returnwhat == "Ac")return(r$Ac - r$Rd)
-    if(returnwhat == "Aj")return(r$Aj - r$Rd)
-  }
-  
-  # Guess Rd (starting value)
-  if(haveRd){
-    Rd_guess <- Rd_meas
-  } else {
-    Rd_guess <- 1.5
-  }
-  
-  # Guess Jmax from max A, T-corrected gammastar (starting value)
-  maxCi <- max(data$Ci)
-  mi <- which.max(data$Ci)
-  maxPhoto <- data$ALEAF[mi]
-  Tl <- data$Tleaf[mi]
-  gammastar <- TGammaStar(Tl,Patm)
-  VJ <- (maxPhoto+Rd_guess) / ((maxCi - gammastar) / (maxCi + 2*gammastar))
-  Jmax_guess <- VJ*4
-  if(Tcorrect){
-    Teffect <- TJmax(Tl,  EaJ=39676.89, delsJ=641.3615, EdVJ=200000)
-    Jmax_guess <- Jmax_guess / Teffect
-  }
-  
-  # Guess Vcmax, from section of curve that is definitely Vcmax-limited
-  dato <- data[data$Ci < 150 & data$Ci > 60 & data$ALEAF > 0,]
-  if(nrow(dato) > 0){
-    Km <- TKm(dato$Tleaf,Patm)
-    gammastar <- TGammaStar(dato$Tleaf,Patm)
-    vcmax <- with(dato, (ALEAF + Rd_guess) / ((Ci - gammastar)/(Ci + Km)))
-    Vcmax_guess <- median(vcmax)
-  } else {
-    Vcmax_guess <- Jmax_guess/1.8 
-  }
-  if(Tcorrect){
-    Teffect <- TVcmax(Tl, EaV=82620.87, delsC=645.1013, EdVC=0)
-    Vcmax_guess <- Vcmax_guess / Teffect
-  }
-  
-  # Fine-tune starting values; try grid of values around initial estimates.
-  if(startValgrid){
-    if(!haveRd){
-      aciSS <- function(Vcmax, Jmax, Rd){
-        Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
-                                 Vcmax=Vcmax, Jmax=Jmax, 
-                                 Rd=Rd, Tleaf=data$Tleaf, Patm=Patm)
-        
-        SS <- sum((data$ALEAF - Photo_mod)^2)
-        return(SS)
-      }
-      d <- 0.3
-      n <- 20
-      gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
-                        Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
+  # Choose method (to be refined)
+  if(is.null(citransition))
+    f <- do_fit_method1(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm)
+  else
+    f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm)
     
-      m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
-      ii <- which.min(m)
-      Vcmax_guess <- gg$Vcmax[ii]
-      Rd_guess <- gg$Rd[ii]
-    } else {
-      
-      aciSS <- function(Vcmax, Jmax, Rd){
-        Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
-                                 Vcmax=Vcmax, Jmax=Jmax, 
-                                 Rd=Rd, Tleaf=data$Tleaf, Patm=Patm)
-        SS <- sum((data$ALEAF - Photo_mod)^2)
-        return(SS)
-      }
-      d <- 0.3
-      n <- 20
-      gg <- data.frame(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n))
-      
-      m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd_meas))
-      ii <- which.min(m)
-      Vcmax_guess <- gg$Vcmax[ii]
-      # Rd_guess already set to Rd_meas above
-      
-    }
-    
-  }
-  
-  # Fit curve.
-  if(is.null(citransition)){
-    
-    if(!haveRd){
-      nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                        Jmax=Jmax, Rd=Rd, Tleaf=Tleaf, Patm=Patm),
-                      algorithm=algorithm,
-                      data=data, control=nls.control(maxiter=500, minFactor=1/10000),
-                      start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
-      p <- coef(nlsfit)
-      pars <- summary(nlsfit)$coefficients[,1:2]
-    } else {
-      
-      nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                        Jmax=Jmax, Rd=Rd_meas, Tleaf=Tleaf, Patm=Patm),
-                    algorithm=algorithm,
-                    data=data, control=nls.control(maxiter=500, minFactor=1/10000),
-                    start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess))
-      p <- coef(nlsfit)
-      p[[3]] <- Rd_meas
-      names(p)[3] <- "Rd"
-      
-      pars <- summary(nlsfit)$coefficients[,1:2]
-      pars <- rbind(pars, c(Rd_meas, NA))
-      rownames(pars)[3] <- "Rd"
-    }
-    
-    
-    
-  } else {
-    
-    # If citransition provided, fit twice.
-    dat_vcmax <- data[data$Ci < citransition,]
-    dat_jmax <- data[data$Ci >= citransition,]
-    
-    if(nrow(dat_vcmax) > 0){
-      nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                        Jmax=10000, Rd=Rd, Tleaf=Tleaf, Patm=Patm, returnwhat="Ac"),
-                    algorithm=algorithm,
-                    data=dat_vcmax, control=nls.control(maxiter=500, minFactor=1/10000),
-                    start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
-      p1 <- coef(nlsfit_vcmax)
-    } else {
-      nlsfit_vcmax <- NULL
-      p1 <- c(Vcmax=NA, Rd=NA)
-    }
-    
-    # Don't re-estimate Rd; it is better estimated from the Vcmax-limited region.
-    Rd_vcmaxguess <- if(!is.null(nlsfit_vcmax))coef(nlsfit_vcmax)[["Rd"]] else 1.5
-    
-    if(nrow(dat_jmax) > 0){
-      nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
-                                        Jmax=Jmax, Rd=Rd_vcmaxguess, 
-                                        Tleaf=Tleaf, Patm=Patm, returnwhat="Aj"),
-                    algorithm=algorithm,
-                    data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
-                    start=list(Jmax=Jmax_guess))
-      p2 <- coef(nlsfit_jmax)
-    } else { 
-      nlsfit_jmax <- NULL
-      p2 <- c(Jmax=NA)
-    }
-    
-    p <- c(p1[1],p2,p1[2])
-    pars1 <- if(!is.null(nlsfit_vcmax))summary(nlsfit_vcmax)$coefficients[,1:2] else matrix(rep(NA,4),ncol=2)
-    pars2 <- if(!is.null(nlsfit_jmax))summary(nlsfit_jmax)$coefficients[,1:2] else matrix(rep(NA,2),ncol=2)
-    pars <- rbind(pars1[1,],pars2,pars1[2,])
-    rownames(pars) <- c("Vcmax","Jmax","Rd")
-    nlsfit <- list(nlsfit_vcmax=nlsfit_vcmax,nlsfit_jmax=nlsfit_jmax)
-  }
+
   
   
   # Using fitted coefficients, get predictions from model.
   acirun <- Photosyn(Ci=data$Ci, 
-                     Vcmax=p[[1]], Jmax=p[[2]], Rd=p[[3]], 
+                     Vcmax=f$pars[1], Jmax=f$pars[2], Rd=f$pars[3], 
                      PPFD=data$PPFD, 
                      Tleaf=data$Tleaf,
                      Patm=Patm,
@@ -343,8 +179,8 @@ fitaci <- function(data,
   # Organize output
   l <- list()  
   l$df <- acirun[order(acirun$Ci),]
-  l$pars <- pars
-  l$nlsfit <- nlsfit
+  l$pars <- f$pars
+  l$nlsfit <- f$fit
   l$Tcorrect <- Tcorrect
   
   # Save function itself, the formals contain the parameters used to fit the A-Ci curve.
@@ -361,26 +197,13 @@ fitaci <- function(data,
   # Store Ci at which photosynthesis transitions from Jmax to Vcmax limitation
   l$Ci_transition <- findCiTransition(l$Photosyn)
   
-  l$Vcmax_guess <- Vcmax_guess
-  l$Jmax_guess <- Jmax_guess
-  l$Rd_guess <- Rd_guess
   l$Rd_measured <- haveRd
   
-  # Store GammaStar and Km
-  if("GammaStar" %in% extrapars) {
-    l$GammaStar <- formals(Photosyn)$GammaStar
-    l$gstarinput <- TRUE
-  } else {
-    l$GammaStar <- TGammaStar(mean(data$Tleaf),Patm)
-    l$gstarinput <- FALSE
-  }
-  if("Km" %in% extrapars){
-    l$Km <- formals(Photosyn)$Km
-    l$kminput <- TRUE
-  } else {
-    l$Km <- TKm(mean(data$Tleaf),Patm)
-    l$kminput <- FALSE
-  }
+  # !!!!!
+  l$GammaStar <- GammaStar
+  l$gstarinput <- gstarinput
+  l$Km <- Km
+  l$kminput <- kminput
   
   class(l) <- "acifit"
   
@@ -532,3 +355,264 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
   }
   
 }
+
+
+
+
+#-- Component functions of fitaci
+
+guess_Jmax <- function(data, Rd_guess, Patm, Tcorrect){
+  
+  # Guess Jmax from max A, T-corrected gammastar (starting value)
+  maxCi <- max(data$Ci)
+  mi <- which.max(data$Ci)
+
+  maxPhoto <- data$ALEAF[mi]
+
+  Tl <- data$Tleaf[mi]
+  gammastar <- TGammaStar(Tl,Patm)
+  VJ <- (maxPhoto+Rd_guess) / ((maxCi - gammastar) / (maxCi + 2*gammastar))
+  Jmax_guess <- VJ*4
+  if(Tcorrect){
+    Teffect <- TJmax(Tl,  EaJ=39676.89, delsJ=641.3615, EdVJ=200000)
+    Jmax_guess <- Jmax_guess / Teffect
+  }
+  
+  return(Jmax_guess)
+}
+
+
+
+guess_Vcmax <- function(data, Rd_guess, Patm, Tcorrect){
+  # Guess Vcmax, from section of curve that is definitely Vcmax-limited
+  dato <- data[data$Ci < 150 & data$Ci > 60 & data$ALEAF > 0,]
+  if(nrow(dato) > 0){
+    Km <- TKm(dato$Tleaf,Patm)
+    gammastar <- TGammaStar(dato$Tleaf,Patm)
+    vcmax <- with(dato, (ALEAF + Rd_guess) / ((Ci - gammastar)/(Ci + Km)))
+    Vcmax_guess <- median(vcmax)
+  } else {
+    Vcmax_guess <- Jmax_guess/1.8 
+  }
+  if(Tcorrect){
+    Teffect <- TVcmax(mean(dato$Tleaf), EaV=82620.87, delsC=645.1013, EdVC=0)
+    Vcmax_guess <- Vcmax_guess / Teffect
+  }
+  return(Vcmax_guess)
+}
+
+
+guess_Rd <- function(haveRd, Rd_meas, default=1.5){
+  if(haveRd){
+    Rd_guess <- Rd_meas
+  } else {
+    Rd_guess <- default
+  }  
+  return(Rd_guess)
+}
+
+set_PPFD <- function(varnames, data, PPFD, quiet){
+  
+  if(!varnames$PPFD %in% names(data) & is.null(PPFD)){
+    data$PPFD <- 1800
+    if(!quiet)Warning("PARi not in dataset; assumed PARi = 1800.")
+  } else {
+    if(!is.null(PPFD))
+      data$PPFD <- PPFD
+    else
+      data$PPFD <- data[,varnames$PPFD]
+  }
+  return(data)
+}
+
+
+
+set_Tleaf <- function(varnames, data, Tleaf, quiet){
+  # Check if Tleaf is provided
+  if(!varnames$Tleaf %in% names(data) & is.null(Tleaf)){
+    data$Tleaf <- 25
+    if(!quiet)Warning("Tleaf not in dataset; assumed Tleaf = 25.")
+  } else {
+    if(!is.null(Tleaf))
+      data$Tleaf <- Tleaf
+    else
+      data$Tleaf <- data[,varnames$Tleaf]
+  }
+return(data)
+}
+
+
+
+# Check if Rd is provided and whether we want to set it as known.
+set_Rdmeas <- function(varnames, data, useRd, citransition){
+  
+  Rd_meas <- NA
+  if(!is.null(varnames$Rd)){ # to avoid breakage with older versions when varnames provided.
+    if(varnames$Rd %in% names(data) && useRd){
+      
+      # Has to be a single unique value for this dataset
+      Rd_meas <- data[,varnames$Rd]
+      Rd_meas <- unique(Rd_meas)
+      if(length(Rd_meas) > 1)
+        Stop("If Rd provided as measured, it must be a single unique value for an A-Ci curve.")
+      
+      if(Rd_meas < 0)Rd_meas <- -Rd_meas
+      haveRd <- TRUE
+      
+      if(!is.null(citransition))Stop("At the moment cannot provide citransition as well as measured Rd.")
+    }
+    if(varnames$Rd %in% names(data) && !useRd){
+      if(!quiet)Warning("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
+    }
+  }
+  return(Rd_meas)
+}
+
+
+
+
+
+do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm){
+  
+  # Guess Rd (starting value)
+  Rd_guess <- guess_Rd(haveRd, Rd_meas)
+  Jmax_guess <- guess_Jmax(data, Rd_guess, Patm, Tcorrect)
+  Vcmax_guess <- guess_Vcmax(data,Rd_guess, Patm, Tcorrect)
+  
+  # Fine-tune starting values; try grid of values around initial estimates.
+  if(startValgrid){
+    if(!haveRd){
+      aciSS <- function(Vcmax, Jmax, Rd){
+        Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
+                                 Vcmax=Vcmax, Jmax=Jmax, 
+                                 Rd=Rd, Tleaf=data$Tleaf, Patm=Patm,
+                                 TcorrectVJ=Tcorrect)
+        
+        SS <- sum((data$ALEAF - Photo_mod)^2)
+        return(SS)
+      }
+      d <- 0.4
+      n <- 25
+      gg <- expand.grid(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n),
+                        Rd=seq(Rd_guess*(1-d),Rd_guess*(1+d),length=n))
+      
+      m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd))
+      ii <- which.min(m)
+      Vcmax_guess <- gg$Vcmax[ii]
+      Rd_guess <- gg$Rd[ii]
+      
+    } else {
+      
+      aciSS <- function(Vcmax, Jmax, Rd){
+        Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
+                                 Vcmax=Vcmax, Jmax=Jmax, 
+                                 Rd=Rd, Tleaf=data$Tleaf, Patm=Patm,
+                                 TcorrectVJ=Tcorrect)
+        SS <- sum((data$ALEAF - Photo_mod)^2)
+        return(SS)
+      }
+      d <- 0.3
+      n <- 20
+      gg <- data.frame(Vcmax=seq(Vcmax_guess*(1-d),Vcmax_guess*(1+d),length=n))
+      
+      m <- with(gg, mapply(aciSS, Vcmax=Vcmax, Jmax=Jmax_guess, Rd=Rd_meas))
+      ii <- which.min(m)
+      Vcmax_guess <- gg$Vcmax[ii]
+      
+    }
+    
+  }
+  
+  if(!haveRd){
+    # Fit Vcmax, Jmax and Rd
+    nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                      Jmax=Jmax, Rd=Rd, Tleaf=Tleaf, Patm=Patm,
+                                      TcorrectVJ=Tcorrect),
+                  algorithm=algorithm,
+                  data=data, control=nls.control(maxiter=500, minFactor=1/10000),
+                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
+    p <- coef(nlsfit)
+    pars <- summary(nlsfit)$coefficients[,1:2]
+  } else {
+    
+    # Fit Vcmax and Jmax
+    nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                      Jmax=Jmax, Rd=Rd_meas, Tleaf=Tleaf, Patm=Patm,
+                                      TcorrectVJ=Tcorrect),
+                  algorithm=algorithm,
+                  data=data, control=nls.control(maxiter=500, minFactor=1/10000),
+                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess))
+    p <- coef(nlsfit)
+    p[[3]] <- Rd_meas
+    names(p)[3] <- "Rd"
+    
+    pars <- summary(nlsfit)$coefficients[,1:2]
+    pars <- rbind(pars, c(Rd_meas, NA))
+    rownames(pars)[3] <- "Rd"
+  }
+  
+  
+  return(list(pars=pars, fit=nlsfit))
+}
+
+
+
+do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm){
+  
+  # Guess Rd (starting value)
+  Rd_guess <- guess_Rd(haveRd, Rd_meas)
+  Jmax_guess <- guess_Jmax(data, Rd_guess, Patm, Tcorrect)
+  Vcmax_guess <- guess_Vcmax(data,Rd_guess, Patm, Tcorrect)
+  
+  # If citransition provided, fit twice.
+  dat_vcmax <- data[data$Ci < citransition,]
+  dat_jmax <- data[data$Ci >= citransition,]
+  
+  if(nrow(dat_vcmax) > 0){
+    nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+                                            Jmax=10000, Rd=Rd, Tleaf=Tleaf, Patm=Patm, returnwhat="Ac",
+                                            TcorrectVJ=Tcorrect),
+                        algorithm=algorithm,
+                        data=dat_vcmax, control=nls.control(maxiter=500, minFactor=1/10000),
+                        start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
+    p1 <- coef(nlsfit_vcmax)
+  } else {
+    nlsfit_vcmax <- NULL
+    p1 <- c(Vcmax=NA, Rd=NA)
+  }
+  
+  # Don't re-estimate Rd; it is better estimated from the Vcmax-limited region.
+  Rd_vcmaxguess <- if(!is.null(nlsfit_vcmax))coef(nlsfit_vcmax)[["Rd"]] else 1.5
+  
+  if(nrow(dat_jmax) > 0){
+    nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
+                                           Jmax=Jmax, Rd=Rd_vcmaxguess, 
+                                           Tleaf=Tleaf, Patm=Patm, returnwhat="Aj",
+                                           TcorrectVJ=Tcorrect),
+                       algorithm=algorithm,
+                       data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
+                       start=list(Jmax=Jmax_guess))
+    p2 <- coef(nlsfit_jmax)
+  } else { 
+    nlsfit_jmax <- NULL
+    p2 <- c(Jmax=NA)
+  }
+  
+  p <- c(p1[1],p2,p1[2])
+  pars1 <- if(!is.null(nlsfit_vcmax))summary(nlsfit_vcmax)$coefficients[,1:2] else matrix(rep(NA,4),ncol=2)
+  pars2 <- if(!is.null(nlsfit_jmax))summary(nlsfit_jmax)$coefficients[,1:2] else matrix(rep(NA,2),ncol=2)
+  pars <- rbind(pars1[1,],pars2,pars1[2,])
+  rownames(pars) <- c("Vcmax","Jmax","Rd")
+  nlsfit <- list(nlsfit_vcmax=nlsfit_vcmax,nlsfit_jmax=nlsfit_jmax)
+  
+  return(list(pars=pars, fit=nlsfit))      
+}
+
+# Wrapper around Photosyn; this wrapper will be sent to nls. 
+acifun_wrap <- function(Ci,..., TcorrectVJ, returnwhat="ALEAF"){
+  r <- Photosyn(Ci=Ci,Tcorrect=TcorrectVJ,...)
+  if(returnwhat == "ALEAF")return(r$ALEAF)
+  if(returnwhat == "Ac")return(r$Ac - r$Rd)
+  if(returnwhat == "Aj")return(r$Aj - r$Rd)
+}
+

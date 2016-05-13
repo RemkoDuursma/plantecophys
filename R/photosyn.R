@@ -221,14 +221,14 @@ Photosyn <- function(VPD=1.5,
     Jmax <- Jmax * TJmax(Tleaf, EaJ, delsJ, EdVJ)
   }
   
-  #--- Stop here if only the parameters are required
-  if(returnParsOnly){
-    return(list(Vcmax=Vcmax, Jmax=Jmax, Km=Km, GammaStar=GammaStar))
-  }
-  
   # Electron transport rate
   J <- Jfun(PPFD, alpha, Jmax, theta)
   VJ <- J/4
+  
+  #--- Stop here if only the parameters are required
+  if(returnParsOnly){
+    return(list(Vcmax=Vcmax, Jmax=Jmax, Km=Km, GammaStar=GammaStar, VJ=VJ))
+  }
   
   # Medlyn et al. 2011 model gs/A. NOTE: 1.6 not here because we need GCO2!
   if(gsmodel == "BBOpti"){
@@ -398,6 +398,9 @@ Photosyn <- function(VPD=1.5,
       if(whichA == "Ac")GS <- (Ac-Rd)/(Ca - Ci)
     }
 
+    # Extra step here; GS can be negative
+    GS[GS < g0] <- g0
+    
     # Output conductance to H2O
     if(!inputGS){
       GS <- GS*GCtoGW
