@@ -397,7 +397,10 @@ Photosyn <- function(VPD=1.5,
       if(whichA == "Aj")GS <- (Aj-Rd)/(Ca - Ci)
       if(whichA == "Ac")GS <- (Ac-Rd)/(Ca - Ci)
     }
-
+    
+    # Extra step here; GS can be negative
+    if(GS < g0)GS <- g0
+    
     # Output conductance to H2O
     if(!inputGS){
       GS <- GS*GCtoGW
