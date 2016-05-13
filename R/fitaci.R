@@ -124,7 +124,7 @@ fitaci <- function(data,
   data <- as.data.frame(data)
   
   # no more extra parameters allowed 
-  #chkDots(...)   # depends on R 3.3.0, so wait for it...
+  if(exists("chkDots"))chkDots(...)   # depends on R 3.3.0, hence the check
   
   # Add PPFD and Tleaf to data, if needed (uses default values, or input values)
   data <- set_PPFD(varnames, data, PPFD, quiet)
@@ -154,15 +154,18 @@ fitaci <- function(data,
   }
     
 
-  
-  
   # Using fitted coefficients, get predictions from model.
   acirun <- Photosyn(Ci=data$Ci, 
                      Vcmax=f$pars[1], Jmax=f$pars[2], Rd=f$pars[3], 
                      PPFD=data$PPFD, 
                      Tleaf=data$Tleaf,
                      Patm=Patm,
-                     Tcorrect=Tcorrect)
+                     Tcorrect=Tcorrect,
+                     alpha=alpha,theta=theta,
+                     gmeso=gmeso,EaV=EaV,
+                     EdVC=EdVC,delsC=delsC,
+                     EaJ=EaJ,EdVJ=EdVJ,
+                     delsJ=delsJ)
   
   acirun$Ameas <- data$ALEAF
   acirun$ELEAF <- NULL
@@ -193,7 +196,7 @@ fitaci <- function(data,
   formals(Photosyn)$Tcorrect <- Tcorrect
   formals(Photosyn)$alpha <- alpha
   formals(Photosyn)$theta <- theta
-  formals(Photosyn)$gmeso <-gmeso
+  formals(Photosyn)$gmeso <- gmeso
   formals(Photosyn)$EaV <- EaV
   formals(Photosyn)$EdVC <- EdVC
   formals(Photosyn)$delsC <- delsC
