@@ -100,18 +100,13 @@ fitaci <- function(data,
                    algorithm="default", useRd=FALSE,
                    PPFD=NULL,
                    Tleaf=NULL,
+                   
                    alpha=0.24,
                    theta=0.85,
                    gmeso=NULL,
-                   Rd0 = 0.92,
-                   Q10 = 1.92,
-                   Rd=NULL,
-                   TrefR = 25,
-                   Rdayfrac = 1.0,
                    EaV = 82620.87,
                    EdVC = 0,
                    delsC = 645.1013,
-                   
                    EaJ = 39676.89,
                    EdVJ = 200000,
                    delsJ = 641.3615,
@@ -123,6 +118,7 @@ fitaci <- function(data,
   
   gstarinput <- !is.null(GammaStar)
   kminput <- !is.null(Km)
+  if(is.null(gmeso))gmeso <- -999  # cannot pass NULL value to nls
   
   # Make sure data is a dataframe; stuff returned by dplyr is no good
   data <- as.data.frame(data)
@@ -149,10 +145,13 @@ fitaci <- function(data,
   TcorrectVJ <- Tcorrect
   
   # Choose method (to be refined)
-  if(is.null(citransition))
-    f <- do_fit_method1(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm)
-  else
-    f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm)
+  if(is.null(citransition)){
+    f <- do_fit_method1(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm,
+                        alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
+  } else {
+    f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
+                        alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
+  }
     
 
   
@@ -192,18 +191,32 @@ fitaci <- function(data,
   formals(Photosyn)$Jmax <- l$pars[2]
   formals(Photosyn)$Rd <- l$pars[3]
   formals(Photosyn)$Tcorrect <- Tcorrect
+  formals(Photosyn)$alpha <- alpha
+  formals(Photosyn)$theta <- theta
+  formals(Photosyn)$gmeso <-gmeso
+  formals(Photosyn)$EaV <- EaV
+  formals(Photosyn)$EdVC <- EdVC
+  formals(Photosyn)$delsC <- delsC
+  formals(Photosyn)$EaJ <- EaJ
+  formals(Photosyn)$EdVJ <- EdVJ
+  formals(Photosyn)$delsJ <- delsJ
+  
+  if(gstarinput)formals(Photosyn)$GammaStar <- GammaStar
+  if(kminput)formals(Photosyn)$Km <- Km
+  
   l$Photosyn <- Photosyn
   
   # Store Ci at which photosynthesis transitions from Jmax to Vcmax limitation
   l$Ci_transition <- findCiTransition(l$Photosyn)
-  
   l$Rd_measured <- haveRd
   
-  # !!!!!
-  l$GammaStar <- GammaStar
-  l$gstarinput <- gstarinput
-  l$Km <- Km
+  # Save GammaStar and Km (either evaluated at mean temperature, or input if provided)
+  if(gstarinput)l$GammaStar <- GammaStar else l$GammaStar <- TGammaStar(mean(data$Tleaf),Patm)
+  if(kminput)l$Km <- Km else l$Km <- TKm(mean(data$Tleaf),Patm)
+  
+  
   l$kminput <- kminput
+  l$gstarinput <- gstarinput
   
   class(l) <- "acifit"
   
@@ -472,7 +485,8 @@ set_Rdmeas <- function(varnames, data, useRd, citransition){
 
 
 
-do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm){
+do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm,
+                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ){
   
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
@@ -486,7 +500,12 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgr
         Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
                                  Vcmax=Vcmax, Jmax=Jmax, 
                                  Rd=Rd, Tleaf=data$Tleaf, Patm=Patm,
-                                 TcorrectVJ=Tcorrect)
+                                 TcorrectVJ=Tcorrect,
+                                 alpha=alpha,theta=theta,
+                                 gmeso=gmeso,EaV=EaV,
+                                 EdVC=EdVC,delsC=delsC,
+                                 EaJ=EaJ,EdVJ=EdVJ,
+                                 delsJ=delsJ)
         
         SS <- sum((data$ALEAF - Photo_mod)^2)
         return(SS)
@@ -507,7 +526,12 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgr
         Photo_mod <- acifun_wrap(data$Ci, PPFD=data$PPFD, 
                                  Vcmax=Vcmax, Jmax=Jmax, 
                                  Rd=Rd, Tleaf=data$Tleaf, Patm=Patm,
-                                 TcorrectVJ=Tcorrect)
+                                 TcorrectVJ=Tcorrect,
+                                 alpha=alpha,theta=theta,
+                                 gmeso=gmeso,EaV=EaV,
+                                 EdVC=EdVC,delsC=delsC,
+                                 EaJ=EaJ,EdVJ=EdVJ,
+                                 delsJ=delsJ)
         SS <- sum((data$ALEAF - Photo_mod)^2)
         return(SS)
       }
@@ -527,7 +551,12 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgr
     # Fit Vcmax, Jmax and Rd
     nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                       Jmax=Jmax, Rd=Rd, Tleaf=Tleaf, Patm=Patm,
-                                      TcorrectVJ=Tcorrect),
+                                      TcorrectVJ=Tcorrect,
+                                      alpha=alpha,theta=theta,
+                                      gmeso=gmeso,EaV=EaV,
+                                      EdVC=EdVC,delsC=delsC,
+                                      EaJ=EaJ,EdVJ=EdVJ,
+                                      delsJ=delsJ),
                   algorithm=algorithm,
                   data=data, control=nls.control(maxiter=500, minFactor=1/10000),
                   start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
@@ -538,7 +567,12 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgr
     # Fit Vcmax and Jmax
     nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                       Jmax=Jmax, Rd=Rd_meas, Tleaf=Tleaf, Patm=Patm,
-                                      TcorrectVJ=Tcorrect),
+                                      TcorrectVJ=Tcorrect,
+                                      alpha=alpha,theta=theta,
+                                      gmeso=gmeso,EaV=EaV,
+                                      EdVC=EdVC,delsC=delsC,
+                                      EaJ=EaJ,EdVJ=EdVJ,
+                                      delsJ=delsJ),
                   algorithm=algorithm,
                   data=data, control=nls.control(maxiter=500, minFactor=1/10000),
                   start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess))
@@ -557,7 +591,8 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgr
 
 
 
-do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm){
+do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
+                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ){
   
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
@@ -571,7 +606,12 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   if(nrow(dat_vcmax) > 0){
     nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                             Jmax=10000, Rd=Rd, Tleaf=Tleaf, Patm=Patm, returnwhat="Ac",
-                                            TcorrectVJ=Tcorrect),
+                                            TcorrectVJ=Tcorrect,
+                                            alpha=alpha,theta=theta,
+                                            gmeso=gmeso,EaV=EaV,
+                                            EdVC=EdVC,delsC=delsC,
+                                            EaJ=EaJ,EdVJ=EdVJ,
+                                            delsJ=delsJ),
                         algorithm=algorithm,
                         data=dat_vcmax, control=nls.control(maxiter=500, minFactor=1/10000),
                         start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
@@ -588,7 +628,12 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
     nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
                                            Jmax=Jmax, Rd=Rd_vcmaxguess, 
                                            Tleaf=Tleaf, Patm=Patm, returnwhat="Aj",
-                                           TcorrectVJ=Tcorrect),
+                                           TcorrectVJ=Tcorrect,
+                                           alpha=alpha,theta=theta,
+                                           gmeso=gmeso,EaV=EaV,
+                                           EdVC=EdVC,delsC=delsC,
+                                           EaJ=EaJ,EdVJ=EdVJ,
+                                           delsJ=delsJ),
                        algorithm=algorithm,
                        data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
                        start=list(Jmax=Jmax_guess))

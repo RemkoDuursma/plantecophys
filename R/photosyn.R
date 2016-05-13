@@ -344,7 +344,7 @@ Photosyn <- function(VPD=1.5,
       }
   
     # Photosynthetic rates, without or with mesophyll limitation
-    if(is.null(gmeso)){
+    if(is.null(gmeso) || gmeso < 0){
       # Get photosynthetic rate  
       Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
       Aj <- VJ * (CIJ - GammaStar)/(CIJ + 2*GammaStar)
