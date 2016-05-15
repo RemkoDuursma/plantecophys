@@ -438,7 +438,9 @@ Jfun <- function(PPFD, alpha, Jmax, theta){
      sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
 }
 
-
+inverseJfun <- function(PPFD, alpha, J, theta){
+  J*(J*theta - alpha*PPFD)/(J - alpha*PPFD)
+}
 
 
 

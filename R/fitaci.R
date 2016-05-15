@@ -143,9 +143,6 @@ fitaci <- function(data,
   # Extract measured net leaf photosynthesis
   data$ALEAF <- data[,varnames$ALEAF]
   
-  # Needed to avoid apparent recursion below.
-  TcorrectVJ <- Tcorrect
-  
   # Choose method (to be refined)
   if(fitmethod == "default"){
     if(is.null(citransition)){
@@ -159,37 +156,38 @@ fitaci <- function(data,
   
   if(fitmethod == "transit"){
 
-    if(!is.null(citransition) && !quiet){
-      Warning("citransition ignored when using transit fitmethod.")
-    }
-    
-    
     O <- function(citrans, returnwhat=c("SS","fit")){
       
       returnwhat <- match.arg(returnwhat)
       
       fit <- do_fit_method3(data, haveRd, Rd_meas, Patm, citrans, Tcorrect, algorithm,
-                                alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
-                                GammaStar, Km)
+                            alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                            GammaStar, Km)
       
       run <- do_acirun(data,fit,Patm,Tcorrect,
-                             alpha=alpha,theta=theta,
-                             gmeso=gmeso,EaV=EaV,
-                             EdVC=EdVC,delsC=delsC,
-                             EaJ=EaJ,EdVJ=EdVJ,
-                             delsJ=delsJ)
-    
+                       alpha=alpha,theta=theta,
+                       gmeso=gmeso,EaV=EaV,
+                       EdVC=EdVC,delsC=delsC,
+                       EaJ=EaJ,EdVJ=EdVJ,
+                       delsJ=delsJ)
+      
       if(returnwhat == "SS"){
         return(sum(run$Ameas - run$Amodel)^2)
-       } else {
+      } else {
         return(fit)
-       }
+      }
     }
     
     
-    opt <- optimize(O, c(100,600))
-    f <- O(opt$minimum,"fit")
+    if(!is.null(citransition) && !quiet){
+      Warning("Input citransition used; omit to find best fit.")
+      f <- O(citransition, "fit")  
+    } else {
+      opt <- optimize(O, c(100,600))
+      f <- O(opt$minimum,"fit")
+    }
     
+
   }
   
   # Only used to add 'Amodel' to the output
@@ -630,7 +628,8 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   
   if(nrow(dat_vcmax) > 0){
     nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                            Jmax=10000, Rd=Rd, Tleaf=Tleaf, Patm=Patm, returnwhat="Ac",
+                                            Jmax=10^6, Rd=Rd, Tleaf=Tleaf, 
+                                            Patm=Patm, returnwhat="Ac",
                                             TcorrectVJ=Tcorrect,
                                             alpha=alpha,theta=theta,
                                             gmeso=gmeso,EaV=EaV,
@@ -696,16 +695,9 @@ do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   
   
   # Linearize
-  if(Tcorrect){
-    data$vcmax_pred <- TVcmax(data$Tleaf,EaV, delsC, EdVC) * (data$Ci - ppar$GammaStar)/(data$Ci + ppar$Km)
-  } else {
-    data$vcmax_pred <- (data$Ci - ppar$GammaStar)/(data$Ci + ppar$Km)
-  }
+  data$vcmax_pred <- (data$Ci - ppar$GammaStar)/(data$Ci + ppar$Km)
   
-  # Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
-  # Aj <- VJ * (CIJ - GammaStar)/(CIJ + 2*GammaStar)
-  
-  # Vcmax
+  # Fit Vcmax and Rd from linearized portion
   datv <- data[data$Ci < citransition,]
   if(nrow(datv) == 0)Stop("No data for Vcmax - use higher citransition")
   fitv <- lm(ALEAF ~ vcmax_pred, data=datv)
@@ -713,17 +705,20 @@ do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   Rd_fit <- coef(fitv)[[1]]
   Vcmax_fit <- coef(fitv)[[2]]
   
-  
-  # At the transition point, we can solve for Jmax
+  # At the transition point, we can solve for J
   gstar <- mean(ppar$GammaStar)
   km <- mean(ppar$Km)
-  Jmax_fit <- 4 * Vcmax_fit * (citransition + 2*gstar)/(citransition + km) / 
-                      mean(Jfun(data$PPFD, alpha, 1, theta))
+  J_fit <- 4 * Vcmax_fit * (citransition + 2*gstar)/(citransition + km)
   
-  # if(Tcorrect){
-  #   Jmax_fit <- Jmax_fit / mean(TJmax(data$Tleaf, EaJ, delsJ, EdVJ))
-  # }
-  #browser()
+  # And solve for Jmax from inverse non-rect. hyperbola
+  Jmax_fit <- inverseJfun(mean(data$PPFD), alpha, J_fit, theta)
+  
+  # The above estimates are at the measured Tleaf.
+  # Express at 25C?
+  if(Tcorrect){
+     Jmax_fit <- Jmax_fit / TJmax(mean(data$Tleaf), EaJ, delsJ, EdVJ)
+     Vcmax_fit <- Vcmax_fit / TVcmax(mean(data$Tleaf),EaV, delsC, EdVC)
+  }
   
   ses <- summary(fitv)$coefficients[,2]
   pars <- matrix(c(Vcmax_fit, Jmax_fit, -Rd_fit,
@@ -731,8 +726,7 @@ do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   rownames(pars) <- c("vcmax","Jmax","Rd")
   colnames(pars) <- c("Estimate","Std. Error")
                    
-return(list(pars=pars, 
-            fit=fitv))
+return(list(pars=pars, fit=fitv))
 }
 
 
@@ -749,8 +743,8 @@ acifun_wrap <- function(Ci,..., TcorrectVJ, returnwhat="ALEAF"){
 do_acirun <- function(data,f,Patm,Tcorrect,...){
   
   acirun <- Photosyn(Ci=data$Ci, 
-                     Vcmax=unname(f$pars[1]), Jmax=unname(f$pars[2]), 
-                     Rd=unname(f$pars[3]), 
+                     Vcmax=f$pars[1,1], Jmax=f$pars[2,1], 
+                     Rd=f$pars[3,1], 
                      PPFD=data$PPFD, 
                      Tleaf=data$Tleaf,
                      Patm=Patm,
