@@ -723,7 +723,7 @@ do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   ses <- summary(fitv)$coefficients[,2]
   pars <- matrix(c(Vcmax_fit, Jmax_fit, -Rd_fit,
                    ses[2],NA,ses[1]), ncol=2)
-  rownames(pars) <- c("vcmax","Jmax","Rd")
+  rownames(pars) <- c("Vcmax","Jmax","Rd")
   colnames(pars) <- c("Estimate","Std. Error")
                    
 return(list(pars=pars, fit=fitv))
