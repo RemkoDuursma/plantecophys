@@ -163,35 +163,33 @@ fitaci <- function(data,
       Warning("citransition ignored when using transit fitmethod.")
     }
     
-    ci <- data$Ci
-    nci <- length(data$Ci)
-    citransitions <- diff(ci)/2 + ci[-nci]
-
-    # at least two on each side, so delete first and last
-    citransitions <- citransitions[-c(1,nci-1)]
     
-    # will tidy!
-    citransitions <- seq(min(citransitions), max(citransitions), length=101)
-    
-    fs <- list()
-    runs <- list()
-    
-    for(i in seq_along(citransitions)){
-
-      fs[[i]] <- do_fit_method3(data, haveRd, Rd_meas, Patm, citransitions[i], Tcorrect, algorithm,
-                                 alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+    O <- function(citrans, returnwhat=c("SS","fit")){
+      
+      returnwhat <- match.arg(returnwhat)
+      
+      fit <- do_fit_method3(data, haveRd, Rd_meas, Patm, citrans, Tcorrect, algorithm,
+                                alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                 GammaStar, Km)
-
-      runs[[i]] <- do_acirun(data,fs[[i]],Patm,Tcorrect,
+      
+      run <- do_acirun(data,fit,Patm,Tcorrect,
                              alpha=alpha,theta=theta,
                              gmeso=gmeso,EaV=EaV,
                              EdVC=EdVC,delsC=delsC,
                              EaJ=EaJ,EdVJ=EdVJ,
                              delsJ=delsJ)
-      
+    
+      if(returnwhat == "SS"){
+        return(sum(run$Ameas - run$Amodel)^2)
+       } else {
+        return(fit)
+       }
     }
-    return(list(fs=fs, runs=runs))
-      
+    
+    
+    opt <- optimize(O, c(100,600))
+    f <- O(opt$minimum,"fit")
+    
   }
   
   # Only used to add 'Amodel' to the output
@@ -727,7 +725,13 @@ do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   # }
   #browser()
   
-return(list(pars=c(Vcmax=Vcmax_fit, Jmax=Jmax_fit, Rd=-Rd_fit), 
+  ses <- summary(fitv)$coefficients[,2]
+  pars <- matrix(c(Vcmax_fit, Jmax_fit, -Rd_fit,
+                   ses[2],NA,ses[1]), ncol=2)
+  rownames(pars) <- c("vcmax","Jmax","Rd")
+  colnames(pars) <- c("Estimate","Std. Error")
+                   
+return(list(pars=pars, 
             fit=fitv))
 }
 
