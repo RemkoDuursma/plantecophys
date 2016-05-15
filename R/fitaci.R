@@ -97,7 +97,7 @@ fitaci <- function(data,
                    Patm=100,
                    citransition=NULL,
                    quiet=FALSE, startValgrid=TRUE, 
-                   fitmethod=c("default","gulike"),
+                   fitmethod=c("default","transit"),
                    algorithm="default", 
                    useRd=FALSE,
                    PPFD=NULL,
@@ -157,16 +157,21 @@ fitaci <- function(data,
     }
   }
   
-  if(fitmethod == "gulike"){
+  if(fitmethod == "transit"){
 
-    if(!is.null(citransition) && !quiet)Warning("citransition ignored when using gulike fitmethod.")
-
+    if(!is.null(citransition) && !quiet){
+      Warning("citransition ignored when using transit fitmethod.")
+    }
+    
     ci <- data$Ci
     nci <- length(data$Ci)
     citransitions <- diff(ci)/2 + ci[-nci]
 
     # at least two on each side, so delete first and last
     citransitions <- citransitions[-c(1,nci-1)]
+    
+    # will tidy!
+    citransitions <- seq(min(citransitions), max(citransitions), length=101)
     
     fs <- list()
     runs <- list()
@@ -710,24 +715,20 @@ do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   Rd_fit <- coef(fitv)[[1]]
   Vcmax_fit <- coef(fitv)[[2]]
   
-  if(Tcorrect){
-    data$Jmax_pred <- 0.25*TJmax(data$Tleaf, EaJ, delsJ, EdVJ) * 
-                        Jfun(data$PPFD, alpha, 1, theta) * 
-                        (data$Ci - ppar$GammaStar)/(data$Ci + 2*ppar$GammaStar)
-  } else {
-    data$Jmax_pred <- 0.25*Jfun(data$PPFD, alpha, 1, theta) * 
-                    (data$Ci - ppar$GammaStar)/(data$Ci + 2*ppar$GammaStar)
-  }
-  data$Aleaf_gross <- data$ALEAF + Rd_fit
   
-  # Jmax
-  datj <- data[data$Ci > citransition,]
-  if(nrow(datj) == 0)Stop("No data for Jmax - use lower citransition")
-  fitj <- lm(Aleaf_gross ~ Jmax_pred-1, data=datj)
-  Jmax_fit <- coef(fitj)[[1]]
-  browser()
+  # At the transition point, we can solve for Jmax
+  gstar <- mean(ppar$GammaStar)
+  km <- mean(ppar$Km)
+  Jmax_fit <- 4 * Vcmax_fit * (citransition + 2*gstar)/(citransition + km) / 
+                      mean(Jfun(data$PPFD, alpha, 1, theta))
   
-return(list(pars=c(Vcmax=Vcmax_fit, Jmax=Jmax_fit, Rd=-Rd_fit), fit=list(fitj=fitj, fitv=fitv)))
+  # if(Tcorrect){
+  #   Jmax_fit <- Jmax_fit / mean(TJmax(data$Tleaf, EaJ, delsJ, EdVJ))
+  # }
+  #browser()
+  
+return(list(pars=c(Vcmax=Vcmax_fit, Jmax=Jmax_fit, Rd=-Rd_fit), 
+            fit=fitv))
 }
 
 
