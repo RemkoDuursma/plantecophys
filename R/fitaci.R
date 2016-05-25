@@ -122,7 +122,10 @@ fitaci <- function(data,
   kminput <- !is.null(Km)
   if(is.null(gmeso))gmeso <- -999  # cannot pass NULL value to nls
   
-  # Make sure data is a dataframe; stuff returned by dplyr is no good
+  # Check data 
+  if(nrow(data) == 0)Stop("No rows in data - check observations.")
+  
+  # Make sure data is a dataframe
   data <- as.data.frame(data)
   
   # no more extra parameters allowed 
@@ -456,7 +459,7 @@ guess_Jmax <- function(data, Rd_guess, Patm, Tcorrect){
 
 
 
-guess_Vcmax <- function(data, Rd_guess, Patm, Tcorrect){
+guess_Vcmax <- function(data, Jmax_guess, Rd_guess, Patm, Tcorrect){
   # Guess Vcmax, from section of curve that is definitely Vcmax-limited
   dato <- data[data$Ci < 150 & data$Ci > 60 & data$ALEAF > 0,]
   if(nrow(dato) > 0){
@@ -551,7 +554,7 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgr
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
   Jmax_guess <- guess_Jmax(data, Rd_guess, Patm, Tcorrect)
-  Vcmax_guess <- guess_Vcmax(data,Rd_guess, Patm, Tcorrect)
+  Vcmax_guess <- guess_Vcmax(data, Jmax_guess, Rd_guess, Patm, Tcorrect)
   
   # Fine-tune starting values; try grid of values around initial estimates.
   if(startValgrid){
@@ -657,7 +660,7 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
   Jmax_guess <- guess_Jmax(data, Rd_guess, Patm, Tcorrect)
-  Vcmax_guess <- guess_Vcmax(data,Rd_guess, Patm, Tcorrect)
+  Vcmax_guess <- guess_Vcmax(data, Jmax_guess, Rd_guess, Patm, Tcorrect)
   
   # If citransition provided, fit twice.
   dat_vcmax <- data[data$Ci < citransition,]
