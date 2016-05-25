@@ -14,11 +14,11 @@
 \usage{
 fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
   = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100, citransition = NULL,
-  quiet = FALSE, startValgrid = TRUE, fitmethod = c("default", "gulike"),
-  algorithm = "default", useRd = FALSE, PPFD = NULL, Tleaf = NULL,
-  alpha = 0.24, theta = 0.85, gmeso = NULL, EaV = 82620.87, EdVC = 0,
-  delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615,
-  GammaStar = NULL, Km = NULL, ...)
+  quiet = FALSE, startValgrid = TRUE, fitmethod = c("default",
+  "bilinear"), algorithm = "default", useRd = FALSE, PPFD = NULL,
+  Tleaf = NULL, alpha = 0.24, theta = 0.85, gmeso = NULL,
+  EaV = 82620.87, EdVC = 0, delsC = 645.1013, EaJ = 39676.89,
+  EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL, Km = NULL, ...)
 
 \method{print}{acifit}(x, ...)
 
