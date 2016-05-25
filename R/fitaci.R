@@ -97,7 +97,7 @@ fitaci <- function(data,
                    Patm=100,
                    citransition=NULL,
                    quiet=FALSE, startValgrid=TRUE, 
-                   fitmethod=c("default","transit"),
+                   fitmethod=c("default","transit","gulike"),
                    algorithm="default", 
                    useRd=FALSE,
                    PPFD=NULL,
@@ -178,7 +178,6 @@ fitaci <- function(data,
       }
     }
     
-    
     if(!is.null(citransition) && !quiet){
       Warning("Input citransition used; omit to find best fit.")
       f <- O(citransition, "fit")  
@@ -188,6 +187,44 @@ fitaci <- function(data,
     }
     
 
+  }
+  
+  
+  if(fitmethod == "gulike"){
+    
+    if(!is.null(citransition) && !quiet)Warning("citransition ignored when using gulike fitmethod.")
+    
+    ci <- data$Ci
+    nci <- length(data$Ci)
+    citransitions <- diff(ci)/2 + ci[-nci]
+    
+    # at least two on each side, so delete first and last
+    citransitions <- citransitions[-c(1,nci-1)]
+    
+    SS <- c()
+    for(i in seq_along(citransitions)){
+      
+      fit <- do_fit_method4(data, haveRd, Rd_meas, Patm, citransitions[i], Tcorrect, algorithm,
+                                alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                                GammaStar, Km)
+      
+      run <- do_acirun(data,fit,Patm,Tcorrect,
+                             alpha=alpha,theta=theta,
+                             gmeso=gmeso,EaV=EaV,
+                             EdVC=EdVC,delsC=delsC,
+                             EaJ=EaJ,EdVJ=EdVJ,
+                             delsJ=delsJ)
+      
+      SS[i] <- sum((run$Ameas - run$Amodel)^2)  
+    }
+    # Best Ci transition
+    citrans <- citransitions[which.min(SS)]
+    
+    f <- do_fit_method4(data, haveRd, Rd_meas, Patm, citrans, Tcorrect, algorithm,
+                            alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                            GammaStar, Km)
+    
+    
   }
   
   # Only used to add 'Amodel' to the output
@@ -729,6 +766,62 @@ do_fit_method3 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
 return(list(pars=pars, fit=fitv))
 }
 
+do_fit_method4 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
+                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                           GammaStar, Km){
+  
+  
+  ppar <- Photosyn(Tleaf=data$Tleaf, Patm=Patm, Tcorrect=Tcorrect,
+                   alpha=alpha,theta=theta,
+                   gmeso=gmeso,EaV=EaV,
+                   EdVC=EdVC,delsC=delsC,
+                   EaJ=EaJ,EdVJ=EdVJ,
+                   delsJ=delsJ,
+                   returnParsOnly=TRUE)
+  if(!is.null(GammaStar))ppar$GammaStar <- GammaStar
+  if(!is.null(Km))ppar$Km <- Km
+  
+  
+  # Linearize
+  data$vcmax_pred <- (data$Ci - ppar$GammaStar)/(data$Ci + ppar$Km)
+  data$Jmax_pred <- (data$Ci - ppar$GammaStar)/(data$Ci + 2*ppar$GammaStar)
+  
+  # Fit Vcmax and Rd from linearized portion
+  datv <- data[data$Ci < citransition,]
+  if(nrow(datv) == 0)Stop("No data for Vcmax - use higher citransition")
+  fitv <- lm(ALEAF ~ vcmax_pred, data=datv)
+  
+  Rd_fit <- coef(fitv)[[1]]
+  Vcmax_fit <- coef(fitv)[[2]]
+  
+  # Fit Jmax from linearized portion
+  datj <- data[data$Ci >= citransition,]
+  if(nrow(datj) == 0)Stop("No data for Jmax - use lower citransition")
+  
+  
+  # Fit gross photo using fitted Rd
+  datj$Agross <- datj$ALEAF - Rd_fit
+  fitj <- lm(Agross ~ Jmax_pred-1, data=datj)
+  J_fit <- 4 * coef(fitj)[[1]]
+  
+  # And solve for Jmax from inverse non-rect. hyperbola
+  Jmax_fit <- inverseJfun(mean(data$PPFD), alpha, J_fit, theta)
+  
+  # The above estimates are at the measured Tleaf.
+  # Express at 25C?
+  if(Tcorrect){
+    Jmax_fit <- Jmax_fit / TJmax(mean(data$Tleaf), EaJ, delsJ, EdVJ)
+    Vcmax_fit <- Vcmax_fit / TVcmax(mean(data$Tleaf),EaV, delsC, EdVC)
+  }
+  
+  ses <- summary(fitv)$coefficients[,2]
+  pars <- matrix(c(Vcmax_fit, Jmax_fit, -Rd_fit,
+                   ses[2],NA,ses[1]), ncol=2)
+  rownames(pars) <- c("Vcmax","Jmax","Rd")
+  colnames(pars) <- c("Estimate","Std. Error")
+  
+  return(list(pars=pars, fit=fitv))
+}
 
 # Wrapper around Photosyn; this wrapper will be sent to nls. 
 acifun_wrap <- function(Ci,..., TcorrectVJ, returnwhat="ALEAF"){
