@@ -16,16 +16,40 @@ fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
   
   d <- split(data, data[,"group"])  
   ng <- length(d)
-  success <- vector("logical", ng)
+  
+  fits <- do_fit_bygroup(d, 1:ng, progressbar, ...)
+  
+  if(any(!fits$success)){
+    if(!quiet){
+      group_fail <- names(d)[!fits$success]
+      message("The following groups could not be fit:")
+      message(paste(group_fail,collapse="\n"))
+    }
+  }
+  
+  # toss unfitted ones
+  fits <- fits$fits[fits$success]
+
+  class(fits) <- "acifits"
+  attributes(fits)$groupname <- group
+  
+return(fits)
+}
+
+do_fit_bygroup <- function(d, which=NULL, progressbar, ...){
+  
+  ng <- length(d)
+  if(is.null(which))which <- 1:ng
+  success <- vector("logical", length(which))
   
   if(progressbar){
     wp <- txtProgressBar(title = "Fitting A-Ci curves", 
-                       label = "", min = 0, max = ng, initial = 0, 
-                       width = 50, style=3)
+                         label = "", min = 0, max = ng, initial = 0, 
+                         width = 50, style=3)
   }
   
   fits <- list()
-  for(i in 1:ng){
+  for(i in which){
     f <- try(fitaci(d[[i]], quiet=TRUE, ...), silent=TRUE)
     success[i] <- !inherits(f, "try-error")
     
@@ -33,23 +57,10 @@ fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
     if(progressbar)setTxtProgressBar(wp, i)
   }
   if(progressbar)close(wp)
-
-  names(fits) <- names(d)
   
-  if(any(!success)){
-    if(!quiet){
-      message("The following groups could not be fit:")
-      print(names(d)[!success])
-    }
-  }
+  names(fits) <- names(d)[which]
   
-  # toss unfitted ones
-  fits <- fits[success]
-
-  class(fits) <- "acifits"
-  attributes(fits)$groupname <- group
-  
-return(fits)
+  l <- list(fits=fits, success=success)
 }
 
 
