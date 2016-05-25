@@ -25,6 +25,7 @@ fit6 <- fitaci(acidatone, varnames=vn, fitmethod="default", gmeso=0.3)
 # Specify transition point
 fit7.1 <- fitaci(acidatone, varnames=vn, fitmethod="default", citransition=400)
 fit7.2 <- fitaci(acidatone, varnames=vn, fitmethod="bilinear", citransition=400)
+fit7.3 <- fitaci(acidatone, varnames=vn, fitmethod="bilinear", citransition=fit2$Ci_transition)
 
 # Fit many A-Ci curves
 fits1 <- fitacis(acidat, "ID", varnames=vn, fitmethod="default", progressbar=FALSE)
@@ -49,5 +50,8 @@ test_that("Aci curve fitted coefficients",{
   expect_gt(coef(fit3.3)[1], coef(fit3.4)[1], "Vcmax Tcorrect", "Vcmax no Tcorrect")
   expect_gt(min(coef(fit1)), 0)
   expect_gt(min(coef(fit2)), 0)
-  expect_gt(coef(fit6)[1], coef(fit5)[1], "Vcmax gmeso = 0.3", "Vcmax gmeso = 0.3")
+  expect_gt(coef(fit6)[1], coef(fit5)[1], "Vcmax gmeso = 0.3", "Vcmax gmeso = 0.9")
+  expect_equal(fit7.3$Ci_transition, fit7.2$Ci_transition)
 })
+
+
