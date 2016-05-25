@@ -5,6 +5,8 @@
 fitacis <- function(data, group, fitmethod=c("default","bilinear"),
                     progressbar=TRUE, quiet=FALSE, ...){
   
+  fitmethod <- match.arg(fitmethod)
+  
   if(!group %in% names(data))
     stop("group variable must be in the dataframe.")
   
@@ -17,8 +19,7 @@ fitacis <- function(data, group, fitmethod=c("default","bilinear"),
   
   d <- split(data, data[,"group"])  
   ng <- length(d)
-  
-  fits <- do_fit_bygroup(d, 1:ng, progressbar, ...)
+  fits <- do_fit_bygroup(d, 1:ng, progressbar, fitmethod, ...)
   
   if(any(!fits$success)){
     if(!quiet){
@@ -41,7 +42,7 @@ return(l)
 }
 
 
-do_fit_bygroup <- function(d, which=NULL, progressbar, ...){
+do_fit_bygroup <- function(d, which=NULL, progressbar, fitmethod, ...){
   
   ng <- length(d)
   if(is.null(which))which <- 1:ng
@@ -55,7 +56,7 @@ do_fit_bygroup <- function(d, which=NULL, progressbar, ...){
   
   fits <- list()
   for(i in which){
-    f <- try(fitaci(d[[i]], quiet=TRUE, ...), silent=TRUE)
+    f <- try(fitaci(d[[i]], quiet=TRUE, fitmethod=fitmethod, ...), silent=TRUE)
     success[i] <- !inherits(f, "try-error")
     
     fits[[i]] <- if(success[i]) f else NA
