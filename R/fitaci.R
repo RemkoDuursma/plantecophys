@@ -9,10 +9,9 @@
 #' @param startValgrid If TRUE (the default), uses a fine grid of starting values to increase the chance of finding a solution.
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param useRd If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in fit. Otherwise it is estimatied from the fit to the A-Ci curve.
-#' @param group For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.
 #' @param object For coef.acifit, and print.acifit, the object returned by \code{fitaci}
 #' @param progressbar For \code{fitacis}, whether to display a progress bar (default is TRUE).
-#' @param \dots Further arguments passed to \code{\link{Photosyn}}
+#' @param \dots Further arguments (ignored at the moment).
 #' @details Uses non-linear regression to fit an A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Three parameters are estimated, Jmax, Vcmax and Rd. When \code{Tcorrect=TRUE} (the defualt), Jmax and Vcmax are re-scaled to 25C, using the temperature response parameters provided (but Rd is always at measurement temperature). When \code{Tcorrect=FALSE}, estimates of all parameters are at measurement temperature.
 #' 
 #' When \code{citransition} is set, it splits the data into a Vcmax-limited (where Ci < citransition), and Jmax-limited region (Ci > citransition). Both parameters are then estimated separately for each region (Rd is estimated only for the Vcmax-limited region). \bold{Note} that the actual transition point as shown in the standard plot of the fitted A-Ci curve may be quite different from that provided, since the fitting method simply decides which part of the dataset to use for which limitation, it does not constrain the actual estimated transition point directly. See the example below.
@@ -542,7 +541,7 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tc
                            alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                            GammaStar, Km){
   
-  
+  # Calculate T-dependent parameters
   ppar <- Photosyn(Tleaf=data$Tleaf, Patm=Patm, Tcorrect=Tcorrect,
                    alpha=alpha,theta=theta,
                    gmeso=gmeso,EaV=EaV,

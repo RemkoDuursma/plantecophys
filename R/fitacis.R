@@ -1,5 +1,13 @@
+#' Fit multiple A-Ci curves at once
+#' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
+#' @param group The name of the grouping variable in the dataframe (an A-Ci curve will be fit for each group separately).
+#' @param quiet If TRUE, no messages are written to the screen.
+#' @param progressbar Display a progress bar (default is TRUE).
+#' @param \dots Further arguments passed to \code{\link{fitaci}}
+#' 
 #' @export
-#' @rdname fitaci
+#' 
+#' 
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
 fitacis <- function(data, group, fitmethod=c("default","bilinear"),
