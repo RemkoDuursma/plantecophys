@@ -2,7 +2,8 @@
 #' @rdname fitaci
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
-fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
+fitacis <- function(data, group, fitmethod=c("default","bilinear"),
+                    progressbar=TRUE, quiet=FALSE, ...){
   
   if(!group %in% names(data))
     stop("group variable must be in the dataframe.")
@@ -25,16 +26,20 @@ fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
       message("The following groups could not be fit:")
       message(paste(group_fail,collapse="\n"))
     }
+    
+    # Refit bad curves using the 'bilinear' method
+    if(!quiet)message("Fitting remaining curves with fitmethod='bilinear'.")
+    refits <- do_fit_bygroup(d, which(!fits$success), progressbar=FALSE, fitmethod="bilinear", ...)
+    fits$fits[!fits$success] <- refits$fits
   }
   
-  # toss unfitted ones
-  fits <- fits$fits[fits$success]
-
-  class(fits) <- "acifits"
-  attributes(fits)$groupname <- group
+  l <- fits$fits
+  class(l) <- "acifits"
+  attributes(l)$groupname <- group
   
-return(fits)
+return(l)
 }
+
 
 do_fit_bygroup <- function(d, which=NULL, progressbar, ...){
   
