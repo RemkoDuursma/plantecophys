@@ -567,7 +567,7 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
   
   if(!haveRd){
     # Fit Vcmax, Jmax and Rd
-    nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+    nlsfit <- try(nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                       Jmax=Jmax, Rd=Rd, Tleaf=Tleaf, Patm=Patm,
                                       TcorrectVJ=Tcorrect,
                                       alpha=alpha,theta=theta,
@@ -577,13 +577,18 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
                                       delsJ=delsJ),
                   algorithm=algorithm,
                   data=data, control=nls.control(maxiter=500, minFactor=1/10000),
-                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess))
+                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess)), silent=TRUE)
+    
+    if(inherits(nlsfit, "try-error")){
+      Stop("Could not fit curve - check quality of data or fit using fitmethod='bilinear'.")
+    }
+    
     p <- coef(nlsfit)
     pars <- summary(nlsfit)$coefficients[,1:2]
   } else {
     
     # Fit Vcmax and Jmax
-    nlsfit <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+    nlsfit <- try(nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
                                       Jmax=Jmax, Rd=Rd_meas, Tleaf=Tleaf, Patm=Patm,
                                       TcorrectVJ=Tcorrect,
                                       alpha=alpha,theta=theta,
@@ -593,7 +598,12 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
                                       delsJ=delsJ),
                   algorithm=algorithm,
                   data=data, control=nls.control(maxiter=500, minFactor=1/10000),
-                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess))
+                  start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess)), silent=TRUE)
+    
+    if(inherits(nlsfit, "try-error")){
+      Stop("Could not fit curve - check quality of data or fit using fitmethod='bilinear'.")
+    }
+    
     p <- coef(nlsfit)
     p[[3]] <- Rd_meas
     names(p)[3] <- "Rd"
