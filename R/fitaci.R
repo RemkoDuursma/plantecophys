@@ -154,41 +154,14 @@ fitaci <- function(data,
     
     if(fitmethod == "default"){
     
-      f <- do_fit_method1(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm,
+      f <- do_fit_method1(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, algorithm,
                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
     } 
     if(fitmethod == "bilinear"){
       
-      ci <- data$Ci
-      nci <- length(data$Ci)
-      citransitions <- diff(ci)/2 + ci[-nci]
-      
-      # at least two on each side, so delete first and last
-      citransitions <- citransitions[-c(1,nci-1)]
-      
-      SS <- c()
-      for(i in seq_along(citransitions)){
-        
-        fit <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransitions[i], Tcorrect, algorithm,
-                              alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
-                              GammaStar, Km)
-        
-        run <- do_acirun(data,fit,Patm,Tcorrect,
-                         alpha=alpha,theta=theta,
-                         gmeso=gmeso,EaV=EaV,
-                         EdVC=EdVC,delsC=delsC,
-                         EaJ=EaJ,EdVJ=EdVJ,
-                         delsJ=delsJ)
-        
-        SS[i] <- sum((run$Ameas - run$Amodel)^2)  
-      }
-      # Best Ci transition
-      citrans <- citransitions[which.min(SS)]
-      
-      f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citrans, Tcorrect, algorithm,
-                                  alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
-                                  GammaStar, Km)
-      
+      f <- do_fit_method_bilinear_bestcitrans(data, haveRd, Rd_meas, Patm, Tcorrect, algorithm,
+                                              alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                                              GammaStar, Km)
     }
   }
   
@@ -530,7 +503,7 @@ set_Rdmeas <- function(varnames, data, useRd, citransition){
 
 
 
-do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, citransition, startValgrid, Tcorrect, algorithm,
+do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, algorithm,
                            alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ){
   
   # Guess Rd (starting value)
@@ -754,6 +727,44 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tc
   colnames(pars) <- c("Estimate","Std. Error")
   
   return(list(pars=pars, fit=fitv))
+}
+
+do_fit_method_bilinear_bestcitrans <- function(data, haveRd, Rd_meas, Patm, Tcorrect,
+                                               algorithm,alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,
+                                               delsJ,GammaStar, Km){
+  
+  # Possible Ci transitions
+  ci <- data$Ci
+  nci <- length(ci)
+  citransitions <- diff(ci)/2 + ci[-nci]
+  
+  # at least two on each side, so delete first and last
+  citransitions <- citransitions[-c(1,nci-1)]
+  
+  SS <- c()
+  for(i in seq_along(citransitions)){
+    
+    fit <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransitions[i], Tcorrect, algorithm,
+                                  alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                                  GammaStar, Km)
+    
+    run <- do_acirun(data,fit,Patm,Tcorrect,
+                     alpha=alpha,theta=theta,
+                     gmeso=gmeso,EaV=EaV,
+                     EdVC=EdVC,delsC=delsC,
+                     EaJ=EaJ,EdVJ=EdVJ,
+                     delsJ=delsJ)
+    
+    SS[i] <- sum((run$Ameas - run$Amodel)^2)  
+  }
+  # Best Ci transition
+  citrans <- citransitions[which.min(SS)]
+  
+  f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citrans, Tcorrect, algorithm,
+                              alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                              GammaStar, Km)
+  
+  return(f)  
 }
 
 # Wrapper around Photosyn; this wrapper will be sent to nls. 
