@@ -689,9 +689,16 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tc
   if(!is.null(GammaStar))ppar$GammaStar <- GammaStar
   if(!is.null(Km))ppar$Km <- Km
   
+  # Calculate Cc if gmeso included
+  if(!is.null(gmeso) && gmeso > 0){
+    Conc <- data$Ci - data$ALEAF/gmeso
+  } else {
+    Conc <- data$Ci
+  }
+  
   # Linearize
-  data$vcmax_pred <- (data$Ci - ppar$GammaStar)/(data$Ci + ppar$Km)
-  data$Jmax_pred <- (data$Ci - ppar$GammaStar)/(data$Ci + 2*ppar$GammaStar)
+  data$vcmax_pred <- (Conc - ppar$GammaStar)/(Conc + ppar$Km)
+  data$Jmax_pred <- (Conc - ppar$GammaStar)/(Conc + 2*ppar$GammaStar)
   
   # Fit Vcmax and Rd from linearized portion
   datv <- data[data$Ci < citransition,]
@@ -748,14 +755,18 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, Rd_meas, Patm, Tcor
                                   alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                   GammaStar, Km)
     
-    run <- do_acirun(data,fit,Patm,Tcorrect,
-                     alpha=alpha,theta=theta,
-                     gmeso=gmeso,EaV=EaV,
-                     EdVC=EdVC,delsC=delsC,
-                     EaJ=EaJ,EdVJ=EdVJ,
-                     delsJ=delsJ)
-    
-    SS[i] <- sum((run$Ameas - run$Amodel)^2)  
+    if(!any(is.na(fit$pars[,"Estimate"]))){
+      run <- do_acirun(data,fit,Patm,Tcorrect,
+                       alpha=alpha,theta=theta,
+                       gmeso=gmeso,EaV=EaV,
+                       EdVC=EdVC,delsC=delsC,
+                       EaJ=EaJ,EdVJ=EdVJ,
+                       delsJ=delsJ)
+      
+      SS[i] <- sum((run$Ameas - run$Amodel)^2)  
+    } else {
+      SS[i] <- 10^6
+    }
   }
   # Best Ci transition
   citrans <- citransitions[which.min(SS)]
