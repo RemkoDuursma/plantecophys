@@ -9,7 +9,8 @@ Description: Coupled leaf gas exchange model, A-Ci curve simulation and
 URL: https://www.bitbucket.org/remkoduursma/plantecophys
 BugReports: https://www.bitbucket.org/remkoduursma/plantecophys/issues
 Suggests:
-    nlstools
+    nlstools,
+    testthat
 License: GPL
 LazyData: yes
 RoxygenNote: 5.0.1
