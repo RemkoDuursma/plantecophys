@@ -10,6 +10,8 @@ print.acifit <- function(x,...){
   cat("Data and predictions:\n")
   print(x$df)
   
+  cat("\nRoot mean squared error: ", x$RMSE, "\n")
+  
   cat("\nEstimated parameters:\n")
   
   print(x$pars)
@@ -119,6 +121,7 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
   # Exact model used to fit the A-Ci curve was saved in the object.
   # (parameter settings etc. are preserved)
   pcor <- mean(x$df$Patm)/100
+  
   pred <- x$Photosyn(Ci=Ci * pcor)
   pred$Ci_original <- pred$Ci / pcor
   

@@ -254,6 +254,7 @@ fitaci <- function(data,
   l$citransition <- ifelse(is.null(citransition), NA, citransition)
   l$gmeso <- ifelse(is.null(gmeso) || gmeso < 0, NA, gmeso)
   l$fitTPU <- fitTPU
+  l$RMSE <- rmse_acifit(l)
   
   class(l) <- "acifit"
   
@@ -262,6 +263,8 @@ return(l)
 
 
 #-- Component functions of fitaci
+
+rmse_acifit <- function(x)sqrt(sum((x$df$Ameas - x$df$Amodel)^2))
 
 guess_Jmax <- function(data, Rd_guess, Patm, Tcorrect){
   
