@@ -17,6 +17,7 @@
 #' @param Jmax Maximum rate of electron transport at 25 degrees C (mu mol m-2 s-1)
 #' @param Vcmax Maximum carboxylation rate at 25 degrees C (mu mol m-2 s-1)
 #' @param gmeso Mesophyll conductance (mol m-2 s-1). If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
+#' @param TPU Triose-phosphate utilization rate (mu mol m-2 s-1); optional.
 #' @param Rd Dark respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)
 #' @param Rd0 Dark respiration rata at reference temperature (\code{TrefR})
 #' @param Q10 Temperature sensitivity of Rd.
@@ -156,6 +157,7 @@ Photosyn <- function(VPD=1.5,
                      Jmax=100, 
                      Vcmax=50, 
                      gmeso=NULL,
+                     TPU=1000,
                      
                      Rd0 = 0.92,
                      Q10 = 1.92,
@@ -358,6 +360,8 @@ Photosyn <- function(VPD=1.5,
       Aj <- Aj + Rd
       
     }
+    # Limitation by triose-phosphate utilization
+    Ap <- 3*TPU 
       
       # When below light-compensation points, assume Ci=Ca.
       if(!inputCi){
@@ -378,7 +382,16 @@ Photosyn <- function(VPD=1.5,
   
     # Hyperbolic minimum.
     hmshape <- 0.9999
-    Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape) - Rd
+    Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape)
+    
+    # Another hyperbolic minimum with the transition to TPU
+    if(any(Ap < Am)){
+      hmshape <- 1 - 1E-07
+      Am <- (Am+Ap - sqrt((Am+Ap)^2-4*hmshape*Am*Ap))/(2*hmshape)
+    }
+    
+    # Net photosynthesis
+    Am <- Am - Rd
   
     # Calculate conductance to CO2
     if(!inputCi && !inputGS){
@@ -415,6 +428,7 @@ Photosyn <- function(VPD=1.5,
                       ELEAF=E,
                       Ac=Ac,
                       Aj=Aj,
+                      Ap=Ap,
                       Rd=Rd,
                       VPD=VPD,
                       Tleaf=Tleaf,

@@ -4,7 +4,6 @@
 \alias{coef.acifit}
 \alias{coef.acifits}
 \alias{fitaci}
-\alias{fitacis}
 \alias{fitted.acifit}
 \alias{plot.acifit}
 \alias{plot.acifits}
@@ -33,9 +32,6 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
   addzeroline = TRUE, addlegend = !add, legendbty = "o",
   transitionpoint = TRUE, linecols = c("black", "blue", "red"), lwd = c(1,
   2), ...)
-
-fitacis(data, group, fitmethod = c("default", "bilinear"),
-  progressbar = TRUE, quiet = FALSE, ...)
 
 \method{plot}{acifits}(x, how = c("manyplots", "oneplot"), highlight = NULL,
   ylim = NULL, xlim = NULL, add = FALSE, what = c("model", "data",
@@ -90,15 +86,13 @@ fitacis(data, group, fitmethod = c("default", "bilinear"),
 
 \item{lwd}{Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).}
 
-\item{group}{For batch analysis using \code{fitacis}, the name of the grouping variable in the dataframe.}
-
-\item{progressbar}{For \code{fitacis}, whether to display a progress bar (default is TRUE).}
-
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
 
 \item{highlight}{If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.}
 
-\item{\dots}{Further arguments passed to \code{\link{Photosyn}}}
+\item{progressbar}{For \code{fitacis}, whether to display a progress bar (default is TRUE).}
+
+\item{\dots}{Further arguments (ignored at the moment).}
 }
 \value{
 A list of class 'acifit', with five components:
