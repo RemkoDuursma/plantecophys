@@ -1,0 +1,46 @@
+---
+title: "TPU Limitation"
+author: "Remko Duursma"
+date: "26 May 2016"
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r}
+library(plantecophys)
+if(packageVersion("plantecophys") < "1.1")stop("Update, please")
+```
+
+# Fitting TPU limitation
+
+```{r}
+# Using built-in example data
+
+# Standard fit
+fit1 <- fitaci(acidata1, PPFD=1800, fitmethod="bilinear")
+
+# TPU
+# If TPU is to be fit, will automatically select bilinear fitmethod.
+fit2 <- fitaci(acidata1, PPFD=1800, fitTPU=TRUE)
+  
+```
+
+## No TPU limitation
+  
+```{r}
+plot(fit1)
+coef(fit1)
+fit1$RMSE
+```
+
+
+## TPU limitation
+
+```{r}
+plot(fit2)
+coef(fit2)
+fit2$RMSE
+```
+
+
