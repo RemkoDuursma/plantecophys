@@ -659,12 +659,12 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
   
   for(i in 1:nrow(citransdf)){
     
-    fit <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransdf$ci1[i], citransdf$ci2[i], Tcorrect, algorithm,
+    fit <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransdf$ci1[i], citransdf$ci2[i], Tcorrect=FALSE, algorithm,
                                   alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                   GammaStar, Km)
     
     if(!any(is.na(fit$pars[,"Estimate"]))){
-      run <- do_acirun(data,fit,Patm,Tcorrect,
+      run <- do_acirun(data,fit,Patm,Tcorrect=FALSE,
                        alpha=alpha,theta=theta,
                        gmeso=gmeso,EaV=EaV,
                        EdVC=EdVC,delsC=delsC,
@@ -683,6 +683,13 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
   f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, bestcis$ci1, bestcis$ci2, Tcorrect, algorithm,
                               alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                               GammaStar, Km)
+  
+  # Express at 25C?
+  if(Tcorrect){
+    f$pars["Jmax","Estimate"] <- f$pars["Jmax","Estimate"] / TJmax(mean(data$Tleaf), EaJ, delsJ, EdVJ)
+    f$pars["Vcmax","Estimate"] <- f$pars["Vcmax","Estimate"] / TVcmax(mean(data$Tleaf),EaV, delsC, EdVC)
+  }
+  
   return(f)  
 }
 
