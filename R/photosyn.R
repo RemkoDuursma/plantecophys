@@ -333,7 +333,11 @@ Photosyn <- function(VPD=1.5,
         # Ci provided (A-Ci function mode)
         CIJ <- Ci
         
-        CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
+        if(length(GammaStar) > 1){
+          CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
+        } else {
+          CIJ[CIJ < GammaStar] <- GammaStar
+        }
         
         CIC <- Ci
         
@@ -360,9 +364,8 @@ Photosyn <- function(VPD=1.5,
       Aj <- Aj + Rd
       
     }
-    # Limitation by triose-phosphate utilization
-    Ap <- 3*TPU 
-      
+
+    
       # When below light-compensation points, assume Ci=Ca.
       if(!inputCi){
         lesslcp <- vector("logical", length(Aj))
@@ -379,7 +382,10 @@ Photosyn <- function(VPD=1.5,
         Ci <- ifelse(Aj < Ac, CIJ, CIC)
       }
   }
-  
+
+    # Limitation by triose-phosphate utilization
+    Ap <- 3*TPU   
+    
     # Hyperbolic minimum.
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape)
