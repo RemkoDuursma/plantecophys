@@ -101,7 +101,7 @@ fitted.acifit <- function(object,...){
 #' @importFrom graphics abline
 #' @importFrom graphics legend
 plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL, 
-                        whichA=c("Ac","Aj","Amin"), add=FALSE, pch=19, 
+                        whichA=c("Ac","Aj","Amin","Ap"), add=FALSE, pch=19, 
                         addzeroline=TRUE, addlegend=!add, legendbty='o',
                         transitionpoint=TRUE, linecols=c("black","blue","red"),
                         lwd=c(1,2),
@@ -122,6 +122,9 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
   pred <- x$Photosyn(Ci=Ci * pcor)
   pred$Ci_original <- pred$Ci / pcor
   
+  # Is there a TPU limitation?
+  TPUlimit <- any(pred$Ap < pred$Aj)
+  
   if(!add){
     with(x$df, plot(Ci_original, Ameas, type='n',
                     ylim=ylim,
@@ -134,9 +137,10 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
   if("data" %in% what)with(x$df, points(Ci_original, Ameas, pch=pch,...))
   
   if("model" %in% what){
-    if("Aj" %in% whichA)with(pred, points(Ci_original, Aj-Rd, type='l', col=linecols[2],lwd=lwd[1]))
-    if("Ac" %in% whichA)with(pred, points(Ci_original, Ac-Rd, type='l', col=linecols[3],lwd=lwd[1]))
-    if("Amin" %in% whichA)with(pred, points(Ci_original, ALEAF, type='l', col=linecols[1], lwd=lwd[2]))
+    if("Aj" %in% whichA)with(pred, lines(Ci_original, Aj-Rd, col=linecols[2],lwd=lwd[1]))
+    if("Ac" %in% whichA)with(pred, lines(Ci_original, Ac-Rd, col=linecols[3],lwd=lwd[1]))
+    if("Ap" %in% whichA & TPUlimit)with(pred, lines(Ci_original, Ap-Rd, col="darkgrey", lty=5, lwd=lwd[1]))
+    if("Amin" %in% whichA)with(pred, lines(Ci_original, ALEAF, col=linecols[1], lwd=lwd[2]))
   }
   
   if(transitionpoint && "model" %in% what)
@@ -145,11 +149,18 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
   if(addzeroline)
     abline(h=0, lty=3)
   
-  if(addlegend){
+  if(addlegend & ! TPUlimit){
     legend("bottomright", c(expression(italic(A)[c]),
                             expression(italic(A)[j]),
                             "Limiting rate"), lty=1, lwd=c(lwd[1],lwd[1],lwd[2]), 
-           col=linecols[3:1], bty=legendbty)
+           col=linecols[3:1], bty=legendbty, bg="white")
+  }
+  if(addlegend & TPUlimit){
+    legend("bottomright", c(expression(italic(A)[c]),
+                            expression(italic(A)[j]),
+                            expression(italic(A)[p]),
+                            "Limiting rate"), lty=1, lwd=c(rep(lwd[1],3), lwd[2]), 
+           col=c(linecols[3:2],"darkgrey",linecols[1]), bty=legendbty, bg="white")
   }
   
 }
