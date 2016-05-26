@@ -98,6 +98,7 @@ fitaci <- function(data,
                    quiet=FALSE, startValgrid=TRUE, 
                    fitmethod=c("default","bilinear"),
                    algorithm="default", 
+                   fitTPU=FALSE,
                    useRd=FALSE,
                    PPFD=NULL,
                    Tleaf=NULL,
@@ -117,6 +118,8 @@ fitaci <- function(data,
                    ...){
   
   fitmethod <- match.arg(fitmethod)
+  if(fitTPU & fitmethod == "default")fitmethod <- "bilinear"
+  
   gstarinput <- !is.null(GammaStar)
   kminput <- !is.null(Km)
   if(is.null(gmeso))gmeso <- -999  # cannot pass NULL value to nls
@@ -158,7 +161,7 @@ fitaci <- function(data,
     } 
     if(fitmethod == "bilinear"){
       
-      f <- do_fit_method_bilinear_bestcitrans(data, haveRd, Rd_meas, Patm, Tcorrect, algorithm,
+      f <- do_fit_method_bilinear_bestcitrans(data, haveRd, fitTPU, Rd_meas, Patm, Tcorrect, algorithm,
                                               alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                               GammaStar, Km)
     }
@@ -174,7 +177,7 @@ fitaci <- function(data,
                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
     }
     if(fitmethod == "bilinear"){
-      f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
+      f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransition, NULL, Tcorrect, algorithm,
                                 alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                 GammaStar, Km)
     }
@@ -182,7 +185,8 @@ fitaci <- function(data,
   }
   
   
-  
+  # TPU
+  if(!("TPU" %in% names(f)))f$TPU <- 1000
   
   # Only used to add 'Amodel' to the output
   acirun <- do_acirun(data,f,Patm,Tcorrect,
@@ -207,6 +211,7 @@ fitaci <- function(data,
   formals(Photosyn)$Vcmax <- l$pars[1]
   formals(Photosyn)$Jmax <- l$pars[2]
   formals(Photosyn)$Rd <- l$pars[3]
+  formals(Photosyn)$TPU <- f$TPU
   formals(Photosyn)$Tcorrect <- Tcorrect
   formals(Photosyn)$alpha <- alpha
   formals(Photosyn)$theta <- theta
@@ -537,7 +542,7 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
 
 
 
-do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
+do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, citransition2=NULL, Tcorrect, algorithm,
                            alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                            GammaStar, Km){
   
@@ -551,6 +556,7 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tc
                    returnParsOnly=TRUE)
   if(!is.null(GammaStar))ppar$GammaStar <- GammaStar
   if(!is.null(Km))ppar$Km <- Km
+  if(is.null(citransition2))citransition2 <- 10^6
   
   # Calculate Cc if gmeso included
   if(!is.null(gmeso) && gmeso > 0){
@@ -564,7 +570,7 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tc
   data$Jmax_pred <- (Conc - ppar$GammaStar)/(Conc + 2*ppar$GammaStar)
   
   # Fit Vcmax and Rd from linearized portion
-  datv <- data[data$Ci < citransition,]
+  datv <- data[data$Ci < citransition & data$Ci < citransition2,]
   if(nrow(datv) == 0)Stop("No data for Vcmax - use higher citransition")
   fitv <- lm(ALEAF ~ vcmax_pred, data=datv)
   
@@ -572,17 +578,30 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tc
   Vcmax_fit <- coef(fitv)[[2]]
   
   # Fit Jmax from linearized portion
-  datj <- data[data$Ci >= citransition,]
-  if(nrow(datj) == 0)Stop("No data for Jmax - use lower citransition")
-  
-  # Fit gross photo using fitted Rd
-  datj$Agross <- datj$ALEAF - Rd_fit
-  fitj <- lm(Agross ~ Jmax_pred-1, data=datj)
-  J_fit <- 4 * coef(fitj)[[1]]
-  
-  # And solve for Jmax from inverse non-rect. hyperbola
-  Jmax_fit <- inverseJfun(mean(data$PPFD), alpha, J_fit, theta)
+  datj <- data[data$Ci >= citransition & data$Ci < citransition2,]
+  datp <- data[data$Ci >= citransition2,]
 
+  if(nrow(datj) > 0){
+    
+    # Fit gross photo using fitted Rd
+    datj$Agross <- datj$ALEAF - Rd_fit
+    fitj <- lm(Agross ~ Jmax_pred-1, data=datj)
+    J_fit <- 4 * coef(fitj)[[1]]
+    
+    # And solve for Jmax from inverse non-rect. hyperbola
+    Jmax_fit <- inverseJfun(mean(data$PPFD), alpha, J_fit, theta)
+    
+  } else {
+    Jmax_fit <- 10^6  # not elegant but will do for now (avoids trouble elsewhere)
+  }
+  
+  if(nrow(datp) > 0){
+    datp$Agross <- datp$ALEAF - Rd_fit
+    TPU <- mean(datp$Agross) / 3
+  } else {
+    TPU <- 1000  # same as default in Photosyn
+  }
+  
   # The above estimates are at the measured Tleaf.
   # Express at 25C?
   if(Tcorrect){
@@ -596,10 +615,10 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, Tc
   rownames(pars) <- c("Vcmax","Jmax","Rd")
   colnames(pars) <- c("Estimate","Std. Error")
   
-  return(list(pars=pars, fit=fitv))
+  return(list(pars=pars, fit=fitv, TPU=TPU))
 }
 
-do_fit_method_bilinear_bestcitrans <- function(data, haveRd, Rd_meas, Patm, Tcorrect,
+do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Patm, Tcorrect,
                                                algorithm,alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,
                                                delsJ,GammaStar, Km){
   
@@ -609,12 +628,21 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, Rd_meas, Patm, Tcor
   citransitions <- diff(ci)/2 + ci[-nci]
   
   # at least two on each side, so delete first and last
-  citransitions <- citransitions[-c(1,nci-1)]
+  citransitions1 <- citransitions[-c(1,nci-1)]
   
+  # Possible transitions to TPU
+  if(!fitTPU){
+    citransitions2 <- max(ci) + 100
+  } else {
+    # start at top, all the way down, leave lowest 2 points alone
+    citransitions2 <- rev(citransitions[-c(1:2)])  
+  }
+  citransdf <- expand.grid(ci1=citransitions1, ci2=citransitions2)
   SS <- c()
-  for(i in seq_along(citransitions)){
+  
+  for(i in 1:nrow(citransdf)){
     
-    fit <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransitions[i], Tcorrect, algorithm,
+    fit <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransdf$ci1[i], citransdf$ci2[i], Tcorrect, algorithm,
                                   alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                   GammaStar, Km)
     
@@ -631,13 +659,13 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, Rd_meas, Patm, Tcor
       SS[i] <- 10^6
     }
   }
-  # Best Ci transition
-  citrans <- citransitions[which.min(SS)]
   
-  f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citrans, Tcorrect, algorithm,
+  # Best Ci transition
+  bestcis <- citransdf[which.min(SS),]
+  
+  f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, bestcis$ci1, bestcis$ci2, Tcorrect, algorithm,
                               alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                               GammaStar, Km)
-  
   return(f)  
 }
 
@@ -656,6 +684,7 @@ do_acirun <- function(data,f,Patm,Tcorrect,...){
   acirun <- Photosyn(Ci=data$Ci, 
                      Vcmax=f$pars[1,1], Jmax=f$pars[2,1], 
                      Rd=f$pars[3,1], 
+                     TPU=f$TPU,
                      PPFD=data$PPFD, 
                      Tleaf=data$Tleaf,
                      Patm=Patm,
