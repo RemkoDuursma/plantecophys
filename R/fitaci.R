@@ -643,15 +643,15 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
   nci <- length(ci)
   citransitions <- diff(ci)/2 + ci[-nci]
   
-  # at least two on each side, so delete first and last
-  citransitions1 <- citransitions[-c(1,nci-1)]
+  # at least two Ci values to estimate Vcmax and Rd, so delete first
+  citransitions1 <- citransitions[-1]
   
   # Possible transitions to TPU
   if(!fitTPU){
-    citransitions2 <- max(ci) + 1
+    citransitions2 <- max(ci) + 1  # outside range, on purpose
   } else {
     # start at top, all the way down, leave lowest 2 points alone
-    citransitions2 <- c(max(ci) + 1, rev(citransitions[-c(1:2)]))
+    citransitions2 <- c(max(ci) + 1, rev(citransitions1))
   }
   citransdf <- expand.grid(ci1=citransitions1, ci2=citransitions2)
   citransdf <- subset(citransdf, ci1 <= ci2)
