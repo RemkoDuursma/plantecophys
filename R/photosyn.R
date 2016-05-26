@@ -391,7 +391,9 @@ Photosyn <- function(VPD=1.5,
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape)
     
     # Another hyperbolic minimum with the transition to TPU
-    if(any(Ap < Am)){
+    #browser()
+    tpulim <- any(Ap < Am)
+    if(!is.na(tpulim) && tpulim){
       hmshape <- 1 - 1E-07
       Am <- (Am+Ap - sqrt((Am+Ap)^2-4*hmshape*Am*Ap))/(2*hmshape)
     }
