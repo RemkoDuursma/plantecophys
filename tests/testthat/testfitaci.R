@@ -30,17 +30,19 @@ fit7.3 <- fitaci(acidatone, varnames=vn, fitmethod="bilinear", citransition=fit2
 # Fit many A-Ci curves
 fits1 <- fitacis(acidat, "ID", varnames=vn, fitmethod="default", progressbar=FALSE)
 fits2 <- fitacis(acidat, "ID", varnames=vn, fitmethod="bilinear", progressbar=FALSE)
-
+fits3 <- fitacis(acidat, "ID", varnames=vn, fitTPU=TRUE, progressbar=FALSE)
 
 test_that("Aci curve fit output format", {
   expect_equal(names(coef(fit1)), c("Vcmax","Jmax","Rd"))
   expect_equal(names(coef(fit2)), c("Vcmax","Jmax","Rd"))
   expect_equal(names(coef(fits1)), c("ID","Vcmax","Jmax","Rd","Vcmax_SE","Jmax_SE","Rd_SE"))
   expect_equal(names(coef(fits2)), c("ID","Vcmax","Jmax","Rd","Vcmax_SE","Jmax_SE","Rd_SE"))
+  expect_equal(names(coef(fits3)), c("ID","Vcmax","Jmax","Rd","TPU","Vcmax_SE","Jmax_SE","Rd_SE","TPU_SE"))
   expect_equal(nrow(coef(fits1)), nlevels(acidat$ID))
   expect_equal(nrow(coef(fits2)), nlevels(acidat$ID))
   expect_s3_class(fit1, "acifit")
   expect_s3_class(fits1, "acifits")
+  expect_gt(ncol(coef(fits3)), ncol(coef(fits2)))
 })
 
 test_that("Aci curve fitted coefficients",{

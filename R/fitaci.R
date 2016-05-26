@@ -196,10 +196,22 @@ fitaci <- function(data,
                       EaJ=EaJ,EdVJ=EdVJ,
                       delsJ=delsJ)
 
+  # If Ap is never actually limiting, set estimated TPU to 1000
+  # This means there is no evidence for TPU-limitation.
+  if(!any(acirun$Ap < acirun$Aj))f$TPU <- 1000
+  
   # Organize output
   l <- list()  
   l$df <- acirun[order(acirun$Ci),]
   l$pars <- f$pars
+  if(fitTPU){
+    val <- ifelse(f$TPU < 1000, f$TPU, NA)
+    tpu <- matrix(c(val,NA), ncol=2)
+    colnames(tpu) <- colnames(l$pars)
+    rownames(tpu) <- "TPU"
+    l$pars <- rbind(l$pars, tpu)
+  }
+  
   l$nlsfit <- f$fit
   l$Tcorrect <- Tcorrect
   
@@ -241,6 +253,7 @@ fitaci <- function(data,
   l$fitmethod <- fitmethod
   l$citransition <- ifelse(is.null(citransition), NA, citransition)
   l$gmeso <- ifelse(is.null(gmeso) || gmeso < 0, NA, gmeso)
+  l$fitTPU <- fitTPU
   
   class(l) <- "acifit"
   
@@ -632,12 +645,13 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
   
   # Possible transitions to TPU
   if(!fitTPU){
-    citransitions2 <- max(ci) + 100
+    citransitions2 <- max(ci) + 1
   } else {
     # start at top, all the way down, leave lowest 2 points alone
-    citransitions2 <- rev(citransitions[-c(1:2)])  
+    citransitions2 <- c(max(ci) + 1, rev(citransitions[-c(1:2)]))
   }
   citransdf <- expand.grid(ci1=citransitions1, ci2=citransitions2)
+  citransdf <- subset(citransdf, ci1 <= ci2)
   SS <- c()
   
   for(i in 1:nrow(citransdf)){
@@ -660,7 +674,7 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
     }
   }
   
-  # Best Ci transition
+  # Best Ci transitions
   bestcis <- citransdf[which.min(SS),]
   
   f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, bestcis$ci1, bestcis$ci2, Tcorrect, algorithm,
