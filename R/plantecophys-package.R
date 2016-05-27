@@ -17,10 +17,10 @@ NULL
 #' @docType data
 #' @format
 #' \describe{
-#' \item {Curve} {An identifier for the A-Ci curve (28 curves in total, 13-14 points per curve)}
-#' \item {Ci}{Intercellular CO2 concentration (ppm)}
-#' \item {Photo}{Net photosynthesis rate (mu mol m-2 s-1)}
-#' \item {Tleaf}{Leaf temperature (deg C)}
-#' \item {PPFD}{Photosynthetic photon flux density (mu mol m-2 s-1)}
+#' \item{Curve}{An identifier for the A-Ci curve (28 curves in total, 13-14 points per curve)}
+#' \item{Ci}{Intercellular CO2 concentration (ppm)}
+#' \item{Photo}{Net photosynthesis rate (mu mol m-2 s-1)}
+#' \item{Tleaf}{Leaf temperature (deg C)}
+#' \item{PPFD}{Photosynthetic photon flux density (mu mol m-2 s-1)}
 #' }
 NULL
