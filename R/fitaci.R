@@ -43,13 +43,10 @@
 #' The A-Ci curve parameters depend on the values of a number of other parameters. For Jmax, PPFD is needed in order to express it as the asymptote. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1 (in which case a warning is printed). It is possible to either provide PPFD as a variable in the dataset (with the default name 'PARi', which can be changed), or as an argument to the \code{fitaci} directly. 
 #' 
 #' \strong{Plotting and summarizing - }
-#' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. 
+#' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. Because fitaci returns the fitted nls object (see next section), more details on statistics of the fit can be extracted with standard tools. The Examples below shows the use of the \pkg{nlstools} to extract many details at once. The fit includes the root mean squared error (RMSE), which can be extracted as \code{myfit$RMSE}. This is a useful metric to compare the different fitting methods.
 #' 
 #' \strong{Atmospheric pressure correction - }
 #' Note that atmospheric pressure (Patm) is taken into account, assuming the original data are in molar units (Ci in mu mol mol-1, or ppm). During the fit, Ci is converted to mu bar, and Km and Gammastar are recalculated accounting for the effects of Patm on the partial pressure of oxygen. When plotting the fit, though, molar units are shown on the X-axis. Thus, you should get (nearly) the same fitted curve when Patm was set to a value lower than 100kPa, but the fitted Vcmax and Jmax will be higher. This is because at low Patm, photosynthetic capacity has to be higher to achieve the same measured photosynthesis rate.
-#' 
-#' \strong{Summarizing the fit - }
-#' Because fitaci returns the fitted nls object (see next section), more details on statistics of the fit can be extracted with standard tools. The Examples below shows the use of the \pkg{nlstools} to extract many details at once. The fit includes the root mean squared error (RMSE), which can be extracted as \code{myfit$RMSE}. This is a useful metric to compare the different fitting methods.
 #' 
 #' @troubleshooting From time to time, the \code{fitaci} function returns an error, indicating that the A-Ci curve could not be fit. In the majority of cases, this indicates a bad curve that probably could not (and should not) be fit in any case. Inspect the raw data to check if the curve does not include severe outliers, or large deviations from the expected, typical A-Ci curve. If the curve looks fine, refit using the option \code{fitmethod="bilinear"}, which will always return estimated parameters.
 #' 
@@ -639,7 +636,9 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, ci
   
   # Fit Vcmax and Rd from linearized portion
   datv <- data[data$Ci < citransition & data$Ci < citransition2,]
-  if(nrow(datv) == 0)Stop("No data for Vcmax - use higher citransition")
+  if(nrow(datv) == 0){
+    return(list(pars=NA, fit=NA, TPU=NA, success=FALSE))
+  }
   fitv <- lm(ALEAF ~ vcmax_pred, data=datv)
   
   Rd_fit <- coef(fitv)[[1]]
@@ -649,12 +648,25 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, ci
   datj <- data[data$Ci >= citransition & data$Ci < citransition2,]
   datp <- data[data$Ci >= citransition2,]
 
+  # Manual fix: if only one point for TPU, and none for Jmax, abandon fit.
+  # In this case it would be more defensible to use the single point for Jmax.
+  if(nrow(datp) == 1 && nrow(datj) == 0){
+    return(list(pars=NA, fit=NA, TPU=NA, success=FALSE))
+  }
+  
+  
   if(nrow(datj) > 0){
     
     # Fit gross photo using fitted Rd
     datj$Agross <- datj$ALEAF - Rd_fit
-    fitj <- lm(Agross ~ Jmax_pred-1, data=datj)
-    J_fit <- 4 * coef(fitj)[[1]]
+    
+    # One point, calculate directly
+    if(nrow(datj) == 1){
+      J_fit <- with(datj, 4 * Agross / Jmax_pred)
+    } else {
+      fitj <- lm(Agross ~ Jmax_pred-1, data=datj)
+      J_fit <- 4 * coef(fitj)[[1]]
+    }
     
     # And solve for Jmax from inverse non-rect. hyperbola
     Jmax_fit <- inverseJfun(mean(data$PPFD), alpha, J_fit, theta)
@@ -683,7 +695,7 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, ci
   rownames(pars) <- c("Vcmax","Jmax","Rd")
   colnames(pars) <- c("Estimate","Std. Error")
   
-  return(list(pars=pars, fit=fitv, TPU=TPU))
+  return(list(pars=pars, fit=fitv, TPU=TPU, success=TRUE))
 }
 
 do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Patm, Tcorrect,
@@ -717,16 +729,15 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
                                   Tcorrect=FALSE, algorithm,
                                   alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                   GammaStar, Km)
-    
-    if(!any(is.na(fit$pars[,"Estimate"]))){
-      run <- do_acirun(data,fit,Patm,Tcorrect=FALSE,
-                       alpha=alpha,theta=theta,
-                       gmeso=gmeso,EaV=EaV,
-                       EdVC=EdVC,delsC=delsC,
-                       EaJ=EaJ,EdVJ=EdVJ,
-                       delsJ=delsJ)
-      
-      SS[i] <- sum((run$Ameas - run$Amodel)^2)  
+    if(fit$success && !any(is.na(fit$pars[,"Estimate"]))){
+        run <- do_acirun(data,fit,Patm,Tcorrect=FALSE,
+                         alpha=alpha,theta=theta,
+                         gmeso=gmeso,EaV=EaV,
+                         EdVC=EdVC,delsC=delsC,
+                         EaJ=EaJ,EdVJ=EdVJ,
+                         delsJ=delsJ)
+        
+        SS[i] <- sum((run$Ameas - run$Amodel)^2)  
     } else {
       SS[i] <- 10^6
     }
