@@ -1,13 +1,35 @@
 #' Fit multiple A-Ci curves at once
+#' 
+#' @description A convenient function to fit many curves at once, by calling \code{\link{fitaci}} for every group in the dataset. The data provided must include a variable that uniquely identifies each A-Ci curve.
+#' 
 #' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
 #' @param group The name of the grouping variable in the dataframe (an A-Ci curve will be fit for each group separately).
 #' @param quiet If TRUE, no messages are written to the screen.
 #' @param progressbar Display a progress bar (default is TRUE).
 #' @param \dots Further arguments passed to \code{\link{fitaci}}
 #' 
+#' 
+#' @examples
+#' 
+#' # Fit many curves (using an example dataset)
+#' # The bilinear method is much faster, but compare using default!
+#' fits <- fitacis(manyacidat, "Curve", fitmethod="bilinear")
+#' with(coef(fits), plot(Vcmax, Jmax))
+#' 
+#' # The resulting object is a list, with each component an object as returned by fitaci
+#' # So, we can extract one curve:
+#' fits[[1]]
+#' plot(fits[[1]])
+#' 
+#' # Other elements can be summarized with sapply. For example, look at the RMSE:
+#' rmses <- sapply(fits, "[[", "RMSE")
+#' plot(rmses, type='h', ylab="RMSE", xlab="Curve nr")
+#' 
+#' # And plot the worst-fitting curve:
+#' plot(fits[[which.max(rmses)]])
+#' 
+#' 
 #' @export
-#' 
-#' 
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
 fitacis <- function(data, group, fitmethod=c("default","bilinear"),
@@ -82,7 +104,7 @@ do_fit_bygroup <- function(d, which=NULL, progressbar, fitmethod, ...){
 #' @S3method plot acifits
 #' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
 #' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
-#' @rdname fitaci
+#' @rdname fitacis
 plot.acifits <- function(x, how=c("manyplots","oneplot"),
                          highlight=NULL, ylim=NULL,xlim=NULL,
                          add=FALSE, what=c("model","data","none"),
@@ -143,7 +165,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
 
 #' @export coef.acifits
 #' @S3method coef acifits
-#' @rdname fitaci
+#' @rdname fitacis
 coef.acifits <- function(object,...){
   
   f <- lapply(object, function(x)c(x$pars))
