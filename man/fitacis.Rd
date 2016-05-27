@@ -20,15 +20,27 @@ fitacis(data, group, fitmethod = c("default", "bilinear"),
 
 \item{group}{The name of the grouping variable in the dataframe (an A-Ci curve will be fit for each group separately).}
 
+\item{fitmethod}{Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.}
+
 \item{progressbar}{Display a progress bar (default is TRUE).}
 
 \item{quiet}{If TRUE, no messages are written to the screen.}
+
+\item{x}{For \code{plot.acifits}, an object returned from \code{fitacis}}
 
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
 
 \item{highlight}{If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.}
 
-\item{\dots}{Further arguments passed to \code{\link{fitaci}}}
+\item{xlim, ylim}{The X and Y axis limits.}
+
+\item{add}{If TRUE, adds the plots to a current plot.}
+
+\item{what}{What to plot, either 'model' (the fitted curve), 'data' or 'none'. See examples.}
+
+\item{object}{For \code{coef.acifits}, the object returned by \code{fitacis}.}
+
+\item{\dots}{Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).}
 }
 \description{
 A convenient function to fit many curves at once, by calling \code{\link{fitaci}} for every group in the dataset. The data provided must include a variable that uniquely identifies each A-Ci curve.
@@ -44,6 +56,14 @@ with(coef(fits), plot(Vcmax, Jmax))
 # So, we can extract one curve:
 fits[[1]]
 plot(fits[[1]])
+
+# Plot all curves in separate figures with plot(fits)
+# Or, in one plot:
+plot(fits, how="oneplot")
+
+# Note that parameters can be passed to plot.acifit. For example,
+plot(fits, how="oneplot", what="data", col="blue")
+plot(fits, how="oneplot", add=TRUE, what="model", lwd=c(1,1))
 
 # Other elements can be summarized with sapply. For example, look at the RMSE:
 rmses <- sapply(fits, "[[", "RMSE")

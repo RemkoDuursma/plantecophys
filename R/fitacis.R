@@ -4,10 +4,17 @@
 #' 
 #' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
 #' @param group The name of the grouping variable in the dataframe (an A-Ci curve will be fit for each group separately).
-#' @param quiet If TRUE, no messages are written to the screen.
+#' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.
 #' @param progressbar Display a progress bar (default is TRUE).
-#' @param \dots Further arguments passed to \code{\link{fitaci}}
-#' 
+#' @param quiet If TRUE, no messages are written to the screen.
+#' @param x For \code{plot.acifits}, an object returned from \code{fitacis}
+#' @param xlim,ylim The X and Y axis limits.
+#' @param add If TRUE, adds the plots to a current plot.
+#' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
+#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
+#' @param what What to plot, either 'model' (the fitted curve), 'data' or 'none'. See examples.
+#' @param object For \code{coef.acifits}, the object returned by \code{fitacis}.
+#' @param \dots Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).
 #' 
 #' @examples
 #' 
@@ -20,6 +27,14 @@
 #' # So, we can extract one curve:
 #' fits[[1]]
 #' plot(fits[[1]])
+#' 
+#' # Plot all curves in separate figures with plot(fits)
+#' # Or, in one plot:
+#' plot(fits, how="oneplot")
+#' 
+#' # Note that parameters can be passed to plot.acifit. For example,
+#' plot(fits, how="oneplot", what="data", col="blue")
+#' plot(fits, how="oneplot", add=TRUE, what="model", lwd=c(1,1))
 #' 
 #' # Other elements can be summarized with sapply. For example, look at the RMSE:
 #' rmses <- sapply(fits, "[[", "RMSE")
@@ -104,8 +119,6 @@ do_fit_bygroup <- function(d, which=NULL, progressbar, fitmethod, ...){
 
 #' @export plot.acifits
 #' @S3method plot acifits
-#' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
-#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
 #' @rdname fitacis
 plot.acifits <- function(x, how=c("manyplots","oneplot"),
                          highlight=NULL, ylim=NULL,xlim=NULL,

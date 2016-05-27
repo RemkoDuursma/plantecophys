@@ -30,13 +30,13 @@ FindTleaf(gs, Tair, ...)
 \item{\dots}{Further parameters passed to \code{\link{Photosyn}}. Note that Tleaf is not allowed as an input, since that is calculated by \code{PhotosynEB} from energy balance.}
 }
 \description{
-As \code{\link{Photosyn}}, but calculates the leaf temperature based on the leaf's energy balance. Including sensible and long-wave heat loss, latent heat loss from evaporation, and solar radiation input.
+As \code{\link{Photosyn}}, but calculates the leaf temperature based on the leaf's energy balance. Including sensible and long-wave heat loss, latent heat loss from evaporation, and solar radiation input. 
 
-Calculate Tleaf from energy balance, given that we know gs
+#'\strong{Warning:}Do not provide GS as an input to \code{PhotosynEB} directly; the results will not be as expected (filed as issue #27)
 }
 \details{
 Uses the Penman-Monteith equation to calculate the leaf transpiration rate, and finds Tleaf by solving the leaf energy balance iteratively. In the solution, it is accounted for that stomatal conductance (via the dependence of photosynthesis on Tleaf) and net radiation depend on Tleaf.
 
-Also included is the function \code{FindTleaf}, which calculates the leaf temperature if the stomatal conductance is known.
+Also included is the function \code{FindTleaf}, which calculates the leaf temperature if the stomatal conductance is known. The \strong{limitation} to this function is that input stomatal conductance (gs) is not vectorized, i.e. you can only provide one value at a time.
 }
 

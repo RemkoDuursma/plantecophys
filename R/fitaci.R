@@ -1,5 +1,5 @@
 #' Fit the Farquhar-Berry-von Caemmerer model of leaf photosynthesis
-#' @description Fits the Farquhar-Berry-von Caemmerer model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their standard errors. A simple plotting method is also included, as well as the function \code{\link{fitacis}} which quickly fits multiple A-Ci curves. Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
+#' @description Fits the Farquhar-Berry-von Caemmerer model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their standard errors. A simple plotting method is also included, as well as the function \code{\link{fitacis}} which quickly fits multiple A-Ci curves (see its help page). Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
 #' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
 #' @param varnames List of names of variables in the dataset (see Details).
 #' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.
@@ -139,6 +139,7 @@
 #' 
 #' @export
 #' @rdname fitaci
+#' @importFrom stats lm
 fitaci <- function(data, 
                    varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi", Rd="Rd"),
                    Tcorrect=TRUE, 
@@ -187,7 +188,7 @@ fitaci <- function(data,
   data <- set_Tleaf(varnames, data, Tleaf, quiet)
   
   # Set measured Rd if provided (or warn when provided but not used)
-  Rd_meas <- set_Rdmeas(varnames, data, useRd, citransition)
+  Rd_meas <- set_Rdmeas(varnames, data, useRd, citransition, quiet)
   haveRd <- !is.na(Rd_meas)
   
   # Extract Ci and apply pressure correction
@@ -398,7 +399,7 @@ return(data)
 
 
 # Check if Rd is provided and whether we want to set it as known.
-set_Rdmeas <- function(varnames, data, useRd, citransition){
+set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
   
   Rd_meas <- NA
   if(!is.null(varnames$Rd)){ # to avoid breakage with older versions when varnames provided.
@@ -718,7 +719,7 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
     citransitions2 <- c(max(ci) + 1, rev(citransitions1))
   }
   citransdf <- expand.grid(ci1=citransitions1, ci2=citransitions2)
-  citransdf <- subset(citransdf, ci1 <= ci2)
+  citransdf <- citransdf[citransdf$ci1 <= citransdf$ci2,]
   SS <- c()
   
   # Note that Tcorrect is set to FALSE inside the loop. If Tcorrect is needed, it is done
