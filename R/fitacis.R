@@ -59,9 +59,11 @@ fitacis <- function(data, group, fitmethod=c("default","bilinear"),
     }
     
     # Refit bad curves using the 'bilinear' method
-    if(!quiet)message("Fitting remaining curves with fitmethod='bilinear'.")
-    refits <- do_fit_bygroup(d, which(!fits$success), progressbar=FALSE, fitmethod="bilinear", ...)
-    fits$fits[!fits$success] <- refits$fits
+    if(fitmethod == "default"){
+      if(!quiet)message("Fitting remaining curves with fitmethod='bilinear'.")
+      refits <- do_fit_bygroup(d, which(!fits$success), progressbar=FALSE, fitmethod="bilinear", ...)
+      fits$fits[!fits$success] <- refits$fits
+    }
   }
   
   l <- fits$fits

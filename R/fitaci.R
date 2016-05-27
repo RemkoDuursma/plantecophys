@@ -234,7 +234,7 @@ fitaci <- function(data,
   }
   
   
-  # TPU
+  # TPU. If it is not estimated, put something in because we need it later.
   if(!("TPU" %in% names(f)))f$TPU <- 1000
   
   # Only used to add 'Amodel' to the output
