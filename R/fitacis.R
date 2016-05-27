@@ -1,8 +1,56 @@
+#' Fit multiple A-Ci curves at once
+#' 
+#' @description A convenient function to fit many curves at once, by calling \code{\link{fitaci}} for every group in the dataset. The data provided must include a variable that uniquely identifies each A-Ci curve.
+#' 
+#' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
+#' @param group The name of the grouping variable in the dataframe (an A-Ci curve will be fit for each group separately).
+#' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.
+#' @param progressbar Display a progress bar (default is TRUE).
+#' @param quiet If TRUE, no messages are written to the screen.
+#' @param x For \code{plot.acifits}, an object returned from \code{fitacis}
+#' @param xlim,ylim The X and Y axis limits.
+#' @param add If TRUE, adds the plots to a current plot.
+#' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
+#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
+#' @param what What to plot, either 'model' (the fitted curve), 'data' or 'none'. See examples.
+#' @param object For \code{coef.acifits}, the object returned by \code{fitacis}.
+#' @param \dots Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).
+#' 
+#' @examples
+#' 
+#' # Fit many curves (using an example dataset)
+#' # The bilinear method is much faster, but compare using default!
+#' fits <- fitacis(manyacidat, "Curve", fitmethod="bilinear")
+#' with(coef(fits), plot(Vcmax, Jmax))
+#' 
+#' # The resulting object is a list, with each component an object as returned by fitaci
+#' # So, we can extract one curve:
+#' fits[[1]]
+#' plot(fits[[1]])
+#' 
+#' # Plot all curves in separate figures with plot(fits)
+#' # Or, in one plot:
+#' plot(fits, how="oneplot")
+#' 
+#' # Note that parameters can be passed to plot.acifit. For example,
+#' plot(fits, how="oneplot", what="data", col="blue")
+#' plot(fits, how="oneplot", add=TRUE, what="model", lwd=c(1,1))
+#' 
+#' # Other elements can be summarized with sapply. For example, look at the RMSE:
+#' rmses <- sapply(fits, "[[", "RMSE")
+#' plot(rmses, type='h', ylab="RMSE", xlab="Curve nr")
+#' 
+#' # And plot the worst-fitting curve:
+#' plot(fits[[which.max(rmses)]])
+#' 
+#' 
 #' @export
-#' @rdname fitaci
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
-fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
+fitacis <- function(data, group, fitmethod=c("default","bilinear"),
+                    progressbar=TRUE, quiet=FALSE, ...){
+  
+  fitmethod <- match.arg(fitmethod)
   
   if(!group %in% names(data))
     stop("group variable must be in the dataframe.")
@@ -16,48 +64,62 @@ fitacis <- function(data, group, progressbar=TRUE, quiet=FALSE, ...){
   
   d <- split(data, data[,"group"])  
   ng <- length(d)
-  success <- vector("logical", ng)
+  fits <- do_fit_bygroup(d, 1:ng, progressbar, fitmethod, ...)
+  
+  if(any(!fits$success)){
+    if(!quiet){
+      group_fail <- names(d)[!fits$success]
+      message("The following groups could not be fit:")
+      message(paste(group_fail,collapse="\n"))
+    }
+    
+    # Refit bad curves using the 'bilinear' method
+    if(fitmethod == "default"){
+      if(!quiet)message("Fitting remaining curves with fitmethod='bilinear'.")
+      refits <- do_fit_bygroup(d, which(!fits$success), progressbar=FALSE, fitmethod="bilinear", ...)
+      fits$fits[!fits$success] <- refits$fits
+    }
+  }
+  
+  l <- fits$fits
+  class(l) <- "acifits"
+  attributes(l)$groupname <- group
+  
+return(l)
+}
+
+
+do_fit_bygroup <- function(d, which=NULL, progressbar, fitmethod, ...){
+  
+  ng <- length(d)
+  if(is.null(which))which <- 1:ng
+  success <- vector("logical", length(which))
   
   if(progressbar){
     wp <- txtProgressBar(title = "Fitting A-Ci curves", 
-                       label = "", min = 0, max = ng, initial = 0, 
-                       width = 50, style=3)
+                         label = "", min = 0, max = ng, initial = 0, 
+                         width = 50, style=3)
   }
   
   fits <- list()
-  for(i in 1:ng){
-    f <- try(fitaci(d[[i]], quiet=TRUE, ...), silent=TRUE)
+  for(i in which){
+    f <- try(fitaci(d[[i]], quiet=TRUE, fitmethod=fitmethod, ...), silent=TRUE)
     success[i] <- !inherits(f, "try-error")
     
     fits[[i]] <- if(success[i]) f else NA
     if(progressbar)setTxtProgressBar(wp, i)
   }
   if(progressbar)close(wp)
-
-  names(fits) <- names(d)
   
-  if(any(!success)){
-    if(!quiet){
-      message("The following groups could not be fit:")
-      print(names(d)[!success])
-    }
-  }
+  names(fits) <- names(d)[which]
   
-  # toss unfitted ones
-  fits <- fits[success]
-
-  class(fits) <- "acifits"
-  attributes(fits)$groupname <- group
-  
-return(fits)
+  l <- list(fits=fits, success=success)
 }
 
 
 #' @export plot.acifits
 #' @S3method plot acifits
-#' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
-#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
-#' @rdname fitaci
+#' @rdname fitacis
 plot.acifits <- function(x, how=c("manyplots","oneplot"),
                          highlight=NULL, ylim=NULL,xlim=NULL,
                          add=FALSE, what=c("model","data","none"),
@@ -118,7 +180,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
 
 #' @export coef.acifits
 #' @S3method coef acifits
-#' @rdname fitaci
+#' @rdname fitacis
 coef.acifits <- function(object,...){
   
   f <- lapply(object, function(x)c(x$pars))

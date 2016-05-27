@@ -17,6 +17,7 @@
 #' @param Jmax Maximum rate of electron transport at 25 degrees C (mu mol m-2 s-1)
 #' @param Vcmax Maximum carboxylation rate at 25 degrees C (mu mol m-2 s-1)
 #' @param gmeso Mesophyll conductance (mol m-2 s-1). If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
+#' @param TPU Triose-phosphate utilization rate (mu mol m-2 s-1); optional.
 #' @param Rd Dark respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)
 #' @param Rd0 Dark respiration rata at reference temperature (\code{TrefR})
 #' @param Q10 Temperature sensitivity of Rd.
@@ -156,6 +157,7 @@ Photosyn <- function(VPD=1.5,
                      Jmax=100, 
                      Vcmax=50, 
                      gmeso=NULL,
+                     TPU=1000,
                      
                      Rd0 = 0.92,
                      Q10 = 1.92,
@@ -191,12 +193,6 @@ Photosyn <- function(VPD=1.5,
   Rgas <- .Rgas()
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
   
-  #---- Functions
-  # Non-rectangular hyperbola
-  Jfun <- function(PPFD, alpha, Jmax, theta){
-    (alpha*PPFD + Jmax - 
-       sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
-  }
   
   #---- Do all calculations that can be vectorized
   
@@ -221,14 +217,14 @@ Photosyn <- function(VPD=1.5,
     Jmax <- Jmax * TJmax(Tleaf, EaJ, delsJ, EdVJ)
   }
   
-  #--- Stop here if only the parameters are required
-  if(returnParsOnly){
-    return(list(Vcmax=Vcmax, Jmax=Jmax, Km=Km, GammaStar=GammaStar))
-  }
-  
   # Electron transport rate
   J <- Jfun(PPFD, alpha, Jmax, theta)
   VJ <- J/4
+  
+  #--- Stop here if only the parameters are required
+  if(returnParsOnly){
+    return(list(Vcmax=Vcmax, Jmax=Jmax, Km=Km, GammaStar=GammaStar, VJ=VJ))
+  }
   
   # Medlyn et al. 2011 model gs/A. NOTE: 1.6 not here because we need GCO2!
   if(gsmodel == "BBOpti"){
@@ -337,14 +333,18 @@ Photosyn <- function(VPD=1.5,
         # Ci provided (A-Ci function mode)
         CIJ <- Ci
         
-        CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
+        if(length(GammaStar) > 1){
+          CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
+        } else {
+          CIJ[CIJ < GammaStar] <- GammaStar
+        }
         
         CIC <- Ci
         
       }
   
     # Photosynthetic rates, without or with mesophyll limitation
-    if(is.null(gmeso)){
+    if(is.null(gmeso) || gmeso < 0){
       # Get photosynthetic rate  
       Ac <- Vcmax*(CIC - GammaStar)/(CIC + Km)
       Aj <- VJ * (CIJ - GammaStar)/(CIJ + 2*GammaStar)
@@ -364,7 +364,8 @@ Photosyn <- function(VPD=1.5,
       Aj <- Aj + Rd
       
     }
-      
+
+    
       # When below light-compensation points, assume Ci=Ca.
       if(!inputCi){
         lesslcp <- vector("logical", length(Aj))
@@ -381,10 +382,24 @@ Photosyn <- function(VPD=1.5,
         Ci <- ifelse(Aj < Ac, CIJ, CIC)
       }
   }
-  
+
+    # Limitation by triose-phosphate utilization
+    Ap <- 3*TPU   
+    
     # Hyperbolic minimum.
     hmshape <- 0.9999
-    Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape) - Rd
+    Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape)
+    
+    # Another hyperbolic minimum with the transition to TPU
+    #browser()
+    tpulim <- any(Ap < Am)
+    if(!is.na(tpulim) && tpulim){
+      hmshape <- 1 - 1E-07
+      Am <- (Am+Ap - sqrt((Am+Ap)^2-4*hmshape*Am*Ap))/(2*hmshape)
+    }
+    
+    # Net photosynthesis
+    Am <- Am - Rd
   
     # Calculate conductance to CO2
     if(!inputCi && !inputGS){
@@ -397,7 +412,7 @@ Photosyn <- function(VPD=1.5,
       if(whichA == "Aj")GS <- (Aj-Rd)/(Ca - Ci)
       if(whichA == "Ac")GS <- (Ac-Rd)/(Ca - Ci)
     }
-    
+
     # Extra step here; GS can be negative
     GS[GS < g0] <- g0
     
@@ -421,6 +436,7 @@ Photosyn <- function(VPD=1.5,
                       ELEAF=E,
                       Ac=Ac,
                       Aj=Aj,
+                      Ap=Ap,
                       Rd=Rd,
                       VPD=VPD,
                       Tleaf=Tleaf,
@@ -437,6 +453,16 @@ return(df)
 Aci <- function(Ci,...)Photosyn(Ci=Ci,...)
 
 
+
+# Non-rectangular hyperbola
+Jfun <- function(PPFD, alpha, Jmax, theta){
+  (alpha*PPFD + Jmax - 
+     sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
+}
+
+inverseJfun <- function(PPFD, alpha, J, theta){
+  J*(J*theta - alpha*PPFD)/(J - alpha*PPFD)
+}
 
 
 
