@@ -128,26 +128,26 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
   how <- match.arg(how)
   what <- match.arg(what)
   
+  if(is.null(ylim)){
+    amax <- max(sapply(x, function(x)max(x$df$Amodel)))
+    amin <- max(sapply(x, function(x)min(x$df$Amodel)))
+    ylim <- c(amin,amax)
+  }
+  if(is.null(xlim)){
+    cimax <- max(sapply(x, function(x)max(x$df$Ci)))
+    cimin <- min(sapply(x, function(x)min(x$df$Ci)))
+    xlim <- c(cimin,cimax)
+  }
+  
   if(how == "manyplots"){
     if(add)Warning("Argument 'add' ignored when making multiple plots.")  
     
     for(i in seq_along(x)){
-      plot.acifit(x[[i]],main=names(x)[i],...)
+      plot.acifit(x[[i]],main=names(x)[i],xlim=xlim,ylim=ylim,...)
     }
   }
   
   if(how == "oneplot"){
-    
-    if(is.null(ylim)){
-      amax <- max(sapply(x, function(x)max(x$df$Amodel)))
-      amin <- max(sapply(x, function(x)min(x$df$Amodel)))
-      ylim <- c(amin,amax)
-    }
-    if(is.null(xlim)){
-      cimax <- max(sapply(x, function(x)max(x$df$Ci)))
-      cimin <- min(sapply(x, function(x)min(x$df$Ci)))
-      xlim <- c(cimin,cimax)
-    }
     
     if(!is.null(highlight)){
       if(!highlight %in% names(x))
@@ -167,7 +167,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
                   linecols="black",...)  
       
     } else {
-      if(!add)plot.acifit(x[[1]], what="none",ylim=c(amin,amax), whichA="Amin", ...)
+      if(!add)plot.acifit(x[[1]], what="none",ylim=ylim, xlim=xlim, whichA="Amin", ...)
       for(i in seq_along(x))
         plot.acifit(x[[i]], what=what, whichA="Amin", add=TRUE,...)  
     }
