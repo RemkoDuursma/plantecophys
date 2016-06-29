@@ -77,7 +77,7 @@ AciC4 <- function(Ci,
 	
 	# Day leaf respiration, umol m-2 s-1
   if (Tleaf > TBELOW) {
-      Rd <- RD0 * exp(Q10F * (Tleaf - RTEMP)) * DAYRESP
+      Rd <- RD0 * Q10^((Tleaf-RTEMP)/10) * DAYRESP
   } else {
       Rd <- 0.0
   }
