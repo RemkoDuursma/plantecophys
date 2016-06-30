@@ -1,5 +1,5 @@
 #' Fit the Farquhar-Berry-von Caemmerer model of leaf photosynthesis
-#' @description Fits the Farquhar-Berry-von Caemmerer model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their standard errors. A simple plotting method is also included, as well as the function \code{\link{fitacis}} which quickly fits multiple A-Ci curves (see its help page). Temperature dependencies are taken into account, see \code{\link{Photosyn}}.
+#' @description Fits the Farquhar-Berry-von Caemmerer model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their standard errors. A simple plotting method is also included, as well as the function \code{\link{fitacis}} which quickly fits multiple A-Ci curves (see its help page). Temperature dependencies of the parameters are taken into account following Medlyn et al. (2002), see \code{\link{Photosyn}} for more details.
 #' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
 #' @param varnames List of names of variables in the dataset (see Details).
 #' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax are estimated at measurement temperature.
@@ -19,11 +19,10 @@
 #' @param EaV,EdVC,delsC Vcmax temperature response parameters
 #' @param EaJ,EdVJ,delsJ Jmax temperature response parameters
 #' @param Km,GammaStar Optionally, provide Michaelis-Menten coefficient for Farquhar model, and Gammastar. If not provided, they are calculated with a built-in function of leaf temperature.
-#' @param object For coef.acifit, and print.acifit, the object returned by \code{fitaci}
 #' @param \dots Further arguments (ignored at the moment).
 #' @details 
 #' 
-#' \strong{Fitting method}
+#' \strong{Fitting method - }
 #' The default method to fit A-Ci curves (set by \code{fitmethod="default"}) uses non-linear regression to fit the A-Ci curve. No assumptions are made on which part of the curve is Vcmax or Jmax limited. Normally, all three parameters are estimated: Jmax, Vcmax and Rd, unless Rd is provided as measured (when \code{useRd=TRUE}, and Rd is contained in the data). This is the method as described by Duursma (2015, Plos One).
 #' 
 #' The 'bilinear' method to fit A-Ci curves (set by \code{fitmethod="bilinear"}) linearizes the Vcmax and Jmax-limited regions, and applies linear regression twice to estimate first Vcmax and Rd, and then Jmax (using Rd estimated from the Vcmax-limited region). The transition point is found as the one which gives the best overall fit to the data (i.e. all possible transitions are tried out, similar to Gu et al. 2010). The advantage of this method is that it \emph{always} returns parameter estimates, so it should be used in cases where the default method fails. Be aware, though, that the default method fails mostly when the curve contains bad data (so check your data before believing the fitted parameters).
@@ -43,12 +42,14 @@
 #' The A-Ci curve parameters depend on the values of a number of other parameters. For Jmax, PPFD is needed in order to express it as the asymptote. If PPFD is not provided in the dataset, it is assumed to equal 1800 mu mol m-2 s-1 (in which case a warning is printed). It is possible to either provide PPFD as a variable in the dataset (with the default name 'PARi', which can be changed), or as an argument to the \code{fitaci} directly. 
 #' 
 #' \strong{Plotting and summarizing - }
-#' When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. Because fitaci returns the fitted nls object (see next section), more details on statistics of the fit can be extracted with standard tools. The Examples below shows the use of the \pkg{nlstools} to extract many details at once. The fit includes the root mean squared error (RMSE), which can be extracted as \code{myfit$RMSE}. This is a useful metric to compare the different fitting methods.
+#' The default \strong{plot} of the fit is constructed with \code{\link{plot.acifit}}, see Examples below. When plotting the fit, the A-Ci curve is simulated using the \code{\link{Aci}} function, with leaf temperature (Tleaf) and PPFD set to the mean value for the dataset. The \strong{coefficients} estimated in the fit (Vcmax, Jmax, and usually Rd) are extracted with \code{coef}. The summary of the fit is the same as the 'print' method, that is \code{myfit} will give the same output as \code{summary(myfit)} (where \code{myfit} is an object returned by \code{fitaci}).
+#' 
+#' Because fitaci returns the fitted \code{\link{nls}} object, more details on statistics of the fit can be extracted with standard tools. The Examples below shows the use of the \pkg{nlstools} to extract many details of the fit at once. The fit also includes the \strong{root mean squared error} (RMSE), which can be extracted as \code{myfit$RMSE}. This is a useful metric to compare the different fitting methods.
 #' 
 #' \strong{Atmospheric pressure correction - }
 #' Note that atmospheric pressure (Patm) is taken into account, assuming the original data are in molar units (Ci in mu mol mol-1, or ppm). During the fit, Ci is converted to mu bar, and Km and Gammastar are recalculated accounting for the effects of Patm on the partial pressure of oxygen. When plotting the fit, though, molar units are shown on the X-axis. Thus, you should get (nearly) the same fitted curve when Patm was set to a value lower than 100kPa, but the fitted Vcmax and Jmax will be higher. This is because at low Patm, photosynthetic capacity has to be higher to achieve the same measured photosynthesis rate.
 #' 
-#' @troubleshooting From time to time, the \code{fitaci} function returns an error, indicating that the A-Ci curve could not be fit. In the majority of cases, this indicates a bad curve that probably could not (and should not) be fit in any case. Inspect the raw data to check if the curve does not include severe outliers, or large deviations from the expected, typical A-Ci curve. If the curve looks fine, refit using the option \code{fitmethod="bilinear"}, which will always return estimated parameters.
+#' @troubleshooting From time to time, the \code{fitaci} function returns an error, indicating that the A-Ci curve could not be fit. In the majority of cases, this indicates a bad curve that probably could not (and should not) be fit in any case. Inspect the raw data to check if the curve does not include severe outliers, or large deviations from the expected, typical A-Ci curve. If the curve looks fine, refit using the option \code{fitmethod="bilinear"}, which will always return estimated parameters. Whatever you do, do not trust fitted curves without inspecting the raw data, and the fit of the model to the data.
 #' 
 #' 
 #' @references

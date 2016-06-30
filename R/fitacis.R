@@ -13,8 +13,15 @@
 #' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
 #' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
 #' @param what What to plot, either 'model' (the fitted curve), 'data' or 'none'. See examples.
-#' @param object For \code{coef.acifits}, the object returned by \code{fitacis}.
 #' @param \dots Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).
+#' 
+#' @details 
+#' \strong{Troubleshooting - } When using the default fitting method (see \code{\link{fitaci}}), it is common that some curves cannot be fit. Usually this indicates that the curve is poor quality and should not be used to estimate photosynthetic capacity, but there are exceptions. The \code{fitacis} function now refits the non-fitting curves with the 'bilinear' method (see \code{fitaci}), which will always return parameter estimates (for better or worse).
+#' 
+#' \strong{Summarizing and plotting - } Like \code{fitaci}, the batch utility \code{fitacis} also has a standard plotting method. By default, it will make a single plot for every curve that you fit (thus generating many plots). Alternatively, use the setting \code{how="oneplot"} (see Examples below) for a single plot. The fitted \strong{coefficients} are extracted with \code{coef}, which gives a dataframe where each row represents a fitted curve (the grouping label is also included).
+#' 
+#' @references 
+#' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 #' 
 #' @examples
 #' 
@@ -175,26 +182,6 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
     
     
   }
-}
-
-
-#' @export coef.acifits
-#' @S3method coef acifits
-#' @rdname fitacis
-coef.acifits <- function(object,...){
-  
-  f <- lapply(object, function(x)c(x$pars))
-  pars <- as.data.frame(do.call(rbind,f))
-  rn <- rownames(object[[1]]$pars)
-  nm <- c(rn, paste0(rn,"_SE"))
-  names(pars) <- nm
-  
-  d <- data.frame(group=names(object))
-  names(d) <- attr(object,"group")
-  pars <- cbind(d,pars)
-  rownames(pars) <- NULL
-  
-return(pars)
 }
 
 

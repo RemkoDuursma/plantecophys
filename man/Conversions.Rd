@@ -43,12 +43,15 @@ RHairToLeaf(RH, Tair, Tleaf, Pa = 101)
 \item{Tair}{Air temperature (degrees C)}
 }
 \description{
-Converts relative humidity (\%) to vapour pressure deficit (kPa), or vice versa. 
-To convert from relative humidity, use the \code{RHtoVPD} function, 
-use \code{VPDtoRH} for the other way around. The water vapor saturation pressure is 
-calculated with \code{esat} (using Jones 1992). Also provided is \code{DewtoVPD} to 
+A collection of functions to convert between relative humidity (RH) (\%), vapour pressure deficit (VPD) (kPa), 
+dew point temperature, and leaf- or air temperature-based VPD or RH. To convert from relative humidity to VPD, 
+use the \code{RHtoVPD} function,  use \code{VPDtoRH} for the other way around. The water vapor saturation pressure is 
+calculated with \code{esat}. Use \code{DewtoVPD} to 
 convert from dewpoint temperature to VPD. The functions \code{VPDleafToAir} and \code{VPDairToLeaf}
-convert VPD from a leaf temperature to an air-temperature basis and vice versa.
+convert VPD from a leaf temperature to an air-temperature basis and vice versa. The functions \code{RHleafToAir} a \code{RHairToLeaf} do the same for relative humidity.
+}
+\details{
+The function describing saturated vapor pressure with temperature is taken from Jones (1992). All other calculations follow directly from the standard definitions, for which Jones (1992) may also be consulted.
 }
 \author{
 Remko Duursma

@@ -1,11 +1,11 @@
 #' @title Coupled leaf gas exchange model
 #' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes options for temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance. 
-#' @param VPD Vapour pressure deficit (kPa)
+#' @param VPD Vapour pressure deficit (kPa) (not needed when RH provided)
 #' @param Ca Atmospheric CO2 concentration (ppm)
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
 #' @param Tleaf Leaf temperature (degrees C)
 #' @param Patm Atmospheric pressure (kPa) (but see warning below!)
-#' @param RH Relative humidity (in \%)
+#' @param RH Relative humidity (in \%) (not needed when VPD provided)
 #' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), or BallBerry (Ball et al. 1987)
 #' @param g0,g1 Parameters of Ball-Berry type stomatal conductance models.
 #' @param gk Optional, exponent of VPD in gs model (Duursma et al. 2013)
@@ -32,33 +32,31 @@
 #' @param whichA Which assimilation rate does gs respond to? 
 #' @param \dots Further arguments passed to \code{Photosyn}
 #' @seealso \code{\link{FARAO}}, \code{\link{fitaci}}, \code{\link{AciC4}}
-#' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model. 
+#' @details The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model, Duursma (2015) for more details on the implementation in the \code{plantecophys} package, and Duursma et al. (2014) for an example application (that uses this implementation).
 #' 
-#' The model of Farquhar et al. (1980) is used to estimate the dependence of photosynthesis rate on Ci.
-#'  
-#'  The temperature response of photosynthetic parameters, including Vcmax, Jmax, Gammastar, and Km follow Medlyn et al. 2002. 
+#' The model of Farquhar et al. (1980) is used to estimate the dependence of leaf net photosynthesis rate (ALEAF) on intercellular CO2 concentration (Ci).   The temperature response of photosynthetic parameters, including Vcmax, Jmax, Gammastar, and Km follow Medlyn et al. (2002). 
 #'  
 #'  At the moment, two stomatal conductance models are implemented, both are Ball-Berry type models. The 'BBOpti' model is a slightly more general form of the model of Medlyn et al. 2011 (see Duursma et al. 2013). It is given by (in notation of the parameters and output variables of \code{Photosyn}),
 #'  
-#'  \deqn{GS = G0 + 1.6*(1 + G1/D^(1-GK))*ALEAF/CA}
+#'  \deqn{GS = g0 + 1.6*(1 + g1/D^(1-gk))*ALEAF/CA}
 #'  
-#'  where GK = 0.5 if stomata behave optimally (cf. Medlyn et al. 2011).
+#'  where gk = 0.5 if stomata behave optimally (cf. Medlyn et al. 2011).
 #'  
 #'  The 'BBLeuning' model is that of Leuning (1995). It is given by,
 #'  
-#'  \deqn{GS = G0 + g1*ALEAF/(Ca * (1 + VPD/D0))}
+#'  \deqn{GS = g0 + g1*ALEAF/(Ca * (1 + VPD/D0))}
 #'  
 #'  Note that this model also uses the g1 parameter, but it needs to be set to a much higher value to be comparable in magnitude to the BBOpti model.
 #'  
 #'  The 'BallBerry' model is that of Ball et al. (1987). It is given by,
 #'  
-#'  \deqn{GS = G0 + g1*RH*ALEAF/Ca}
+#'  \deqn{GS = g0 + g1*RH*ALEAF/Ca}
 #'  
 #'  Where RH is relative humidity.
 #'  
-#'  For the full numerical solution to the Cowan-Farquhar optimization, use the \code{\link{FARAO}} function.
+#'  For the full numerical solution to the Cowan-Farquhar optimization, use the \code{\link{FARAO}} function (which was used in Medlyn et al. 2011 for comparison to the approximation there presented).
 #'  
-#'  If the mesophyll conductance is provided, it is assumed that Vcmax and Jmax are the chloroplastic rates, and leaf photosynthesis is calculated following Ethier and Livingston (2004).
+#'  If the mesophyll conductance \code{gmeso} is provided, it is assumed that Vcmax and Jmax are the chloroplastic rates, and leaf photosynthesis is calculated following Ethier and Livingston (2004).
 #'  
 #'  If Ci is provided as an input, this function calculates an A-Ci curve. Otherwise, Ci is calculated from the intersection between the 'supply' and 'demand', where 'demand' is given by the Farquhar model of photosynthesis (A=f(Ci)), and supply by the stomatal conductance. The latter is, by default, estimated using the stomatal conductance model of Medlyn et al. (2011), but two other models are provided as well (Ball-Berry and Leuning, see \code{gsmodel} argument). Otherwise, stomatal conductance may be directly provided via the \code{GS} argument. 
 #'  
@@ -73,6 +71,10 @@
 #' 
 #' @references 
 #' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
+#' 
+#' Duursma, R.A., Barton, C.V.M., Lin, Y.-S., Medlyn, B.E., Eamus, D., Tissue, D.T., Ellsworth, D.S., McMurtrie, R.E., 2014. The peaked response of transpiration rate to vapour pressure deficit in field conditions can be explained by the temperature optimum of photosynthesis. Agricultural and Forest Meteorology 189–190, 2–10. doi:10.1016/j.agrformet.2013.12.007
+#'
+#' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 #'
 #'Ethier, G. and N. Livingston. 2004. On the need to incorporate sensitivity to CO2 transfer conductance into the Farquhar von Caemmerer Berry leaf photosynthesis model. Plant, Cell & Environment. 27:137-153.
 #'

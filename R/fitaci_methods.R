@@ -1,8 +1,7 @@
 
 
-#' @export print.acifit
+
 #' @S3method print acifit
-#' @rdname fitaci
 print.acifit <- function(x,...){
   
   cat("Result of fitaci.\n\n")
@@ -54,9 +53,8 @@ print.acifit <- function(x,...){
   
 }
 
-#' @export summary.acifit
+
 #' @S3method summary acifit
-#' @rdname fitaci
 summary.acifit <- function(object,...){
   
   print.acifit(object, ...)
@@ -64,18 +62,35 @@ summary.acifit <- function(object,...){
 }
 
 
-#' @export coef.acifit
+
 #' @S3method coef acifit
-#' @rdname fitaci
 coef.acifit <- function(object, ...){
   v <- unname(object$pars[,1])
   names(v) <- rownames(object$pars)
   return(v)
 }
 
-#' @export fitted.acifit
+
+#' @S3method coef acifits
+coef.acifits <- function(object,...){
+  
+  f <- lapply(object, function(x)c(x$pars))
+  pars <- as.data.frame(do.call(rbind,f))
+  rn <- rownames(object[[1]]$pars)
+  nm <- c(rn, paste0(rn,"_SE"))
+  names(pars) <- nm
+  
+  d <- data.frame(group=names(object))
+  names(d) <- attr(object,"group")
+  pars <- cbind(d,pars)
+  rownames(pars) <- NULL
+  
+  return(pars)
+}
+
+
+
 #' @S3method fitted acifit
-#' @rdname fitaci
 fitted.acifit <- function(object,...){
   
   object$df$Amodel
