@@ -191,6 +191,7 @@ fitaci <- function(data,
   # Set measured Rd if provided (or warn when provided but not used)
   Rd_meas <- set_Rdmeas(varnames, data, useRd, citransition, quiet)
   haveRd <- !is.na(Rd_meas)
+  if(haveRd & useRd & fitmethod == "bilinear")Warning("Measured Rd not yet used with bilinear fitmethod.")
   
   # Extract Ci and apply pressure correction
   data$Ci_original <- data[,varnames$Ci]
@@ -199,6 +200,10 @@ fitaci <- function(data,
   # Extract measured net leaf photosynthesis
   data$ALEAF <- data[,varnames$ALEAF]
   
+  # Calculate Km and GammaStar, if not input 
+  # (Photosyn does this as well, but have to repeat it here since we cannot have NULL in call to nls)
+  Km_v <- if(!kminput) TKm(data$Tleaf, Patm) else rep(Km, nrow(data))
+  GammaStar_v <- if(!gstarinput)TGammaStar(data$Tleaf, Patm) else rep(GammaStar, nrow(data))
   
   # Citransition not defined:
   # default method = full non-linear model
@@ -208,13 +213,13 @@ fitaci <- function(data,
     if(fitmethod == "default"){
     
       f <- do_fit_method1(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, algorithm,
-                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
+                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
     } 
     if(fitmethod == "bilinear"){
       
       f <- do_fit_method_bilinear_bestcitrans(data, haveRd, fitTPU, Rd_meas, Patm, Tcorrect, algorithm,
                                               alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
-                                              GammaStar, Km)
+                                              GammaStar_v, Km_v)
     }
   }
   
@@ -225,12 +230,12 @@ fitaci <- function(data,
     
     if(fitmethod == "default"){
       f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
-                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ)
+                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
     }
     if(fitmethod == "bilinear"){
       f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransition, NULL, Tcorrect, algorithm,
                                 alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
-                                GammaStar, Km)
+                                GammaStar_v, Km_v)
     }
     
   }
@@ -240,12 +245,12 @@ fitaci <- function(data,
   if(!("TPU" %in% names(f)))f$TPU <- 1000
   
   # Only used to add 'Amodel' to the output
-  acirun <- do_acirun(data,f,Patm,Tcorrect,
+  acirun <- do_acirun(data,f,Patm,Tcorrect,  # Note several parameters are stored in 'f'
                       alpha=alpha,theta=theta,
                       gmeso=gmeso,EaV=EaV,
                       EdVC=EdVC,delsC=delsC,
                       EaJ=EaJ,EdVJ=EdVJ,
-                      delsJ=delsJ)
+                      delsJ=delsJ,GammaStar=GammaStar_v, Km=Km_v)
 
   # If Ap is never actually limiting, set estimated TPU to 1000
   # This means there is no evidence for TPU-limitation.
@@ -296,11 +301,11 @@ fitaci <- function(data,
   l$Rd_measured <- haveRd
   
   # Save GammaStar and Km (either evaluated at mean temperature, or input if provided)
-  if(gstarinput)l$GammaStar <- GammaStar else l$GammaStar <- TGammaStar(mean(data$Tleaf),Patm)
-  if(kminput)l$Km <- Km else l$Km <- TKm(mean(data$Tleaf),Patm)
-  
+  l$GammaStar <- mean(GammaStar_v)
+  l$Km <- mean(Km_v)
   l$kminput <- kminput
   l$gstarinput <- gstarinput
+  
   l$fitmethod <- fitmethod
   l$citransition <- ifelse(is.null(citransition), NA, citransition)
   l$gmeso <- ifelse(is.null(gmeso) || gmeso < 0, NA, gmeso)
@@ -429,7 +434,7 @@ set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
 
 
 do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, algorithm,
-                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ){
+                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar,Km){
   
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
@@ -448,7 +453,7 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
                                  gmeso=gmeso,EaV=EaV,
                                  EdVC=EdVC,delsC=delsC,
                                  EaJ=EaJ,EdVJ=EdVJ,
-                                 delsJ=delsJ)
+                                 delsJ=delsJ,Km=Km,GammaStar=GammaStar)
         
         SS <- sum((data$ALEAF - Photo_mod)^2)
         return(SS)
@@ -474,7 +479,7 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
                                  gmeso=gmeso,EaV=EaV,
                                  EdVC=EdVC,delsC=delsC,
                                  EaJ=EaJ,EdVJ=EdVJ,
-                                 delsJ=delsJ)
+                                 delsJ=delsJ,Km=Km,GammaStar=GammaStar)
         SS <- sum((data$ALEAF - Photo_mod)^2)
         return(SS)
       }
@@ -499,7 +504,7 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
                                       gmeso=gmeso,EaV=EaV,
                                       EdVC=EdVC,delsC=delsC,
                                       EaJ=EaJ,EdVJ=EdVJ,
-                                      delsJ=delsJ),
+                                      delsJ=delsJ,Km=Km,GammaStar=GammaStar),
                   algorithm=algorithm,
                   data=data, control=nls.control(maxiter=500, minFactor=1/10000),
                   start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess, Rd=Rd_guess)), silent=TRUE)
@@ -520,7 +525,7 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
                                       gmeso=gmeso,EaV=EaV,
                                       EdVC=EdVC,delsC=delsC,
                                       EaJ=EaJ,EdVJ=EdVJ,
-                                      delsJ=delsJ),
+                                      delsJ=delsJ,Km=Km,GammaStar=GammaStar),
                   algorithm=algorithm,
                   data=data, control=nls.control(maxiter=500, minFactor=1/10000),
                   start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess)), silent=TRUE)
@@ -545,7 +550,7 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
 
 
 do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
-                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ){
+                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar,Km){
   
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
@@ -565,7 +570,7 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
                                             gmeso=gmeso,EaV=EaV,
                                             EdVC=EdVC,delsC=delsC,
                                             EaJ=EaJ,EdVJ=EdVJ,
-                                            delsJ=delsJ),
+                                            delsJ=delsJ,Km=Km,GammaStar=GammaStar),
                         algorithm=algorithm,
                         data=dat_vcmax, control=nls.control(maxiter=500, minFactor=1/10000),
                         start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
@@ -587,7 +592,7 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
                                            gmeso=gmeso,EaV=EaV,
                                            EdVC=EdVC,delsC=delsC,
                                            EaJ=EaJ,EdVJ=EdVJ,
-                                           delsJ=delsJ),
+                                           delsJ=delsJ,Km=Km,GammaStar=GammaStar),
                        algorithm=algorithm,
                        data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
                        start=list(Jmax=Jmax_guess))
@@ -609,9 +614,10 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
 
 
 
-do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, citransition2=NULL, Tcorrect, algorithm,
-                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
-                           GammaStar, Km){
+do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, citransition2=NULL,
+                                   Tcorrect, algorithm,
+                                   alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                                   GammaStar, Km){
   
   # Calculate T-dependent parameters
   ppar <- Photosyn(Tleaf=data$Tleaf, Patm=Patm, Tcorrect=Tcorrect,
@@ -737,7 +743,7 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
                          gmeso=gmeso,EaV=EaV,
                          EdVC=EdVC,delsC=delsC,
                          EaJ=EaJ,EdVJ=EdVJ,
-                         delsJ=delsJ)
+                         delsJ=delsJ,GammaStar=GammaStar,Km=Km)
         
         SS[i] <- sum((run$Ameas - run$Amodel)^2)  
     } else {
