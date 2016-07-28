@@ -356,7 +356,7 @@ guess_Vcmax <- function(data, Jmax_guess, Rd_guess, Patm, Tcorrect){
     Vcmax_guess <- Jmax_guess/1.8 
   }
   if(Tcorrect){
-    Teffect <- TVcmax(mean(dato$Tleaf), EaV=82620.87, delsC=645.1013, EdVC=0)
+    Teffect <- TVcmax(mean(data$Tleaf), EaV=82620.87, delsC=645.1013, EdVC=0)
     Vcmax_guess <- Vcmax_guess / Teffect
   }
   return(Vcmax_guess)
