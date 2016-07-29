@@ -85,6 +85,16 @@ coef.acifits <- function(object,...){
   pars <- cbind(d,pars)
   rownames(pars) <- NULL
   
+  if(!is.null(object[[1]]$id)){
+    get_id <- function(x){
+      res <- x$df[x$id]
+      res1 <- res[1,,drop=FALSE]
+      as.data.frame(lapply(res1, as.character))
+    }
+    ids <- do.call(rbind,lapply(object, get_id))
+    pars <- cbind(pars, ids)
+  }
+  
   return(pars)
 }
 

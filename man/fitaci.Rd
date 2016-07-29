@@ -11,7 +11,8 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
   "bilinear"), algorithm = "default", fitTPU = FALSE, useRd = FALSE,
   PPFD = NULL, Tleaf = NULL, alpha = 0.24, theta = 0.85, gmeso = NULL,
   EaV = 82620.87, EdVC = 0, delsC = 645.1013, EaJ = 39676.89,
-  EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL, Km = NULL, ...)
+  EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL, Km = NULL,
+  id = NULL, ...)
 
 \method{plot}{acifit}(x, what = c("data", "model", "none"), xlim = NULL,
   ylim = NULL, whichA = c("Ac", "Aj", "Amin", "Ap"), add = FALSE,
@@ -83,6 +84,8 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 \item{linecols}{Vector of three colours for the lines (limiting rate, Ac, Aj), if one value provided it is used for all three.}
 
 \item{lwd}{Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).}
+
+\item{Names}{of variables (quoted, can be a vector) in the original dataset to be stored in the result. Most useful when using \code{\link{fitacis}}, see there for examples of its use.}
 
 \item{\dots}{Further arguments (ignored at the moment).}
 }

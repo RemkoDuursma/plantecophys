@@ -19,6 +19,7 @@
 #' @param EaV,EdVC,delsC Vcmax temperature response parameters
 #' @param EaJ,EdVJ,delsJ Jmax temperature response parameters
 #' @param Km,GammaStar Optionally, provide Michaelis-Menten coefficient for Farquhar model, and Gammastar. If not provided, they are calculated with a built-in function of leaf temperature.
+#' @param Names of variables (quoted, can be a vector) in the original dataset to be stored in the result. Most useful when using \code{\link{fitacis}}, see there for examples of its use.
 #' @param \dots Further arguments (ignored at the moment).
 #' @details 
 #' 
@@ -166,6 +167,7 @@ fitaci <- function(data,
                    
                    GammaStar = NULL,
                    Km = NULL,
+                   id=NULL,
                    ...){
   
   fitmethod <- match.arg(fitmethod)
@@ -259,6 +261,14 @@ fitaci <- function(data,
   # Organize output
   l <- list()  
   l$df <- acirun[order(acirun$Ci),]
+  if(!is.null(id)){
+    if(any(!id %in% names(data))){
+      Warning("id ignored - not all variables are in dataset provided")
+    } else {
+      l$df <- cbind(l$df, data[id])
+    }
+  }
+  l$id <- id
   l$pars <- f$pars
   if(fitTPU){
     val <- ifelse(f$TPU < 1000, f$TPU, NA)

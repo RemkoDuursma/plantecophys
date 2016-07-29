@@ -7,6 +7,7 @@
 #' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.
 #' @param progressbar Display a progress bar (default is TRUE).
 #' @param quiet If TRUE, no messages are written to the screen.
+#' @param id Names of variables (quoted, can be a vector) in the original dataset to return as part of the coef() statement. Useful for keeping track of species names, treatment levels, etc. See examples.
 #' @param x For \code{plot.acifits}, an object returned from \code{fitacis}
 #' @param xlim,ylim The X and Y axis limits.
 #' @param add If TRUE, adds the plots to a current plot.
@@ -20,13 +21,15 @@
 #' 
 #' \strong{Summarizing and plotting - } Like \code{fitaci}, the batch utility \code{fitacis} also has a standard plotting method. By default, it will make a single plot for every curve that you fit (thus generating many plots). Alternatively, use the setting \code{how="oneplot"} (see Examples below) for a single plot. The fitted \strong{coefficients} are extracted with \code{coef}, which gives a dataframe where each row represents a fitted curve (the grouping label is also included).
 #' 
+#' \strong{Adding identifying variables - } after fitting multiple curves, the most logical next step is to analyze the coefficient by some categorical variable (species, treatment, location). You can use the \code{id} argument to store variables from the original dataset in the output. It is important that the 'id' variables take only one value per fitted curve, if this is not the case only the first value of the curve will be stored (this will be rarely useful). See examples.
+#' 
 #' @references 
 #' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 #' 
 #' @examples
 #' 
 #' # Fit many curves (using an example dataset)
-#' # The bilinear method is much faster, but compare using default!
+#' # The bilinear method is much faster, but compare using 'default'!
 #' fits <- fitacis(manyacidat, "Curve", fitmethod="bilinear")
 #' with(coef(fits), plot(Vcmax, Jmax))
 #' 
@@ -50,12 +53,20 @@
 #' # And plot the worst-fitting curve:
 #' plot(fits[[which.max(rmses)]])
 #' 
+#' # It is very straightforward to summarize the coefficients by a factor variable
+#' # that was contained in the original data. In manyacidat, there is a factor variable
+#' # 'treatment'.
+#' # We first have to refit the curves, using the 'id' argument:
+#' fits <- fitacis(manyacidat, "Curve", fitmethod="bilinear", id="treatment")
+#' 
+#' # And now use this to plot Vcmax by treatment.
+#' boxplot(Vcmax ~ treatment, data=coef(fits), ylim=c(0,130))
 #' 
 #' @export
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
 fitacis <- function(data, group, fitmethod=c("default","bilinear"),
-                    progressbar=TRUE, quiet=FALSE, ...){
+                    progressbar=TRUE, quiet=FALSE, id=NULL, ...){
   
   fitmethod <- match.arg(fitmethod)
   
@@ -71,7 +82,7 @@ fitacis <- function(data, group, fitmethod=c("default","bilinear"),
   
   d <- split(data, data[,"group"])  
   ng <- length(d)
-  fits <- do_fit_bygroup(d, 1:ng, progressbar, fitmethod, ...)
+  fits <- do_fit_bygroup(d, 1:ng, progressbar, fitmethod, id=id, ...)
   
   if(any(!fits$success)){
     if(!quiet){
