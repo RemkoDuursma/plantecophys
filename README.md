@@ -14,7 +14,7 @@ Welcome to the home of *plantecophys*, an R package that bundles a number of too
 * `fitBB` fits various forms of the Ball-Berry stomatal conductance model to data.
 * `Photosyn` is an implementation of a coupled leaf gas exchange model, including the Farquhar-Berry-von Caemmerer model of photosynthesis, and Ball-Berry-type stomatal conductance models. Accounts for leaf temperature effects on many processes.
 * `PhotosynEB` is the same, but also calculates the leaf temperature (Tleaf) by solving the leaf energy balance (and takes air temperature as input). Extra inputs are wind speed, leaf width, and some others.
-* `Aci` calculates the dependence of photosynthesis (A) on the intercellular CO2 concentration (Ci) for C3 plants with the FvCB model. 
+* `Aci` calculates the dependence of photosynthesis (A) on the intercellular CO2 concentration (Ci) for C3 plants with the FvCB model (as used by `fitaci`)
 * `FARAO` is an implementation of the stomatal optimization model as suggested by Cowan and Farquhar (1977). It is a full numerical solution to the model, and uses the FARquhar model for photosynthesis.
 * The functions `RHtoVPD`, `VPDtoRH`, and `DewtoVPD`convert between relative humidity, vapour pressure deficit (VPD) and the dewpoint. 
 
