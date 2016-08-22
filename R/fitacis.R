@@ -7,7 +7,7 @@
 #' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.
 #' @param progressbar Display a progress bar (default is TRUE).
 #' @param quiet If TRUE, no messages are written to the screen.
-#' @param id Names of variables (quoted, can be a vector) in the original dataset to return as part of the coef() statement. Useful for keeping track of species names, treatment levels, etc. See examples.
+#' @param id Names of variables (quoted, can be a vector) in the original dataset to return as part of the coef() statement. Useful for keeping track of species names, treatment levels, etc. See Details and Examples.
 #' @param x For \code{plot.acifits}, an object returned from \code{fitacis}
 #' @param xlim,ylim The X and Y axis limits.
 #' @param add If TRUE, adds the plots to a current plot.
@@ -87,15 +87,16 @@ fitacis <- function(data, group, fitmethod=c("default","bilinear"),
   if(any(!fits$success)){
     if(!quiet){
       group_fail <- names(d)[!fits$success]
-      message("The following groups could not be fit:")
+      message("The following groups could not be fit with fitmethod='default':")
       message(paste(group_fail,collapse="\n"))
     }
     
     # Refit bad curves using the 'bilinear' method
     if(fitmethod == "default"){
-      if(!quiet)message("Fitting remaining curves with fitmethod='bilinear'.")
+      if(!quiet)message("Fitting those curves with fitmethod='bilinear'.")
       refits <- do_fit_bygroup(d, which(!fits$success), progressbar=FALSE, fitmethod="bilinear", ...)
-      fits$fits[!fits$success] <- refits$fits
+      
+      fits$fits[!fits$success] <- refits$fits[!fits$success]
     }
   }
   
