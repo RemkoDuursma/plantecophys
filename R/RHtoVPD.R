@@ -14,7 +14,7 @@
 #' @param VPD Vapour pressure deficit (kPa)
 #' @param Pa Atmospheric pressure (kPa)
 #' @param Tdew Dewpoint temperature (degrees C)
-#' @export RHtoVPD VPDtoRH esat DewtoVPD VPDleafToAir VPDairToLeaf
+#' @export RHtoVPD VPDtoRH esat DewtoVPD VPDtoDew VPDleafToAir VPDairToLeaf
 #' @rdname Conversions
 #' @references Jones, H.G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology. 2nd Edition., 2nd Edn. Cambridge University Press, Cambridge. 428 p.
 #' @author Remko Duursma
@@ -40,6 +40,24 @@ esat <- function(TdegC, Pa=101){
   esatval <- f * a * (exp(b * TdegC/(c + TdegC)))
   return(esatval)
 }
+
+# inverse of esat (calc T given a saturation vapor pressure)
+T_esat <- function(sat, Pa=101){
+  a <- 611.21
+  b <- 17.502
+  c <- 240.97
+  f <- 1.0007 + 3.46 * 10^-8 * Pa * 1000
+  
+  phi <- log(sat/(f*a))
+  (c*phi)/(b-phi)
+}
+VPDtoDew <- function(VPD, TdegC, Pa=101){
+  
+  esatval <- esat(TdegC, Pa)
+  e <- pmax(0, esatval - VPD*1000)
+  T_esat(e, Pa)
+}
+
 #' @rdname Conversions
 DewtoVPD <- function(Tdew, TdegC, Pa=101){
   
