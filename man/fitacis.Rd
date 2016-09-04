@@ -23,7 +23,7 @@ fitacis(data, group, fitmethod = c("default", "bilinear"),
 
 \item{quiet}{If TRUE, no messages are written to the screen.}
 
-\item{id}{Names of variables (quoted, can be a vector) in the original dataset to return as part of the coef() statement. Useful for keeping track of species names, treatment levels, etc. See examples.}
+\item{id}{Names of variables (quoted, can be a vector) in the original dataset to return as part of the coef() statement. Useful for keeping track of species names, treatment levels, etc. See Details and Examples.}
 
 \item{x}{For \code{plot.acifits}, an object returned from \code{fitacis}}
 
