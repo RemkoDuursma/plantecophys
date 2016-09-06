@@ -59,6 +59,8 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 
 \item{Km, GammaStar}{Optionally, provide Michaelis-Menten coefficient for Farquhar model, and Gammastar. If not provided, they are calculated with a built-in function of leaf temperature.}
 
+\item{id}{Names of variables (quoted, can be a vector) in the original dataset to be stored in the result. Most useful when using \code{\link{fitacis}}, see there for examples of its use.}
+
 \item{x}{For plot.acifit, an object returned by \code{fitaci}}
 
 \item{what}{The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them, or 'none' for neither (only the plot region is set up)}
@@ -84,8 +86,6 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 \item{linecols}{Vector of three colours for the lines (limiting rate, Ac, Aj), if one value provided it is used for all three.}
 
 \item{lwd}{Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).}
-
-\item{Names}{of variables (quoted, can be a vector) in the original dataset to be stored in the result. Most useful when using \code{\link{fitacis}}, see there for examples of its use.}
 
 \item{\dots}{Further arguments (ignored at the moment).}
 }

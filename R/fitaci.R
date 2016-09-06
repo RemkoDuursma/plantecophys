@@ -19,7 +19,7 @@
 #' @param EaV,EdVC,delsC Vcmax temperature response parameters
 #' @param EaJ,EdVJ,delsJ Jmax temperature response parameters
 #' @param Km,GammaStar Optionally, provide Michaelis-Menten coefficient for Farquhar model, and Gammastar. If not provided, they are calculated with a built-in function of leaf temperature.
-#' @param Names of variables (quoted, can be a vector) in the original dataset to be stored in the result. Most useful when using \code{\link{fitacis}}, see there for examples of its use.
+#' @param id Names of variables (quoted, can be a vector) in the original dataset to be stored in the result. Most useful when using \code{\link{fitacis}}, see there for examples of its use.
 #' @param \dots Further arguments (ignored at the moment).
 #' @details 
 #' 
@@ -229,6 +229,9 @@ fitaci <- function(data,
   # default - two nonlinear fits (first Vcmax, then Jmax region)
   # bilinear - two linear fits
   if(!is.null(citransition)){
+    
+    # NOTE-- bug in default method when citransition specified. Switch off for now.
+    fitmethod <- "bilinear"
     
     if(fitmethod == "default"){
       f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
@@ -573,7 +576,7 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   
   if(nrow(dat_vcmax) > 0){
     nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                            Jmax=10^6, Rd=Rd, Tleaf=Tleaf, 
+                                            Jmax=10^6, Rd=Rd, Tleaf=mean(Tleaf), 
                                             Patm=Patm, returnwhat="Ac",
                                             TcorrectVJ=Tcorrect,
                                             alpha=alpha,theta=theta,
@@ -596,7 +599,7 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   if(nrow(dat_jmax) > 0){
     nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
                                            Jmax=Jmax, Rd=Rd_vcmaxguess, 
-                                           Tleaf=Tleaf, Patm=Patm, returnwhat="Aj",
+                                           Tleaf=mean(Tleaf), Patm=Patm, returnwhat="Aj",
                                            TcorrectVJ=Tcorrect,
                                            alpha=alpha,theta=theta,
                                            gmeso=gmeso,EaV=EaV,
