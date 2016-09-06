@@ -51,6 +51,7 @@ T_esat <- function(sat, Pa=101){
   phi <- log(sat/(f*a))
   (c*phi)/(b-phi)
 }
+#' @rdname Conversions
 VPDtoDew <- function(VPD, TdegC, Pa=101){
   
   esatval <- esat(TdegC, Pa)
