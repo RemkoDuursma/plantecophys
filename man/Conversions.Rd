@@ -7,6 +7,7 @@
 \alias{RHtoVPD}
 \alias{VPDairToLeaf}
 \alias{VPDleafToAir}
+\alias{VPDtoDew}
 \alias{VPDtoRH}
 \alias{esat}
 \title{Conversions between relative humidity, vapour pressure deficit and dewpoint}
@@ -16,6 +17,8 @@ RHtoVPD(RH, TdegC, Pa = 101)
 VPDtoRH(VPD, TdegC, Pa = 101)
 
 esat(TdegC, Pa = 101)
+
+VPDtoDew(VPD, TdegC, Pa = 101)
 
 DewtoVPD(Tdew, TdegC, Pa = 101)
 

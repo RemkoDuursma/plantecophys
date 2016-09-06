@@ -436,7 +436,7 @@ set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
       if(!is.null(citransition))Stop("At the moment cannot provide citransition as well as measured Rd.")
     }
     if(varnames$Rd %in% names(data) && !useRd){
-      if(!quiet)Warning("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
+      if(!quiet)message("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
     }
   }
   return(Rd_meas)

@@ -4,3 +4,4 @@ photosyn_test/
 R_other/
 .gitignore
 README.md
+.travis.yml
