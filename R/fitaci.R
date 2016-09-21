@@ -263,7 +263,8 @@ fitaci <- function(data,
   
   # Organize output
   l <- list()  
-  l$df <- acirun[order(acirun$Ci),]
+  runorder <- order(acirun$Ci)
+  l$df <- acirun[runorder,]
   if(!is.null(id)){
     if(any(!id %in% names(data))){
       Warning("id ignored - not all variables are in dataset provided")
@@ -324,6 +325,7 @@ fitaci <- function(data,
   l$gmeso <- ifelse(is.null(gmeso) || gmeso < 0, NA, gmeso)
   l$fitTPU <- fitTPU
   l$RMSE <- rmse_acifit(l)
+  l$runorder <- runorder
   
   class(l) <- "acifit"
   
