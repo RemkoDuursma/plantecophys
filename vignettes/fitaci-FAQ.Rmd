@@ -89,8 +89,10 @@ If you have an estimate of the mesophyll conductance, it is possible to use it w
 - Use the `gmeso` argument, like this:
 
 ```{r}
+library(plantecophys)
+
 # Assume a mesophyll conductance of 0.2 mol m-2 s-1 bar-1
-f <- fitaci(mydata, gmeso=0.2)
+f <- fitaci(acidata1, gmeso=0.2)
 ```
 
 In this case the equations from [Ethier and Livingston (2004)](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-3040.2004.01140.x/full) are used.
@@ -99,10 +101,10 @@ In this case the equations from [Ethier and Livingston (2004)](http://onlinelibr
 
 ```{r}
 # Assume a mesophyll conductance of 0.2 mol m-2 s-1 bar-1
-mydata$Cc <- with(mydata, Ci - Photo/0.2)
+acidata1$Cc <- with(acidata1, Ci - Photo/0.2)
 
 # Fit normally, but make sure to use Cc!
-f <- fitaci(mydata, varnames=list(ALEAF="Photo", Ci="Cc", Tleaf="Tleaf"))
+f <- fitaci(acidata1, varnames=list(ALEAF="Photo", Ci="Cc", Tleaf="Tleaf", PPFD="PARi"))
 ```
 
 
