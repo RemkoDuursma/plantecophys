@@ -24,6 +24,19 @@ Welcome to the home of *plantecophys*, an R package that bundles a number of too
 Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. [doi:10.1371/journal.pone.0143346]().
 
 
+### Help
+
+Please read the built-in help files carefully if you have any questions. The examples are often helpful as well. 
+
+An included vignette lists a few frequently-asked questions on fitting A-Ci curves. [Follow this link to read the FAQ](http://www.remkoduursma.com/docs/fitaci-FAQ.html).
+
+Alternatively you can access it with:
+
+```
+vignette("fitaci-FAQ")
+```
+
+
 ### Installation
 
 The package is now on CRAN, so just do:
