@@ -1,0 +1,95 @@
+---
+title: "Fitting A-Ci curves - FAQ"
+author: "Remko Duursma"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fitting A-Ci curves - FAQ}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+This document lists frequently asked questions (FAQ) on the use of the `fitaci` function from the `plantecophys` package, to fit the FvCB model to measurements of photosynthesis rate at varying CO~2~ concentrations (A-C~i~ curves).
+
+This list will be updated based on queries I receive on email. 
+
+
+## 1. Some of my curves don't fit, what should I do?
+
+When using the 'default' fitting method, it is possible that some curves don't fit. This method uses non-linear regression, which depends on reasonable guesses of 'starting values' for it to converge to a solution. Nearly always, in my experience, when a curve does not fit it means it should really not be fit because the data are poor quality.
+
+As a first step, inspect the data with a simple plot of photosynthesis against intercellular CO~2~ concentration (C~i~). Do the data generate a smooth curve? Does photosynthesis saturate with C~i~? Does C~i~ reach values high enough for reasonable estimates of J~max~ (e.g. > 800 ppm)? If the answer is 'no' to any of these, you have no choice but to discard the data.
+
+If the curve looks reasonable, try refitting the curve with the bilinear method, like so:
+
+```
+f <- fitaci(mydata, fitmethod="bilinear")
+```
+
+If you are using `fitacis` to fit many curves at once, curves that did not fit will be automatically refit with the bilinear method. The curves that could not be fit are printed in a message - make sure to inspect all fitted curves to check for data quality.  
+
+
+## 2. The `fitaci` function gives different results from other implementations, which one should I use?
+
+Different methods will give different results essentially always for these two reasons:
+
+- Differences in parameters associated with the FvCB model, especially when you are correcting for temperature. But even if you are not, different implementations will make different assumptions on GammaStar, Kc, Ko, perhaps have different default atmospheric pressure, etc.
+
+- Differences in the fitting method. A number of choices can be made on the actual fitting routine used, particularly with regards to choosing the two (or three) limitations to photosynthesis, how to estimate respiration, the actual algorithms, etc. Implementations can also differ in whether they estimate TPU limitation (`fitaci` does optionally, but not by default), and what to do with mesophyll conductance (`fitaci` ignores it by default, but it can be used optionally).
+
+
+Which one is right? There is no one right method, but I certainly would recommend inspecting the goodness of fit (residual variance or R^2^) in choosing the 'better' method. Most importantly, though, you have to a) describe what you did (including all relevant parameter settings), and b) publish your data so it can be used by others. I recommend moving away from only publishing Vcmax and Jmax, which are sensitive to fitting methods.
+
+
+## 3. How do I report when using the `fitaci` function?
+
+It is not sufficient to state "we used the `plantecophys` package to estimate Vcmax and Jmax". At the very least, state the following details:
+
+- Did you correct for temperature to a common temperature of (normally) 25C? If so, list all temperature-sensitivity parameters (EaV, etc.).
+
+- Did you measure dark respiration and use that in the fit, or was it estimated from the A-C~i~ curve?
+
+- What were the values of the other parameters used, in particular GammaStar and Km (both are shown in standard output of `fitaci`)?
+
+If no default settings were changed when fitting the curves, state this as well.
+
+Finally, cite the publication associated with the package, which you can view with:
+
+```{r eval=FALSE}
+citation("plantecophys")
+```
+
+and report the version of the package used in the work, which you can view with:
+
+```{r}
+packageVersion("plantecophys")
+```
+
+
+## 4. Which fitting method should I use?
+
+
+The `fitaci` function has two implemented methods: 'default' (non-linear regression to the full model at once) or 'bilinear' (linear regression to transformed data to both limitations separately). Only the default method was described in Duursma (2015), the bilinear method is a later addition.
+
+Based on comparisons of goodness of fit, the default method appears to always fit better, albeit only very slightly better. For this reason one might recommend the default method.
+
+The bilinear method **always** returns parameter values, which is a good thing - except when the data are such poor quality that fitting should not have been done. 
+
+The bilinear method is **much faster**. This may make a difference in some settings.
+
+Finally, the default method reports reliable standard errors for the parameters, which can (and should) be reported along with the estimated values. The bilinear method does not give a standard error for J~max~ (for technical reasons this is not possible), and for other technical reasons, the standard error for V~cmax~ will be much too low (i.e. it is too optimistic). For this reason I prefer the default method over the bilinear method, unless it does not converge.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 Package: plantecophys
 Type: Package
 Title: Modelling and Analysis of Leaf Gas Exchange Data
-Version: 1.1-10
+Version: 1.2
 Authors@R: person("Remko", "Duursma", role = c("aut", "cre"),email = "remkoduursma@gmail.com")
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
     fitting, Ball-Berry stomatal conductance models, 
@@ -11,7 +11,10 @@ URL: https://www.bitbucket.org/remkoduursma/plantecophys
 BugReports: https://www.bitbucket.org/remkoduursma/plantecophys/issues
 Suggests:
     nlstools,
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 License: GPL
 LazyData: yes
 RoxygenNote: 5.0.1
+VignetteBuilder: knitr
