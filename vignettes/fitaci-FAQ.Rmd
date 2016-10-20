@@ -2,7 +2,9 @@
 title: "Fitting A-Ci curves - FAQ"
 author: "Remko Duursma"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Fitting A-Ci curves - FAQ}
   %\VignetteEngine{knitr::rmarkdown}
@@ -78,11 +80,35 @@ The bilinear method **always** returns parameter values, which is a good thing -
 
 The bilinear method is **much faster**. This may make a difference in some settings.
 
-Finally, the default method reports reliable standard errors for the parameters, which can (and should) be reported along with the estimated values. The bilinear method does not give a standard error for J~max~ (for technical reasons this is not possible), and for other technical reasons, the standard error for V~cmax~ will be much too low (i.e. it is too optimistic). For this reason I prefer the default method over the bilinear method, unless it does not converge.
+Finally, the default method reports **reliable standard errors** for the parameters, which can (and should) be reported along with the estimated values. The bilinear method does not give a standard error for J~max~ (for technical reasons this is not possible), and for other technical reasons, the standard error for V~cmax~ will be much too low (i.e. it is too optimistic). For this reason I prefer the default method over the bilinear method, unless it does not converge.
+
+## 5. How do I account for the mesophyll conductance?
+
+If you have an estimate of the mesophyll conductance, it is possible to use it when fitting the A-C~i~ curve with the `fitaci` function. In that case, estimated V~cmax~ and J~max~ can be interpreted as the chloroplastic rates. You have two options:
+
+- Use the `gmeso` argument, like this:
+
+```{r}
+# Assume a mesophyll conductance of 0.2 mol m-2 s-1 bar-1
+f <- fitaci(mydata, gmeso=0.2)
+```
+
+In this case the equations from [Ethier and Livingston (2004)](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-3040.2004.01140.x/full) are used.
+
+- Calculate the chloroplastic CO~2~ concentration, and fit normally, like this:
+
+```{r}
+# Assume a mesophyll conductance of 0.2 mol m-2 s-1 bar-1
+mydata$Cc <- with(mydata, Ci - Photo/0.2)
+
+# Fit normally, but make sure to use Cc!
+f <- fitaci(mydata, varnames=list(ALEAF="Photo", Ci="Cc", Tleaf="Tleaf"))
+```
 
 
+I am not sure which of the two options is 'better'. I assume that the first is superior, but one user has reported that the second method gave better fits (lower SE on Vcmax and Jmax). More work is needed to evaluate these methods, and the use of mesophyll conductance in A-C~i~ curves in general.
 
-
+Note that a method exists where mesophyll conductance is estimated from A-C~i~ curves (without further measurements), but I have not implemented this in the `fitaci` function. I don't believe the method has any merit and it will not be implemented.
 
 
 
