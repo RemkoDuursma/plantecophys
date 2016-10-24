@@ -28,14 +28,15 @@ Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Lea
 
 Please read the built-in help files carefully if you have any questions. The examples are often helpful as well. 
 
-An included vignette lists a few frequently-asked questions on fitting A-Ci curves. [Follow this link to read the FAQ](http://www.remkoduursma.com/docs/fitaci-FAQ.html).
+[Follow this link to read answers to some frequently asked questions (FAQ)](http://www.remkoduursma.com/docs/fitaci-FAQ.html).
 
-Alternatively you can access it with:
+After loading the package, you can also access the FAQ with:
 
 ```
 vignette("fitaci-FAQ")
 ```
 
+(please note the FAQ is only available for the dev version at this point - following the link below is more reliable for a while).
 
 ### Installation
 
