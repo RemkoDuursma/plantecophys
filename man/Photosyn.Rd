@@ -54,11 +54,11 @@ Aci(Ci, ...)
 
 \item{TPU}{Triose-phosphate utilization rate (mu mol m-2 s-1); optional.}
 
-\item{Rd0}{Dark respiration rata at reference temperature (\code{TrefR})}
+\item{Rd0}{Day respiration rate at reference temperature (\code{TrefR})}
 
 \item{Q10}{Temperature sensitivity of Rd.}
 
-\item{Rd}{Dark respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)}
+\item{Rd}{Day respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)}
 
 \item{TrefR}{Reference temperature for Rd (Celcius).}
 
@@ -84,7 +84,7 @@ Aci(Ci, ...)
 Returns a dataframe.
 }
 \description{
-A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes options for temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance.
+A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes options for temperature sensitivity of photosynthetic parameters, day respiration (optionally calculated from leaf temperature), and mesophyll conductance.
 }
 \details{
 The coupled photosynthesis - stomatal conductance model finds the intersection between the supply of CO2 by diffusion, and the demand for CO2 by photosynthesis. See Farquhar and Sharkey (1982) for basic description of this type of model, Duursma (2015) for more details on the implementation in the \code{plantecophys} package, and Duursma et al. (2014) for an example application (that uses this implementation).

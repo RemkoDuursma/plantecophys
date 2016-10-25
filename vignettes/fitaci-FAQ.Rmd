@@ -50,7 +50,7 @@ It is not sufficient to state "we used the `plantecophys` package to estimate Vc
 
 - Did you correct for temperature to a common temperature of (normally) 25C? If so, list all temperature-sensitivity parameters (EaV, etc.).
 
-- Did you measure dark respiration and use that in the fit, or was it estimated from the A-C~i~ curve?
+- Did you measure day respiration and use that in the fit, or was it estimated from the A-C~i~ curve?
 
 - What were the values of the other parameters used, in particular GammaStar and Km (both are shown in standard output of `fitaci`)?
 

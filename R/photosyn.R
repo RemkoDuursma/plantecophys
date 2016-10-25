@@ -1,5 +1,5 @@
 #' @title Coupled leaf gas exchange model
-#' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes options for temperature sensitivity of photosynthetic parameters, dark respiration (optionally calculated from leaf temperature), and mesophyll conductance. 
+#' @description A coupled photosynthesis - stomatal conductance model, based on the Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. Includes options for temperature sensitivity of photosynthetic parameters, day respiration (optionally calculated from leaf temperature), and mesophyll conductance. 
 #' @param VPD Vapour pressure deficit (kPa) (not needed when RH provided)
 #' @param Ca Atmospheric CO2 concentration (ppm)
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
@@ -18,8 +18,8 @@
 #' @param Vcmax Maximum carboxylation rate at 25 degrees C (mu mol m-2 s-1)
 #' @param gmeso Mesophyll conductance (mol m-2 s-1). If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
 #' @param TPU Triose-phosphate utilization rate (mu mol m-2 s-1); optional.
-#' @param Rd Dark respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)
-#' @param Rd0 Dark respiration rata at reference temperature (\code{TrefR})
+#' @param Rd Day respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)
+#' @param Rd0 Day respiration rate at reference temperature (\code{TrefR})
 #' @param Q10 Temperature sensitivity of Rd.
 #' @param TrefR Reference temperature for Rd (Celcius).
 #' @param Rdayfrac Ratio of Rd in the light vs. in the dark.

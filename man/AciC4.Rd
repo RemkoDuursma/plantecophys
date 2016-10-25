@@ -46,7 +46,7 @@ AciC4(Ci, PPFD = 1500, Tleaf = 25, VPMAX25 = 120, JMAX25 = 400,
 
 \item{Q10F}{T-dependence parameter of respiration}
 
-\item{FRM}{Fraction of dark respiration that is mesophyll respiration (Rm)}
+\item{FRM}{Fraction of day respiration that is mesophyll respiration (Rm)}
 
 \item{\dots}{Further arguments (currently ignored).}
 }

@@ -20,7 +20,7 @@
 #' @param TBELOW Below this T, respiration is zero.
 #' @param DAYRESP Fraction respiration in the light vs. that measured in the dark
 #' @param Q10F T-dependence parameter of respiration 
-#' @param FRM Fraction of dark respiration that is mesophyll respiration (Rm)
+#' @param FRM Fraction of day respiration that is mesophyll respiration (Rm)
 #' @param \dots Further arguments (currently ignored).
 #' @details Note that the temperature response parameters have been hardwired in this function, and are based on von Caemmerer (2000).
 #' 
