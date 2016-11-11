@@ -168,7 +168,7 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
     if("Aj" %in% whichA)with(pred, lines(Ci_original, Aj-Rd, col=linecols[2],lwd=lwd[1]))
     if("Ac" %in% whichA)with(pred, lines(Ci_original, Ac-Rd, col=linecols[3],lwd=lwd[1]))
     if("Ap" %in% whichA & TPUlimit){
-      predp <- subset(pred, Ci_original > 400)
+      predp <- pred[pred$Ci_original > 400,]
       with(predp, lines(Ci_original, Ap-Rd, col="darkgrey", lty=5, lwd=lwd[1]))
     }
     if("Amin" %in% whichA)with(pred, lines(Ci_original, ALEAF, col=linecols[1], lwd=lwd[2]))

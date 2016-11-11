@@ -392,9 +392,13 @@ Photosyn <- function(VPD=1.5,
   }
 
     # Limitation by triose-phosphate utilization
-    Ap <- 3 * TPU * (Ci - GammaStar)/(Ci - (1 + 3*alphag)*GammaStar)   
-    Ap[Ci < 400] <- 10^6  # avoid nonsense
-    
+    if(!is.null(Ci)){
+      Ap <- 3 * TPU * (Ci - GammaStar)/(Ci - (1 + 3*alphag)*GammaStar)   
+      Ap[Ci < 400] <- 1000  # avoid nonsense
+    } else {
+      Ap <- 1000  # This is when inputGS = TRUE; 
+    }  
+  
     # Hyperbolic minimum.
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape)
