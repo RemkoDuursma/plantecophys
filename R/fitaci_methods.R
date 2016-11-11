@@ -113,7 +113,7 @@ fitted.acifit <- function(object,...){
 #' @param x For plot.acifit, an object returned by \code{fitaci}
 #' @param xlim Limits for the X axis, if left blank estimated from data
 #' @param ylim Limits for the Y axis, if left blank estimated from data
-#' @param whichA By default all three photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)). Or, specify one or two of them. 
+#' @param whichA By default all photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)), TPU-limited rate (Ap, if estimated in the fit). Or, specify one or two of them. 
 #' @param what The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them, or 'none' for neither (only the plot region is set up)
 #' @param add If TRUE, adds to the current plot
 #' @param pch The plotting symbol for the data
@@ -167,7 +167,10 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
   if("model" %in% what){
     if("Aj" %in% whichA)with(pred, lines(Ci_original, Aj-Rd, col=linecols[2],lwd=lwd[1]))
     if("Ac" %in% whichA)with(pred, lines(Ci_original, Ac-Rd, col=linecols[3],lwd=lwd[1]))
-    if("Ap" %in% whichA & TPUlimit)with(pred, lines(Ci_original, Ap-Rd, col="darkgrey", lty=5, lwd=lwd[1]))
+    if("Ap" %in% whichA & TPUlimit){
+      predp <- subset(pred, Ci_original > 400)
+      with(predp, lines(Ci_original, Ap-Rd, col="darkgrey", lty=5, lwd=lwd[1]))
+    }
     if("Amin" %in% whichA)with(pred, lines(Ci_original, ALEAF, col=linecols[1], lwd=lwd[2]))
   }
   

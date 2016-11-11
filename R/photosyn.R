@@ -18,6 +18,7 @@
 #' @param Vcmax Maximum carboxylation rate at 25 degrees C (mu mol m-2 s-1)
 #' @param gmeso Mesophyll conductance (mol m-2 s-1). If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
 #' @param TPU Triose-phosphate utilization rate (mu mol m-2 s-1); optional.
+#' @param alphag Fraction of glycolate not returned to the chloroplast; parameter in TPU-limited photosynthesis (optional, only to be used when TPU is provided) (0 - 1)
 #' @param Rd Day respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)
 #' @param Rd0 Day respiration rate at reference temperature (\code{TrefR})
 #' @param Q10 Temperature sensitivity of Rd.
@@ -69,12 +70,16 @@
 #' 
 #' Note that Patm is an argument to the Photosyn function, but it only affects calculations of Km and GammaStar (as used by fitaci), and transpiration rate. Setting only Patm \strong{does not correct for atmospheric pressure effects on photosynthesis rates}.
 #' 
+#' The limitation of the photosynthetic rate to triose-phosphate utilization follows details in Ellsworth et al. (2015), their Eq. 7. Note that the parameter \code{alphag} is set to zero by default.
+#' 
 #' @references 
 #' Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
 #' 
 #' Duursma, R.A., Barton, C.V.M., Lin, Y.-S., Medlyn, B.E., Eamus, D., Tissue, D.T., Ellsworth, D.S., McMurtrie, R.E., 2014. The peaked response of transpiration rate to vapour pressure deficit in field conditions can be explained by the temperature optimum of photosynthesis. Agricultural and Forest Meteorology 189 - 190, 2-10. doi:10.1016/j.agrformet.2013.12.007
 #'
 #' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
+#' 
+#' Ellsworth, D.S., Crous, K.Y., Lambers, H., Cooke, J., 2015. Phosphorus recycling in photorespiration maintains high photosynthetic capacity in woody species. Plant Cell Environ 38, 1142–1156. doi:10.1111/pce.12468
 #'
 #'Ethier, G. and N. Livingston. 2004. On the need to incorporate sensitivity to CO2 transfer conductance into the Farquhar von Caemmerer Berry leaf photosynthesis model. Plant, Cell & Environment. 27:137-153.
 #'
@@ -160,6 +165,7 @@ Photosyn <- function(VPD=1.5,
                      Vcmax=50, 
                      gmeso=NULL,
                      TPU=1000,
+                     alphag=0,
                      
                      Rd0 = 0.92,
                      Q10 = 1.92,
@@ -386,14 +392,14 @@ Photosyn <- function(VPD=1.5,
   }
 
     # Limitation by triose-phosphate utilization
-    Ap <- 3*TPU   
+    Ap <- 3 * TPU * (Ci - GammaStar)/(Ci - (1 + 3*alphag)*GammaStar)   
+    Ap[Ci < 400] <- 10^6  # avoid nonsense
     
     # Hyperbolic minimum.
     hmshape <- 0.9999
     Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape)
     
     # Another hyperbolic minimum with the transition to TPU
-    #browser()
     tpulim <- any(Ap < Am)
     if(!is.na(tpulim) && tpulim){
       hmshape <- 1 - 1E-07

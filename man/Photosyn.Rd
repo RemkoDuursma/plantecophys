@@ -9,11 +9,11 @@ Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25, Patm = 100,
   RH = NULL, gsmodel = c("BBOpti", "BBLeuning", "BallBerry"), g1 = 4,
   g0 = 0, gk = 0.5, vpdmin = 0.5, D0 = 5, GS = NULL, alpha = 0.24,
   theta = 0.85, Jmax = 100, Vcmax = 50, gmeso = NULL, TPU = 1000,
-  Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25, Rdayfrac = 1,
-  EaV = 82620.87, EdVC = 0, delsC = 645.1013, EaJ = 39676.89,
-  EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL, Km = NULL,
-  Ci = NULL, Tcorrect = TRUE, returnParsOnly = FALSE, whichA = c("Ah",
-  "Amin", "Ac", "Aj"))
+  alphag = 0, Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25,
+  Rdayfrac = 1, EaV = 82620.87, EdVC = 0, delsC = 645.1013,
+  EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL,
+  Km = NULL, Ci = NULL, Tcorrect = TRUE, returnParsOnly = FALSE,
+  whichA = c("Ah", "Amin", "Ac", "Aj"))
 
 Aci(Ci, ...)
 }
@@ -53,6 +53,8 @@ Aci(Ci, ...)
 \item{gmeso}{Mesophyll conductance (mol m-2 s-1). If not NULL (the default), Vcmax and Jmax are chloroplastic rates.}
 
 \item{TPU}{Triose-phosphate utilization rate (mu mol m-2 s-1); optional.}
+
+\item{alphag}{Fraction of glycolate not returned to the chloroplast; parameter in TPU-limited photosynthesis (optional, only to be used when TPU is provided) (0 - 1)}
 
 \item{Rd0}{Day respiration rate at reference temperature (\code{TrefR})}
 
@@ -125,6 +127,8 @@ Note that the function \code{Aci} is provided as a shorthand for \code{Photosyn(
 A correction for atmospheric pressure (Patm) is implemented in \code{\link{fitaci}}, but \strong{not in Photosyn}. In \code{fitaci}, the necessary corrections are applied so that estimated Vcmax and Jmax are expressed at standard pressure (Patm=100kPa). In Photosyn, however, the corrections are much more complicated and tend to be very small, because effects of Patm on partial pressures are largely offset by increases in diffusivity (Terashima et al. 1995, Gale 1973). 
 
 Note that Patm is an argument to the Photosyn function, but it only affects calculations of Km and GammaStar (as used by fitaci), and transpiration rate. Setting only Patm \strong{does not correct for atmospheric pressure effects on photosynthesis rates}.
+
+The limitation of the photosynthetic rate to triose-phosphate utilization follows details in Ellsworth et al. (2015), their Eq. 7. Note that the parameter \code{alphag} is set to zero by default.
 }
 \examples{
 # Run the coupled leaf gas exchange model, set only a couple of parameters
@@ -177,6 +181,8 @@ Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.
 Duursma, R.A., Barton, C.V.M., Lin, Y.-S., Medlyn, B.E., Eamus, D., Tissue, D.T., Ellsworth, D.S., McMurtrie, R.E., 2014. The peaked response of transpiration rate to vapour pressure deficit in field conditions can be explained by the temperature optimum of photosynthesis. Agricultural and Forest Meteorology 189 - 190, 2-10. doi:10.1016/j.agrformet.2013.12.007
 
 Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
+
+Ellsworth, D.S., Crous, K.Y., Lambers, H., Cooke, J., 2015. Phosphorus recycling in photorespiration maintains high photosynthetic capacity in woody species. Plant Cell Environ 38, 1142–1156. doi:10.1111/pce.12468
 
 Ethier, G. and N. Livingston. 2004. On the need to incorporate sensitivity to CO2 transfer conductance into the Farquhar von Caemmerer Berry leaf photosynthesis model. Plant, Cell & Environment. 27:137-153.
 

@@ -10,6 +10,7 @@
 #' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param fitTPU Logical (default FALSE). Attempt to fit TPU limitation (fitmethod set to 'bilinear' automatically if used). See Details.
+#' @param alphag When estimating TPU limitation (with \code{fitTPU}), an additional parameter (see Details).
 #' @param useRd If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in fit. Otherwise it is estimatied from the fit to the A-Ci curve.
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
 #' @param Tleaf Leaf temperature (degrees C)
@@ -31,7 +32,7 @@
 #' When \code{citransition} is set, it splits the data into a Vcmax-limited (where Ci < citransition), and Jmax-limited region (Ci > citransition). Both parameters are then estimated separately for each region (Rd is estimated only for the Vcmax-limited region). \bold{Note} that the actual transition point as shown in the standard plot of the fitted A-Ci curve may be quite different from that provided, since the fitting method simply decides which part of the dataset to use for which limitation, it does not constrain the actual estimated transition point directly. See the example below. If \code{fitmethod="default"}, it applies non-linear regression to both parts of the data, and when fitmethod="bilinear", it uses linear regression on the linearized photosynthesis rate. Results will differ between the two methods (slightly).
 #' 
 #' \strong{TPU limitation - }
-#' Optionally, the \code{fitaci} function estimates the triose-phosphate utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be recognized by a 'flattening out' of the A-Ci curve at high Ci. When \code{fitTPU=TRUE}, the fitting method used will always be 'bilinear'. The TPU is estimated by trying out whether the fit improves when the last n points of the curve are TPU-limited (where n=1,2,...). When TPU is estimated, it is possible (though rare) that no points are Jmax-limited (in which case estimated Jmax will be NA). A minimum of two points is always reserved for the estimate of Vcmax and Rd. See examples.
+#' Optionally, the \code{fitaci} function estimates the triose-phosphate utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be recognized by a 'flattening out' of the A-Ci curve at high Ci. When \code{fitTPU=TRUE}, the fitting method used will always be 'bilinear'. The TPU is estimated by trying out whether the fit improves when the last n points of the curve are TPU-limited (where n=1,2,...). When TPU is estimated, it is possible (though rare) that no points are Jmax-limited (in which case estimated Jmax will be NA). A minimum of two points is always reserved for the estimate of Vcmax and Rd. An additional parameter (\code{alphag}) can be set that affects the behaviour at high Ci (see Ellsworth et al. 2015 for details, and also \code{\link{Photosyn}}). See examples.
 #' 
 #' \strong{Temperature correction - }
 #' When \code{Tcorrect=TRUE} (the default), Jmax and Vcmax are re-scaled to 25C, using the temperature response parameters provided (but Rd is always at measurement temperature). When \code{Tcorrect=FALSE}, estimates of all parameters are at measurement temperature. If TPU is fit, it is never corrected for temperature. Important parameters to the fit are GammaStar and Km, both of which are calculated from leaf temperature using standard formulations. Alternatively, they can be provided as known inputs.
@@ -151,6 +152,8 @@ fitaci <- function(data,
                    fitmethod=c("default","bilinear"),
                    algorithm="default", 
                    fitTPU=FALSE,
+                   alphag=0,
+                   
                    useRd=FALSE,
                    PPFD=NULL,
                    Tleaf=NULL,
@@ -180,11 +183,11 @@ fitaci <- function(data,
   # Check data 
   if(nrow(data) == 0)Stop("No rows in data - check observations.")
   
-  # Make sure data is a dataframe
+  # Make sure data is a proper dataframe, not some tibble or other nonsense.
   data <- as.data.frame(data)
   
-  # no more extra parameters allowed 
-  if(exists("chkDots"))chkDots(...)   # depends on R 3.3.0, hence the check
+  # Extra parameters not used at the moment; warn when provided.
+  chkDots(...)
   
   # Add PPFD and Tleaf to data, if needed (uses default values, or input values)
   data <- set_PPFD(varnames, data, PPFD, quiet)
@@ -219,7 +222,7 @@ fitaci <- function(data,
     } 
     if(fitmethod == "bilinear"){
       
-      f <- do_fit_method_bilinear_bestcitrans(data, haveRd, fitTPU, Rd_meas, Patm, Tcorrect, algorithm,
+      f <- do_fit_method_bilinear_bestcitrans(data, haveRd, fitTPU, alphag, Rd_meas, Patm, Tcorrect, algorithm,
                                               alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                               GammaStar_v, Km_v)
     }
@@ -238,7 +241,7 @@ fitaci <- function(data,
                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
     }
     if(fitmethod == "bilinear"){
-      f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransition, NULL, Tcorrect, algorithm,
+      f <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, citransition, NULL, Tcorrect, algorithm,
                                 alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                 GammaStar_v, Km_v)
     }
@@ -294,6 +297,7 @@ fitaci <- function(data,
   formals(Photosyn)$Jmax <- l$pars[2]
   formals(Photosyn)$Rd <- l$pars[3]
   formals(Photosyn)$TPU <- f$TPU
+  formals(Photosyn)$alphag <- alphag
   formals(Photosyn)$Tcorrect <- Tcorrect
   formals(Photosyn)$alpha <- alpha
   formals(Photosyn)$theta <- theta
@@ -324,6 +328,7 @@ fitaci <- function(data,
   l$citransition <- ifelse(is.null(citransition), NA, citransition)
   l$gmeso <- ifelse(is.null(gmeso) || gmeso < 0, NA, gmeso)
   l$fitTPU <- fitTPU
+  l$alphag <- alphag
   l$RMSE <- rmse_acifit(l)
   l$runorder <- runorder
   
@@ -629,7 +634,7 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
 
 
 
-do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, citransition2=NULL,
+do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransition, citransition2=NULL,
                                    Tcorrect, algorithm,
                                    alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                    GammaStar, Km){
@@ -656,6 +661,7 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, ci
   # Linearize
   data$vcmax_pred <- (Conc - ppar$GammaStar)/(Conc + ppar$Km)
   data$Jmax_pred <- (Conc - ppar$GammaStar)/(Conc + 2*ppar$GammaStar)
+  data$TPU_part <- (Conc - ppar$GammaStar)/(Conc - (1+3*alphag)*ppar$GammaStar)
   
   # Fit Vcmax and Rd from linearized portion
   datv <- data[data$Ci < citransition & data$Ci < citransition2,]
@@ -698,9 +704,13 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, ci
     Jmax_fit <- 10^6  # not elegant but will do for now (avoids trouble elsewhere)
   }
   
+  # TPU
   if(nrow(datp) > 0){
     datp$Agross <- datp$ALEAF - Rd_fit
-    TPU <- mean(datp$Agross) / 3
+    
+    tpu_vals <- (1/3) * datp$Agross / datp$TPU_part
+    
+    TPU <- mean(tpu_vals)
   } else {
     TPU <- 1000  # same as default in Photosyn
   }
@@ -721,7 +731,7 @@ do_fit_method_bilinear <- function(data, haveRd, Rd_meas, Patm, citransition, ci
   return(list(pars=pars, fit=fitv, TPU=TPU, success=TRUE))
 }
 
-do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Patm, Tcorrect,
+do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, alphag, Rd_meas, Patm, Tcorrect,
                                                algorithm,alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,
                                                delsJ,GammaStar, Km){
   
@@ -748,7 +758,7 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
   # after the loop finishes (avoids a bug).
   for(i in 1:nrow(citransdf)){
     
-    fit <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, citransdf$ci1[i], citransdf$ci2[i], 
+    fit <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, citransdf$ci1[i], citransdf$ci2[i], 
                                   Tcorrect=FALSE, algorithm,
                                   alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                   GammaStar, Km)
@@ -769,7 +779,7 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, Rd_meas, Pa
   # Best Ci transitions
   bestcis <- citransdf[which.min(SS),]
   
-  f <- do_fit_method_bilinear(data, haveRd, Rd_meas, Patm, bestcis$ci1, bestcis$ci2, Tcorrect, algorithm,
+  f <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, bestcis$ci1, bestcis$ci2, Tcorrect, algorithm,
                               alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                               GammaStar, Km)
 

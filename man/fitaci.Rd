@@ -8,11 +8,11 @@
 fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
   = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100, citransition = NULL,
   quiet = FALSE, startValgrid = TRUE, fitmethod = c("default",
-  "bilinear"), algorithm = "default", fitTPU = FALSE, useRd = FALSE,
-  PPFD = NULL, Tleaf = NULL, alpha = 0.24, theta = 0.85, gmeso = NULL,
-  EaV = 82620.87, EdVC = 0, delsC = 645.1013, EaJ = 39676.89,
-  EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL, Km = NULL,
-  id = NULL, ...)
+  "bilinear"), algorithm = "default", fitTPU = FALSE, alphag = 0,
+  useRd = FALSE, PPFD = NULL, Tleaf = NULL, alpha = 0.24,
+  theta = 0.85, gmeso = NULL, EaV = 82620.87, EdVC = 0,
+  delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615,
+  GammaStar = NULL, Km = NULL, id = NULL, ...)
 
 \method{plot}{acifit}(x, what = c("data", "model", "none"), xlim = NULL,
   ylim = NULL, whichA = c("Ac", "Aj", "Amin", "Ap"), add = FALSE,
@@ -40,6 +40,8 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 \item{algorithm}{Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.}
 
 \item{fitTPU}{Logical (default FALSE). Attempt to fit TPU limitation (fitmethod set to 'bilinear' automatically if used). See Details.}
+
+\item{alphag}{When estimating TPU limitation (with \code{fitTPU}), an additional parameter (see Details).}
 
 \item{useRd}{If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in fit. Otherwise it is estimatied from the fit to the A-Ci curve.}
 
@@ -69,7 +71,7 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 
 \item{ylim}{Limits for the Y axis, if left blank estimated from data}
 
-\item{whichA}{By default all three photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)). Or, specify one or two of them.}
+\item{whichA}{By default all photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)), TPU-limited rate (Ap, if estimated in the fit). Or, specify one or two of them.}
 
 \item{add}{If TRUE, adds to the current plot}
 
@@ -101,7 +103,7 @@ The 'bilinear' method to fit A-Ci curves (set by \code{fitmethod="bilinear"}) li
 When \code{citransition} is set, it splits the data into a Vcmax-limited (where Ci < citransition), and Jmax-limited region (Ci > citransition). Both parameters are then estimated separately for each region (Rd is estimated only for the Vcmax-limited region). \bold{Note} that the actual transition point as shown in the standard plot of the fitted A-Ci curve may be quite different from that provided, since the fitting method simply decides which part of the dataset to use for which limitation, it does not constrain the actual estimated transition point directly. See the example below. If \code{fitmethod="default"}, it applies non-linear regression to both parts of the data, and when fitmethod="bilinear", it uses linear regression on the linearized photosynthesis rate. Results will differ between the two methods (slightly).
 
 \strong{TPU limitation - }
-Optionally, the \code{fitaci} function estimates the triose-phosphate utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be recognized by a 'flattening out' of the A-Ci curve at high Ci. When \code{fitTPU=TRUE}, the fitting method used will always be 'bilinear'. The TPU is estimated by trying out whether the fit improves when the last n points of the curve are TPU-limited (where n=1,2,...). When TPU is estimated, it is possible (though rare) that no points are Jmax-limited (in which case estimated Jmax will be NA). A minimum of two points is always reserved for the estimate of Vcmax and Rd. See examples.
+Optionally, the \code{fitaci} function estimates the triose-phosphate utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be recognized by a 'flattening out' of the A-Ci curve at high Ci. When \code{fitTPU=TRUE}, the fitting method used will always be 'bilinear'. The TPU is estimated by trying out whether the fit improves when the last n points of the curve are TPU-limited (where n=1,2,...). When TPU is estimated, it is possible (though rare) that no points are Jmax-limited (in which case estimated Jmax will be NA). A minimum of two points is always reserved for the estimate of Vcmax and Rd. An additional parameter (\code{alphag}) can be set that affects the behaviour at high Ci (see Ellsworth et al. 2015 for details, and also \code{\link{Photosyn}}). See examples.
 
 \strong{Temperature correction - }
 When \code{Tcorrect=TRUE} (the default), Jmax and Vcmax are re-scaled to 25C, using the temperature response parameters provided (but Rd is always at measurement temperature). When \code{Tcorrect=FALSE}, estimates of all parameters are at measurement temperature. If TPU is fit, it is never corrected for temperature. Important parameters to the fit are GammaStar and Km, both of which are calculated from leaf temperature using standard formulations. Alternatively, they can be provided as known inputs.
