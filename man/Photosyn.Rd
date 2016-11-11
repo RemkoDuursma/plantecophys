@@ -182,7 +182,7 @@ Duursma, R.A., Barton, C.V.M., Lin, Y.-S., Medlyn, B.E., Eamus, D., Tissue, D.T.
 
 Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 
-Ellsworth, D.S., Crous, K.Y., Lambers, H., Cooke, J., 2015. Phosphorus recycling in photorespiration maintains high photosynthetic capacity in woody species. Plant Cell Environ 38, 1142–1156. doi:10.1111/pce.12468
+Ellsworth, D.S., Crous, K.Y., Lambers, H., Cooke, J., 2015. Phosphorus recycling in photorespiration maintains high photosynthetic capacity in woody species. Plant Cell Environ 38, 1142-1156. doi:10.1111/pce.12468
 
 Ethier, G. and N. Livingston. 2004. On the need to incorporate sensitivity to CO2 transfer conductance into the Farquhar von Caemmerer Berry leaf photosynthesis model. Plant, Cell & Environment. 27:137-153.
 
