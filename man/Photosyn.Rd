@@ -13,7 +13,7 @@ Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25, Patm = 100,
   Rdayfrac = 1, EaV = 82620.87, EdVC = 0, delsC = 645.1013,
   EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL,
   Km = NULL, Ci = NULL, Tcorrect = TRUE, returnParsOnly = FALSE,
-  whichA = c("Ah", "Amin", "Ac", "Aj"))
+  whichA = c("Ah", "Amin", "Ac", "Aj", "Aval"), Aval = NULL)
 
 Aci(Ci, ...)
 }

@@ -187,7 +187,8 @@ Photosyn <- function(VPD=1.5,
                      Ci = NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
-                     whichA=c("Ah","Amin","Ac","Aj")){
+                     whichA=c("Ah","Amin","Ac","Aj","Aval"),
+                     Aval=NULL){
 
   
   whichA <- match.arg(whichA)
@@ -418,6 +419,7 @@ Photosyn <- function(VPD=1.5,
       if(whichA == "Ah")GS <- g0 + GSDIVA*Am
       if(whichA == "Aj")GS <- g0 + GSDIVA*(Aj-Rd)
       if(whichA == "Ac")GS <- g0 + GSDIVA*(Ac-Rd)
+      if(whichA == "Aval")GS <- g0 + GSDIVA*Aval
     } 
     if(inputCi) {
       if(whichA == "Ah")GS <- Am/(Ca - Ci)
