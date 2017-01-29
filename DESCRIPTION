@@ -1,7 +1,7 @@
 Package: plantecophys
 Type: Package
 Title: Modelling and Analysis of Leaf Gas Exchange Data
-Version: 1.2-2
+Version: 9.9
 Authors@R: person("Remko", "Duursma", role = c("aut", "cre"),email = "remkoduursma@gmail.com")
 Description: Coupled leaf gas exchange model, A-Ci curve simulation and
     fitting, Ball-Berry stomatal conductance models, 
