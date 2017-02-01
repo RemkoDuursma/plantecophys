@@ -76,9 +76,9 @@ fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO
   }
   if(gsmodel == "BBOptiFull"){
     if(!fitg0){
-      fit <- try(nls(gs ~ 1.6*(1 + g1/vpd^gk)*(aleaf/ca), start=list(g1=4, gk=0.5)) )
+      fit <- try(nls(gs ~ 1.6*(1 + g1/vpd^(1-gk))*(aleaf/ca), start=list(g1=4, gk=0.5)) )
     } else {
-      fit <- try(nls(gs ~ g0 + 1.6*(1 + g1/vpd^gk)*(aleaf/ca), start=list(g1=4, g0=0.005, gk=0.5)) )
+      fit <- try(nls(gs ~ g0 + 1.6*(1 + g1/vpd^(1-gk))*(aleaf/ca), start=list(g1=4, g0=0.005, gk=0.5)) )
     }
   }
   if(gsmodel == "BBLeuning"){
