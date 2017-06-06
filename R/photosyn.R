@@ -438,6 +438,13 @@ Photosyn <- function(VPD=1.5,
       Ci <- Ca - Am/GC
     }
     
+    # Chloroplastic CO2 concentration
+    if(!is.null(gmeso)){
+      Cc <- Ci - Am/gmeso
+    } else {
+      Cc <- Ci
+    }
+    
     # Transpiration rate assuming perfect coupling.
     # Output units are mmol m-2 s-1
     E <- 1000*GS*VPD/Patm
@@ -453,6 +460,7 @@ Photosyn <- function(VPD=1.5,
                       VPD=VPD,
                       Tleaf=Tleaf,
                       Ca=Ca,
+                      Cc=Cc,
                       PPFD=PPFD,
                       Patm=Patm)
   
