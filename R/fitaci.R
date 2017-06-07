@@ -196,7 +196,7 @@ fitaci <- function(data,
   # Set measured Rd if provided (or warn when provided but not used)
   Rd_meas <- set_Rdmeas(varnames, data, useRd, citransition, quiet)
   haveRd <- !is.na(Rd_meas)
-  if(haveRd & useRd & fitmethod == "bilinear")Warning("Measured Rd not yet used with bilinear fitmethod.")
+  #if(haveRd & useRd & fitmethod == "bilinear")Warning("Measured Rd not yet used with bilinear fitmethod.")
   
   # Extract Ci and apply pressure correction
   data$Ci_original <- data[,varnames$Ci]
@@ -437,7 +437,8 @@ set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
       if(length(Rd_meas) > 1)
         Stop("If Rd provided as measured, it must be a single unique value for an A-Ci curve.")
       
-      if(Rd_meas < 0)Rd_meas <- -Rd_meas
+      # Use positive value throughout.
+      Rd_meas <- abs(Rd_meas)
       haveRd <- TRUE
       
       if(!is.null(citransition))Stop("At the moment cannot provide citransition as well as measured Rd.")
@@ -662,16 +663,24 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransi
   data$vcmax_pred <- (Conc - ppar$GammaStar)/(Conc + ppar$Km)
   data$Jmax_pred <- (Conc - ppar$GammaStar)/(Conc + 2*ppar$GammaStar)
   data$TPU_part <- (Conc - ppar$GammaStar)/(Conc - (1+3*alphag)*ppar$GammaStar)
-  
+    
   # Fit Vcmax and Rd from linearized portion
   datv <- data[data$Ci < citransition & data$Ci < citransition2,]
   if(nrow(datv) == 0){
     return(list(pars=NA, fit=NA, TPU=NA, success=FALSE))
   }
-  fitv <- lm(ALEAF ~ vcmax_pred, data=datv)
   
-  Rd_fit <- coef(fitv)[[1]]
-  Vcmax_fit <- coef(fitv)[[2]]
+  if(!haveRd){
+    fitv <- lm(ALEAF ~ vcmax_pred, data=datv)
+    Rd_fit <- coef(fitv)[[1]]
+    Vcmax_fit <- coef(fitv)[[2]]
+  } else {
+    # IF using measured Rd, add to Anet, and remove intercept from fit.
+    datv$ALEAFg <- datv$ALEAF + Rd_meas
+    fitv <- lm(ALEAFg ~ vcmax_pred-1, data=datv)
+    Rd_fit <- -Rd_meas
+    Vcmax_fit <- coef(fitv)[[1]]
+  }
   
   # Fit Jmax from linearized portion
   datj <- data[data$Ci >= citransition & data$Ci < citransition2,]
@@ -687,6 +696,7 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransi
   if(nrow(datj) > 0){
     
     # Fit gross photo using fitted Rd
+    # (Rd_fit is negative)
     datj$Agross <- datj$ALEAF - Rd_fit
     
     # One point, calculate directly
