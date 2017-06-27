@@ -42,9 +42,6 @@ The numerical solution of the optimal stomatal conductance model, coupled with t
 \details{
 This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably more stable) implementation, based on Buckley et al. 2014 (P,C&E). Both functions are provided, as FARAO has a few more options than FARAO2, at the moment.
 }
-\author{
-Remko Duursma
-}
 \references{
 Buckley, T.N., Martorell, S., Diaz-Espejo, A., Tomas, M., Medrano, H., 2014. Is stomatal conductance optimized over both time and space in plant crowns? A field test in grapevine (Vitis vinifera). Plant Cell Environ doi:10.1111/pce.12343
 
@@ -52,4 +49,6 @@ Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabol
 
 Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 }
-
+\author{
+Remko Duursma
+}

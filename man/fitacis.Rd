@@ -25,6 +25,8 @@ fitacis(data, group, fitmethod = c("default", "bilinear"),
 
 \item{id}{Names of variables (quoted, can be a vector) in the original dataset to return as part of the coef() statement. Useful for keeping track of species names, treatment levels, etc. See Details and Examples.}
 
+\item{\dots}{Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).}
+
 \item{x}{For \code{plot.acifits}, an object returned from \code{fitacis}}
 
 \item{how}{If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.}
@@ -36,8 +38,6 @@ fitacis(data, group, fitmethod = c("default", "bilinear"),
 \item{add}{If TRUE, adds the plots to a current plot.}
 
 \item{what}{What to plot, either 'model' (the fitted curve), 'data' or 'none'. See examples.}
-
-\item{\dots}{Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).}
 }
 \description{
 A convenient function to fit many curves at once, by calling \code{\link{fitaci}} for every group in the dataset. The data provided must include a variable that uniquely identifies each A-Ci curve.
@@ -89,4 +89,3 @@ boxplot(Vcmax ~ treatment, data=coef(fits), ylim=c(0,130))
 \references{
 Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 }
-

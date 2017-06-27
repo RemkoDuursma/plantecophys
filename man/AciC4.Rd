@@ -63,10 +63,9 @@ Note that it is not (yet) possible to fit this curve to observations of photosyn
 aci <- AciC4(Ci=seq(5,600, length=101))
 with(aci, plot(Ci, ALEAF, type='l', ylim=c(0,max(ALEAF))))
 }
-\author{
-Rhys Whitley
-}
 \references{
 Caemmerer, S.V., 2000. Biochemical Models of Leaf Photosynthesis. Csiro Publishing.
 }
-
+\author{
+Rhys Whitley
+}

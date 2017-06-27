@@ -14,4 +14,3 @@
 \description{
 CO2 response of leaf photosynthesis, as measured with a Licor6400, for multiple leaves.
 }
-
