@@ -710,6 +710,9 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransi
     # And solve for Jmax from inverse non-rect. hyperbola
     Jmax_fit <- inverseJfun(mean(data$PPFD), alpha, J_fit, theta)
     
+    if(Jmax_fit < 0){
+      Stop("Cannot invert light response curve to estimate Jmax - increase alpha or theta.")
+    }
     
   } else {
     Jmax_fit <- 10^6  # not elegant but will do for now (avoids trouble elsewhere)
