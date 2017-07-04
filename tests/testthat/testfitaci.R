@@ -18,7 +18,7 @@ fit3.4 <- fitaci(acidatone,  fitmethod="bilinear", Tcorrect=FALSE, Tleaf=15)
 
 # With mesophyll conductance
 fit5 <- fitaci(acidatone,  fitmethod="default", gmeso=0.9)
-fit6 <- fitaci(acidatone,  fitmethod="default", gmeso=0.3)
+fit6 <- fitaci(acidatone,  fitmethod="default", gmeso=0.4)
 
 # Specify transition point
 fit7.1 <- fitaci(acidatone,  fitmethod="default", citransition=400)

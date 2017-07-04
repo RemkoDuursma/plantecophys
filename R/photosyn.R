@@ -285,14 +285,15 @@ Photosyn <- function(VPD=1.5,
     A <- 1./GC
     B <- (Rd - Vcmax)/GC - Ca - Km
     C <- Vcmax * (Ca - GammaStar) - Rd * (Ca + Km)
-    Ac <- (- B - sqrt(B*B - 4*A*C)) / (2*A)
+    Ac <- QUADM(A,B,C)
     
     # Photosynthesis when electron transport is limiting
     B <- (Rd - VJ)/GC - Ca - 2*GammaStar
     C <- VJ * (Ca - GammaStar) - Rd * (Ca + 2*GammaStar)
-    Aj <- (- B - sqrt(B*B - 4*A*C)) / (2*A)
+    Aj <- QUADM(A,B,C)
     
-    # NOTE: this solution gives net photosynthesis (see old Maestra code).
+    # NOTE: the solution above gives net photosynthesis, add Rd
+    # to get gross rates (to be consistent with other solutions).
     Ac <- Ac + Rd
     Aj <- Aj + Rd
     
@@ -321,7 +322,7 @@ Photosyn <- function(VPD=1.5,
             (Km - Ca)- GSDIVA * (Vcmax*GammaStar + Km*Rd)
           C <- -(1. - Ca*GSDIVA) * (Vcmax*GammaStar + Km*Rd) - g0*Km*Ca
           
-          CIC <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+          CIC <- QUADP(A,B,C)
           
           # Solution when electron transport rate is limiting
           A <- g0 + GSDIVA * (VJ - Rd)
@@ -330,10 +331,7 @@ Photosyn <- function(VPD=1.5,
           C <- -(1 - Ca*GSDIVA) * GammaStar * (VJ + 2*Rd) - 
             g0*2*GammaStar*Ca
           
-          if(A == 0)
-            CIJ <- -C/B
-          else
-            CIJ <- (- B + sqrt(B*B - 4*A*C)) / (2*A)
+          CIJ <- QUADP(A,B,C)
           
           return(c(CIJ,CIC))
         }
@@ -425,14 +423,12 @@ Photosyn <- function(VPD=1.5,
     }  
   
     # Hyperbolic minimum.
-    hmshape <- 0.9999
-    Am <- (Ac+Aj - sqrt((Ac+Aj)^2-4*hmshape*Ac*Aj))/(2*hmshape)
-    
+    Am <- -mapply(QUADP, A = 1 - 1E-04, B = Ac+Aj, C = Ac*Aj)
+
     # Another hyperbolic minimum with the transition to TPU
     tpulim <- any(Ap < Am)
     if(!is.na(tpulim) && tpulim){
-      hmshape <- 1 - 1E-07
-      Am <- (Am+Ap - sqrt((Am+Ap)^2-4*hmshape*Am*Ap))/(2*hmshape)
+      Am <- -mapply(QUADP, A = 1 - 1E-07, B = Am+Ap, C = Am*Ap)
     }
     
     # Net photosynthesis
@@ -505,6 +501,7 @@ Jfun <- function(PPFD, alpha, Jmax, theta){
      sqrt((alpha*PPFD + Jmax)^2 - 4*alpha*theta*PPFD*Jmax))/(2*theta)
 }
 
+# Given PPFD and J, what is Jmax? (inverse non-rectangular hyperbola)
 inverseJfun <- function(PPFD, alpha, J, theta){
   J*(J*theta - alpha*PPFD)/(J - alpha*PPFD)
 }
