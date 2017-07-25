@@ -302,14 +302,11 @@ Photosyn <- function(VPD=1.5,
     # If CI not provided, calculate from intersection between supply and demand
     if(!inputCi){
     
-      #--- non-vectorized workhorse
-      #! This can be vectorized, if we exclude Zero PPFD first,
-      #! move whichA to somewhere else (at the end), and don't take minimum
-        #! of Ac, Aj (calc both, return pmin at the end).
+        #--- non-vectorized workhorse
         getCI <- function(VJ,GSDIVA,PPFD,VPD,Ca,Tleaf,vpdmin,g0,Rd,
                               Vcmax,Jmax,Km,GammaStar){
           
-          if(PPFD == 0){
+          if(identical(PPFD, 0) | identical(VJ, 0)){
             vec <- c(Ca,Ca)
             return(vec)
           }
@@ -332,7 +329,6 @@ Photosyn <- function(VPD=1.5,
             g0*2*GammaStar*Ca
           
           CIJ <- QUADP(A,B,C)
-          
           return(c(CIJ,CIC))
         }
       
@@ -365,9 +361,9 @@ Photosyn <- function(VPD=1.5,
         CIJ <- Ci
         
         if(length(GammaStar) > 1){
-          CIJ[CIJ < GammaStar] <- GammaStar[CIJ < GammaStar]
+          CIJ[CIJ <= GammaStar] <- GammaStar[CIJ < GammaStar]
         } else {
-          CIJ[CIJ < GammaStar] <- GammaStar
+          CIJ[CIJ <= GammaStar] <- GammaStar
         }
         
         CIC <- Ci
