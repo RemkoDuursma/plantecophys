@@ -91,6 +91,28 @@ fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
 
 \item{lwd}{Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).}
 }
+\value{
+A list of class 'acifit', with five components:
+\describe{
+\item{df}{A dataframe with the original data, the fitted photosynthetic rate (Amodel), Jmax and Vcmax-limited gross rates (Aj, Ac)}
+\item{pars}{Contains the parameter estimates and their approximate standard errors}
+\item{nlsfit}{The object returned by \code{\link{nls}}, and contains more detail on the quality of the fit}
+\item{Tcorrect}{whether the temperature correction was applied (logical)}
+\item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and PPFD are set to the mean value in the dataset. All other parameters that were set in fitaci are also used (e.g. temperature dependency parameters).}
+\item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax to Jmax limited photosynthesis.}
+\item{Rd_measured}{Logical - was Rd provided as measured input?}
+\item{GammaStar}{The value for GammaStar, either calculated or provided to the fit.}
+\item{Km}{he value for Km, either calculated or provided to the fit.}
+\item{kminput}{Was Km provided as input? (If FALSE, it was calculated from Tleaf)}
+\item{gstarinput}{Was GammaStar provided as input? (If FALSE, it was calculated from Tleaf)}
+\item{fitmethod}{The fitmethod uses, either default or bilinear}
+\item{citransition}{The input citransition (NA if it was not provided as input)}
+\item{gmeso}{The mesophyll conductance used in the fit (NA if it was not set)}
+\item{fitTPU}{Was TPU fit?}
+\item{RMSE}{The Root-mean squared error, calculated as \code{sqrt(sum((Ameas-Amodel)^2))}.}
+
+}
+}
 \description{
 Fits the Farquhar-Berry-von Caemmerer model of photosynthesis to measurements of photosynthesis and intercellular \eqn{CO_2}{CO2} concentration (Ci). Estimates Jmax, Vcmax, Rd and their standard errors. A simple plotting method is also included, as well as the function \code{\link{fitacis}} which quickly fits multiple A-Ci curves (see its help page). Temperature dependencies of the parameters are taken into account following Medlyn et al. (2002), see \code{\link{Photosyn}} for more details.
 }

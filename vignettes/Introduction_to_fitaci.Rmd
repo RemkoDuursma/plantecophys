@@ -1,0 +1,20 @@
+---
+title: "Introduction to fitaci"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+# Fitting A-Ci curves
+
+```{r}
+library(plantecophys)
+fit <- fitaci(acidata1)
+plot(fit)
+```
+

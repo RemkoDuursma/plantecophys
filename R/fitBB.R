@@ -121,14 +121,16 @@ return(l)
 
 
 
-#' @S3method coef BBfit
+#' @method coef BBfit
+#' @export
 coef.BBfit <- function(object, ...){
   
   object$coef
   
 }
 
-#' @S3method print BBfit
+#' @method print BBfit
+#' @export
 print.BBfit <- function(x, ...){
   
   cat("Result of fitBB.\n")

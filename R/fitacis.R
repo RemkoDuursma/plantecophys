@@ -136,8 +136,9 @@ do_fit_bygroup <- function(d, which=NULL, progressbar, fitmethod, ...){
 }
 
 
-#' @export plot.acifits
-#' @S3method plot acifits
+ 
+#' @method plot acifits
+#' @export
 #' @rdname fitacis
 plot.acifits <- function(x, how=c("manyplots","oneplot"),
                          highlight=NULL, ylim=NULL,xlim=NULL,

@@ -74,7 +74,7 @@
 #' \item{citransition}{The input citransition (NA if it was not provided as input)}
 #' \item{gmeso}{The mesophyll conductance used in the fit (NA if it was not set)}
 #' \item{fitTPU}{Was TPU fit?}
-#' \item{RMSE}{The Root-mean squared error, calculated as \code{sqrt(sum((Ameas-Amodel)^2))}.
+#' \item{RMSE}{The Root-mean squared error, calculated as \code{sqrt(sum((Ameas-Amodel)^2))}.}
 #' 
 #' }
 #' @examples
