@@ -14,7 +14,8 @@ Suggests:
     nlstools,
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    DT
 License: GPL
 LazyData: yes
 RoxygenNote: 6.0.1

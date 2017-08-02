@@ -9,11 +9,26 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+This vignette explains how to fit A-Ci curves with the `plantecophys` package in R. It is written to be usable for absolute beginners in R. 
 
-# Fitting A-Ci curves
 
 ```{r}
 library(plantecophys)
+```
+
+
+## Preparing the data
+
+```{r, echo=FALSE}
+knitr::kable(acidata1)
+```
+
+
+
+## Fitting A-Ci curves
+
+```{r, fig.width=7, fig.height=5, echo=-1}
+par(mar=c(5,5,2,2), cex.lab=1.1)
 fit <- fitaci(acidata1)
 plot(fit)
 ```
