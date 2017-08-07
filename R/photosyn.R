@@ -279,23 +279,29 @@ Photosyn <- function(VPD=1.5,
   }
   
   if(inputGS){
+    
     GC <- GS / GCtoGW
     
-    # Solution when Rubisco activity is limiting
-    A <- 1./GC
-    B <- (Rd - Vcmax)/GC - Ca - Km
-    C <- Vcmax * (Ca - GammaStar) - Rd * (Ca + Km)
-    Ac <- QUADM(A,B,C)
-    
-    # Photosynthesis when electron transport is limiting
-    B <- (Rd - VJ)/GC - Ca - 2*GammaStar
-    C <- VJ * (Ca - GammaStar) - Rd * (Ca + 2*GammaStar)
-    Aj <- QUADM(A,B,C)
-    
-    # NOTE: the solution above gives net photosynthesis, add Rd
-    # to get gross rates (to be consistent with other solutions).
-    Ac <- Ac + Rd
-    Aj <- Aj + Rd
+    if(GS > 0){
+      
+      # Solution when Rubisco activity is limiting
+      A <- 1./GC
+      B <- (Rd - Vcmax)/GC - Ca - Km
+      C <- Vcmax * (Ca - GammaStar) - Rd * (Ca + Km)
+      Ac <- QUADM(A,B,C)
+      
+      # Photosynthesis when electron transport is limiting
+      B <- (Rd - VJ)/GC - Ca - 2*GammaStar
+      C <- VJ * (Ca - GammaStar) - Rd * (Ca + 2*GammaStar)
+      Aj <- QUADM(A,B,C)
+      
+      # NOTE: the solution above gives net photosynthesis, add Rd
+      # to get gross rates (to be consistent with other solutions).
+      Ac <- Ac + Rd
+      Aj <- Aj + Rd
+    } else {
+      Ac <- Aj <- 0
+    }
     
   } else {
     
@@ -453,6 +459,10 @@ Photosyn <- function(VPD=1.5,
     # Calculate Ci if GS was provided as input.
     if(inputGS){
       Ci <- Ca - Am/GC
+      
+      # For zero GC:
+      Ci[!is.finite(Ci)] <- Ca
+      # Stomata fully shut; Ci is not really Ca but that's how we like to think about it.
     }
     
     # Chloroplastic CO2 concentration
