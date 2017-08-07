@@ -1,6 +1,6 @@
 
 
-
+#'@export
 #'@method print acifit
 print.acifit <- function(x,...){
   

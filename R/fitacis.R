@@ -197,6 +197,20 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
   }
 }
 
+#'@export
+#'@method print acifits
+print.acifits <- function(x, ...){
+  
+  cat("Result of fitacis.\n\n")
+  p <- coef(x)
+  
+  cat("Fitted", nrow(p), "curves by", attr(x, "groupname"), "grouping variable.")
+  
+  cat("\nRange in estimated Vcmax:", round(min(p$Vcmax, na.rm=TRUE),2), "-", round(max(p$Vcmax),2))
+  cat("\nRange in estimated Jmax:", round(min(p$Jmax, na.rm=TRUE),2), "-", round(max(p$Jmax),2))
+  cat("\nUse coef() on the object to see all fitted coefficients.")
+  
+}
 
 
 
