@@ -5,3 +5,5 @@ R_other/
 .gitignore
 README.md
 .travis.yml
+^C:\repos\plantecophys\docs$
+^_pkgdown\.yml$
