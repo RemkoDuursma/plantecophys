@@ -1,7 +1,6 @@
 # The plantecophys R package
 
-[![](http://www.r-pkg.org/badges/version/plantecophys)](http://cran.rstudio.com/web/packages/plantecophys/index.html) ![](http://cranlogs.r-pkg.org/badges/plantecophys) ![](https://img.shields.io/bitbucket/issues/remkoduursma/plantecophys.svg)
-![](https://travis-ci.org/RemkoDuursma/plantecophys.svg?branch=master) ![](https://img.shields.io/codecov/c/github/RemkoDuursma/plantecophys/master.svg)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/plantecophys)](https://cran.r-project.org/package=plantecophys) [![Bitbucket Issues](https://img.shields.io/bitbucket/issues/remkoduursma/plantecophys.svg)](https://img.shields.io/bitbucket/issues/remkoduursma/plantecophys.svg) [![Travis-CI Build Status](https://travis-ci.org/RemkoDuursma/plantecophys.svg?branch=master)](https://travis-ci.org/RemkoDuursma/plantecophys.svg?branch=master) [![Coverage Status](https://img.shields.io/codecov/c/github/RemkoDuursma/plantecophys/master.svg)](https://codecov.io/github/RemkoDuursma/plantecophys?branch=master)
 
 Welcome to the home of *plantecophys*, an R package that bundles a number of tools to analyze and model leaf gas exchange data.
 
