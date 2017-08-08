@@ -1,6 +1,6 @@
 ---
 title: "Introduction to fitaci"
-author: "Vignette Author"
+author: "Remko Duursma"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -9,27 +9,148 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette explains how to fit A-Ci curves with the `plantecophys` package in R. It is written to be usable for absolute beginners in R. 
+This vignette explains how to fit A-Ci curves with the `plantecophys` package in R. It is written to be usable for  beginners in R. 
 
+After installing the package from CRAN with `install.packages("plantecophys")`, load the package the usual way:
 
 ```{r}
 library(plantecophys)
 ```
 
+```{r echo=FALSE}
+acidata1$Rd <- NULL
+```
 
 ## Preparing the data
 
+In the examples below I will use two built-in datasets in the `plantecophys` package. The `acidata1` dataset looks like this:
+
 ```{r, echo=FALSE}
-knitr::kable(acidata1)
+knitr::kable(acidata1[,c("Ci","Photo","Tleaf","PARi")])
 ```
 
+The easiest approach is to make your dataset look like that, including those column names. If you want to use different column names, see an example further below. 
+
+Read your data into a dataframe in R, possibly using `read.csv` (comma-separated values):
+
+```{r eval=FALSE}
+mydata <- read.csv("myfile.csv")
+```
 
 
 ## Fitting A-Ci curves
 
+If you have the default column names, fitting an A-Ci curve is as easy as this:
+
+```{r}
+fit <- fitaci(acidata1)
+```
+
+The results are stored in the object `fit`, which can be inspected via: 
+
+```{r}
+fit
+```
+
+The coefficients can be extracted,
+
+```{r}
+coef(fit)
+```
+
+And a standard plot can be made:
+
 ```{r, fig.width=7, fig.height=5, echo=-1}
 par(mar=c(5,5,2,2), cex.lab=1.1)
-fit <- fitaci(acidata1)
 plot(fit)
 ```
+
+
+## Temperature corrections
+
+The `fitaci` function corrects the estimates of Vcmax and Jmax to a common temperature (25C) by default, but you may want to change this behaviour if you are interested in actual rates at the temperature measured (not corrected for temperature).
+
+```{r}
+fit2 <- fitaci(acidata1, Tcorrect=FALSE)
+```
+
+**Note** that the correction to a common temperature depends on a number of parameters, the default values in `fitaci` are not necessarily right for your application!
+
+## Using measured dark respiration
+
+The `fitaci` function also estimates dark respiration (Rd) in the fit, but be aware that those estimates are very imprecise. Also, a higher precision of Vcmax and Jmax can be obtained if you measure Rd independently, and use that value in the fit. To do this, add Rd to the dataframe (default column name is 'Rd'), and set the `useRd=TRUE` argument, like so:
+
+```{r, echo=-1}
+acidata2 <- acidata1
+acidata2$Rd <- 2
+fit3 <- fitaci(acidata2, useRd=TRUE)
+coef(fit3)
+```
+
+## Using different columns
+
+When your column names differ from the defaults, you have to specify all column names. It may also be useful to use a different column in some instance, for example air instead of leaf temperature (perhaps the thermocouple was broken):
+
+```{r, eval=FALSE}
+fit4 <- fitaci(acidata1, varnames=c(ALEAF="Photo", Tleaf="Tair", Ci="Ci", PPFD="PARi"))
+```
+
+**Note** that the right-hand side of each pair is the name of the variable in your dataframe.
+
+
+## Missing leaf temperature and/or PAR
+
+If leaf temperature is not available in the dataset, a default value of 25C is assumed, or you can pass it as an argument (see below). Likewise, for PAR (which is used to express Jmax at 'infinite' light availability), a value of 1800 is assumed. 
+
+To use different values, set `Tleaf` and `PPFD` (PAR) directly:
+
+```{r}
+fit5 <- fitaci(acidata1, Tleaf=30, PPFD=2000)
+```
+
+You can also set `GammaStar`, `Km` directly.
+
+
+## Using mesophyll conductance
+
+It is not possible to estimate mesophyll conductance (gmeso) from A-Ci curves (contrary to what some people have claimed in the literature), but it is possible to include gmeso to arrive at chloroplastic rates of Vcmax and Jmax. This is easily done via,
+
+```{r}
+fit6 <- fitaci(acidata1, gmeso=0.2)
+```
+
+**Note:** However note a section in the FAQ Vignette that is included in this package on another approach to account for gmeso.
+
+
+## Fitting TPU limitation
+
+A fairly recent addition to the package (not described in Duursma, 2015) is the estimation of triose phosphate utilization (TPU) limitation. This rate can be estimated like this,
+
+```{r fig.width=7, fig.height=5, echo=-1}
+par(mar=c(5,5,2,2), cex.lab=1.1)
+fit7 <- fitaci(acidata1, fitTPU=TRUE)
+plot(fit7)
+```
+
+**Note:** the horizontal line (Ap) is the TPU-limited rate of photosynthesis. 
+
+The TPU rate can be extracted via:
+
+```{r}
+coef(fit7)
+```
+
+**Note:** In many cases this rate cannot be estimated, i.e. when the limitation is not clearly affecting photosynthesis. In that case the estimated coefficient will be NA. 
+
+
+
+
+
+
+
+
+
+
+
+
 
