@@ -733,10 +733,18 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransi
   }
   
   ses <- summary(fitv)$coefficients[,2]
-  pars <- matrix(c(Vcmax_fit, Jmax_fit, -Rd_fit,
+  if(!haveRd){
+    pars <- matrix(c(Vcmax_fit, Jmax_fit, -Rd_fit,
                    ses[2],NA,ses[1]), ncol=2)
+  } else {
+    pars <- matrix(c(Vcmax_fit, Jmax_fit, -Rd_fit,
+                     ses[1],NA,NA), ncol=2)
+  }
+  
+  
   rownames(pars) <- c("Vcmax","Jmax","Rd")
   colnames(pars) <- c("Estimate","Std. Error")
+  
   
   return(list(pars=pars, fit=fitv, TPU=TPU, success=TRUE))
 }
