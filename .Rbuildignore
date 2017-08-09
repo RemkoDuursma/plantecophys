@@ -7,3 +7,4 @@ README.md
 .travis.yml
 _pkgdown\.yml
 docs/
+^_pkgdown\.yml$
