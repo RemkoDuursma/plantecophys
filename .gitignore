@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 *.Rproj
-*.html
 inst/doc
 vignettes/.build.timestamp
 vignettes/*.R
