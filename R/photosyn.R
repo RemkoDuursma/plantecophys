@@ -218,6 +218,8 @@ Photosyn <- function(VPD=1.5,
   
   if(inputCi & inputGS)stop("Cannot provide both Ci and GS.")
   
+  if(is.null(TPU))TPU <- 1000
+  
   #---- Constants; hard-wired parameters.
   Rgas <- .Rgas()
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
