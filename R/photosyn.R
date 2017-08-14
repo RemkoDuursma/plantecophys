@@ -20,8 +20,8 @@
 #' @param gmeso Mesophyll conductance (mol m-2 s-1). If not NULL (the default), Vcmax and Jmax are chloroplastic rates.
 #' @param TPU Triose-phosphate utilization rate (mu mol m-2 s-1); optional.
 #' @param alphag Fraction of glycolate not returned to the chloroplast; parameter in TPU-limited photosynthesis (optional, only to be used when TPU is provided) (0 - 1)
-#' @param Rd Day respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)
-#' @param Rd0 Day respiration rate at reference temperature (\code{TrefR})
+#' @param Rd Day respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR). Must be a positive value (an error occurs when a negative value is supplied).
+#' @param Rd0 Day respiration rate at reference temperature (\code{TrefR}). Must be a positive value.
 #' @param Q10 Temperature sensitivity of Rd.
 #' @param TrefR Reference temperature for Rd (Celcius).
 #' @param Rdayfrac Ratio of Rd in the light vs. in the dark.
@@ -226,7 +226,9 @@ Photosyn <- function(VPD=1.5,
   if(is.null(VPD) && is.null(RH)){
     stop("Need one of VPD, RH.")
   }
-  
+  if(Rd < 0){
+    stop("Rd must be supplied as positive value.")
+  }
   #---- Constants; hard-wired parameters.
   Rgas <- .Rgas()
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O
