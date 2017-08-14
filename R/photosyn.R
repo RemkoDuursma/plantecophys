@@ -226,9 +226,7 @@ Photosyn <- function(VPD=1.5,
   if(is.null(VPD) && is.null(RH)){
     stop("Need one of VPD, RH.")
   }
-  if(Rd < 0){
-    stop("Rd must be supplied as positive value.")
-  }
+
   #---- Constants; hard-wired parameters.
   Rgas <- .Rgas()
   GCtoGW <- 1.57     # conversion from conductance to CO2 to H2O

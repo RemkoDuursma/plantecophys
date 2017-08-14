@@ -59,11 +59,11 @@ Aci(Ci, ...)
 
 \item{alphag}{Fraction of glycolate not returned to the chloroplast; parameter in TPU-limited photosynthesis (optional, only to be used when TPU is provided) (0 - 1)}
 
-\item{Rd0}{Day respiration rate at reference temperature (\code{TrefR})}
+\item{Rd0}{Day respiration rate at reference temperature (\code{TrefR}). Must be a positive value.}
 
 \item{Q10}{Temperature sensitivity of Rd.}
 
-\item{Rd}{Day respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR)}
+\item{Rd}{Day respiration rate (mu mol m-2 s-1), optional (if not provided, calculated from Tleaf, Rd0, Q10 and TrefR). Must be a positive value (an error occurs when a negative value is supplied).}
 
 \item{TrefR}{Reference temperature for Rd (Celcius).}
 
