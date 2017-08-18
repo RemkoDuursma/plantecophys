@@ -201,7 +201,7 @@ Photosyn <- function(VPD=1.5,
                      
                      GammaStar = NULL,
                      Km = NULL,
-                     
+  
                      Ci = NULL,
                      Tcorrect=TRUE,  
                      returnParsOnly=FALSE,
@@ -286,7 +286,7 @@ Photosyn <- function(VPD=1.5,
   if(gsmodel == "BBdefine"){
     GSDIVA <- BBmult / GCtoGW
   }
-  
+
   if(inputGS){
     
     GC <- GS / GCtoGW
@@ -499,7 +499,7 @@ Photosyn <- function(VPD=1.5,
                       Cc=Cc,
                       PPFD=PPFD,
                       Patm=Patm)
-  
+
 return(df)
 }
 
