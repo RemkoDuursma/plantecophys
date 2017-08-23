@@ -54,9 +54,11 @@ AciC4(Ci, PPFD = 1500, Tleaf = 25, VPMAX25 = 120, JMAX25 = 400,
 An implementation of the A-Ci curve for C4 plants, based on von Caemmerer et al. (2000)
 }
 \details{
-Note that the temperature response parameters have been hardwired in this function, and are based on von Caemmerer (2000).
+Note that the temperature response parameters have been hardwired 
+in this function, and are based on von Caemmerer (2000).
 
-Note that it is not (yet) possible to fit this curve to observations of photosynthesis (see \code{\link{fitaci}} to fit the C3 model of photosynthesis).
+Note that it is not (yet) possible to fit this curve to observations of 
+photosynthesis (see \code{\link{fitaci}} to fit the C3 model of photosynthesis).
 }
 \examples{
 # Simulate a C4 A-Ci curve. 

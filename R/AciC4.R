@@ -22,9 +22,11 @@
 #' @param Q10F T-dependence parameter of respiration 
 #' @param FRM Fraction of day respiration that is mesophyll respiration (Rm)
 #' @param \dots Further arguments (currently ignored).
-#' @details Note that the temperature response parameters have been hardwired in this function, and are based on von Caemmerer (2000).
+#' @details Note that the temperature response parameters have been hardwired 
+#' in this function, and are based on von Caemmerer (2000).
 #' 
-#' Note that it is not (yet) possible to fit this curve to observations of photosynthesis (see \code{\link{fitaci}} to fit the C3 model of photosynthesis).
+#' Note that it is not (yet) possible to fit this curve to observations of 
+#' photosynthesis (see \code{\link{fitaci}} to fit the C3 model of photosynthesis).
 #' @references Caemmerer, S.V., 2000. Biochemical Models of Leaf Photosynthesis. Csiro Publishing.
 #' @examples
 #' # Simulate a C4 A-Ci curve. 
@@ -64,7 +66,8 @@ AciC4 <- function(Ci,
 	# Half the reciprocal for Rubisco specificity (NOT CO2 compensation point)
 	low_gammastar <- 1.93e-4
 	
-	# Michaelis-Menten coefficients for CO2 (Kc, mu mol mol-1) and O (Ko, mmol mol-1) and combined (K)
+	# Michaelis-Menten coefficients for CO2 (Kc, mu mol mol-1) and 
+	# O (Ko, mmol mol-1) and combined (K)
   Kc <- 650*Q10^((Tleaf-25)/10)
   Kp <- 80*Q10^((Tleaf-25)/10)
   Ko <- 450*Q10^((Tleaf-25)/10)
@@ -117,5 +120,6 @@ AciC4 <- function(Ci,
 	Ac <- Ac - Rd
 	Aj <- Aj - Rd
 		
-	return(data.frame(Ci=Ci, ALEAF=Ad, An=An, Ac=Ac, Aj=Aj, Vp=Vp, Rd=Rd, Tleaf=Tleaf, PPFD=PPFD))
+	return(data.frame(Ci=Ci, ALEAF=Ad, An=An, Ac=Ac, Aj=Aj, 
+	                  Vp=Vp, Rd=Rd, Tleaf=Tleaf, PPFD=PPFD))
 }

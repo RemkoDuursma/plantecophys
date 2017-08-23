@@ -62,9 +62,9 @@ test_that("Aci curve fitted coefficients",{
 })
 
 test_that("Aci curve RMSE", {
-  expect_lt( max(sapply(fits1, "[[", "RMSE")), 5)
-  expect_lt( max(sapply(fits2, "[[", "RMSE")), 5)
-  expect_lt( max(sapply(fits3, "[[", "RMSE")), 5)
+  expect_lt( max(vapply(fits1, "[[", numeric(1), "RMSE")), 5)
+  expect_lt( max(vapply(fits2, "[[", numeric(1), "RMSE")), 5)
+  expect_lt( max(vapply(fits3, "[[", numeric(1), "RMSE")), 5)
   expect_lt(fit1$RMSE, 5)
   expect_lt(fit2$RMSE, 5)
   expect_lt(fit3.1$RMSE, 5)
