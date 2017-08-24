@@ -1,25 +1,39 @@
 #' FARquhar And Opti
-#' @description The numerical solution of the optimal stomatal conductance model, coupled with the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation to this full numeric solution.
+#' @description The numerical solution of the optimal stomatal conductance model, coupled with 
+#' the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation 
+#' to this full numeric solution.
 #' @param lambda The marginal cost of water (mol mol-1)
 #' @param Ca The CO2 concentration. 
 #' @param VPD Vapor pressure deficit (kPa)
-#' @param photo Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. the minimum of Vcmax and Jmax limited rates.
-#' @param energybalance If TRUE (Default = FALSE), calculates leaf temperature from energy balance (and its effects on photosynthesis as well as leaf transpiration), using \code{\link{PhotosynEB}}.
+#' @param photo Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. 
+#' the minimum of Vcmax and Jmax limited rates.
+#' @param energybalance If TRUE (Default = FALSE), calculates leaf temperature from energy balance 
+#' (and its effects on photosynthesis as well as leaf transpiration), using \code{\link{PhotosynEB}}.
 #' @param C4 If TRUE, uses the C4 photosynthesis routine (\code{\link{AciC4}})
 #' @param Tair Air temperature (deg C)
 #' @param Wind Wind speed (m s-1) (only used if energybalance=TRUE)
 #' @param Wleaf Leaf width (m) (only used if energybalance=TRUE)
-#' @param StomatalRatio The stomatal ratio (see \code{\link{PhotosynEB}}) (only used if energybalance=TRUE)
-#' @param LeafAbs Leaf absorptance (see \code{\link{PhotosynEB}}) (only used if energybalance=TRUE)
+#' @param StomatalRatio The stomatal ratio (see \code{\link{PhotosynEB}}) (only used if 
+#' energybalance=TRUE)
+#' @param LeafAbs Leaf absorptance (see \code{\link{PhotosynEB}}) (only used if 
+#' energybalance=TRUE)
 #' @param ... All other parameters are passed to \code{\link{Aci}}
 #' @author Remko Duursma
-#' @details This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977, see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably more stable) implementation, based on Buckley et al. 2014 (P,C&E). Both functions are provided, as FARAO has a few more options than FARAO2, at the moment.
+#' @details This model finds the Ci that maximizes A - lambda*E (Cowan & Farquhar 1977,
+#'  see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably 
+#'  more stable) implementation, based on Buckley et al. 2014 (P,C&E). Both functions 
+#'  are provided, as FARAO has a few more options than FARAO2, at the moment.
 #' @references 
-#' Buckley, T.N., Martorell, S., Diaz-Espejo, A., Tomas, M., Medrano, H., 2014. Is stomatal conductance optimized over both time and space in plant crowns? A field test in grapevine (Vitis vinifera). Plant Cell Environ doi:10.1111/pce.12343
+#' Buckley, T.N., Martorell, S., Diaz-Espejo, A., Tomas, M., Medrano, H., 2014. Is stomatal 
+#' conductance optimized over both time and space in plant crowns? A field test in 
+#' grapevine (Vitis vinifera). Plant Cell Environ doi:10.1111/pce.12343
 #' 
-#' Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabolism and environment. Symposia of the Society for Experimental Biology. 31:471-505.
+#' Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabolism 
+#' and environment. Symposia of the Society for Experimental Biology. 31:471-505.
 #' 
-#' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
+#' Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, 
+#' K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal 
+#' and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 #' @export
 #' @importFrom stats optimize
 #' @rdname FARAO
@@ -113,7 +127,8 @@ OPTfun <- function(Ci,              # mu mol mol-1
 	
   # Given a Ci, calculate photosynthetic rate
   if(!C4)
-		run <- Aci(Ci=Ci, VPD=VPD, ...)   # note that VPD does not do anything, just for consistency in I/O
+    # note that VPD does not do anything, just for consistency in I/O
+		run <- Aci(Ci=Ci, VPD=VPD, ...)   
 	else 
 		run <- AciC4(Ci, VPD=VPD, ...)
 	
@@ -164,7 +179,8 @@ OPTfunEB <- function(Ci,           # mu mol mol-1
     
     # Given a Ci, calculate photosynthetic rate
     if(!C4)
-      run <- Aci(Ci, VPD=VPD, ...)   # note that VPD does not do anything, just for consistency in I/O
+      # note that VPD does not do anything, just for consistency in I/O
+      run <- Aci(Ci, VPD=VPD, ...)   
     else 
       run <- AciC4(Ci, VPD=VPD, ...)
     
@@ -188,7 +204,8 @@ OPTfunEB <- function(Ci,           # mu mol mol-1
     (newx - x)^2
   }
 
-  Tleaf <- optimize(fx, interval=c(Tair-10, Tair+10), Ci=Ci, Tair=Tair, Wind=Wind, VPD=VPD, Wleaf=Wleaf, 
+  Tleaf <- optimize(fx, interval=c(Tair-10, Tair+10), Ci=Ci, Tair=Tair, 
+                    Wind=Wind, VPD=VPD, Wleaf=Wleaf, 
                    StomatalRatio=StomatalRatio, LeafAbs=LeafAbs, ...)$minimum
   
   z <- gsfun(Ci=Ci, Tleaf=Tleaf, VPD=VPD, returnwhat="all",...)
@@ -257,10 +274,10 @@ FARAO2 <- function(lambda=0.002, Ca=400, energybalance=FALSE, ...){
   return(p)
   }
   
-  m <- mapply(faraofun, lambda=lambda, Ca=Ca, energybalance=energybalance, ..., SIMPLIFY=FALSE)
+  m <- mapply(faraofun, lambda=lambda, Ca=Ca, 
+              energybalance=energybalance, ..., SIMPLIFY=FALSE)
   
-  
-return(do.call(rbind,m))
+return(do.call(rbind, m))
 }
 
 
