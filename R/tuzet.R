@@ -61,7 +61,9 @@ PhotosynTuzet <- function(g1=8,
                           sf=3, 
                           psif=-2,
                           ...){
-  as.data.frame(t(mapply(PhotosynTuzet_f, g1=g1, Ca=Ca, psis=psis, kl=kl, sf=sf, psif=psif, ...)))
+  m <- mapply(PhotosynTuzet_f, g1=g1, Ca=Ca, psis=psis, kl=kl, sf=sf, psif=psif, 
+              ..., SIMPLIFY=FALSE)
+  do.call(rbind, m)
 }
 
 
