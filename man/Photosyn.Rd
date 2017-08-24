@@ -89,7 +89,8 @@ calculated via gs model.}
 \item{Tcorrect}{If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, 
 assumes the provided Vcmax and Jmax are at the Tleaf provided)}
 
-\item{returnParsOnly}{If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on leaf temperature.}
+\item{returnParsOnly}{If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on 
+leaf temperature.}
 
 \item{whichA}{Which assimilation rate does gs respond to?}
 
@@ -120,7 +121,13 @@ Gammastar, and Km follow Medlyn et al. (2002). However, \strong{note that the de
 temperature response parameter values are not taken from Medlyn, and likely will have to 
 be adjusted for your situation}.
 
-#'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and Jmax-limited photosynthetic rates, as well as the hyperbolic minimum of Jmax-limited and TPU-limited rates. This approach avoids the discontinuity at the transition between the two rates (thus allowing use of \code{Photosyn} and \code{fitaci} in optimization or fitting routines). The individual rates (Ac, Aj and Ap) are also returned as output should they be needed. Note that those rates are output as gross photosynthetic rates (leaf respiration has to be subtracted to give net leaf photosynthesis).
+#'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and 
+Jmax-limited photosynthetic rates, as well as the hyperbolic minimum of Jmax-limited and 
+TPU-limited rates. This approach avoids the discontinuity at the transition between the 
+two rates (thus allowing use of \code{Photosyn} and \code{fitaci} in optimization or 
+fitting routines). The individual rates (Ac, Aj and Ap) are also returned as output 
+should they be needed. Note that those rates are output as gross photosynthetic rates 
+(leaf respiration has to be subtracted to give net leaf photosynthesis).
 
 \strong{Coupled leaf gas exchange}
  When Ci is not provided, Ci is calculated from the intersection between the 'supply' and 
@@ -268,7 +275,7 @@ Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter, P.C. Harley, M.U.F. Kirsc
 
 Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
 
-Terashima, I., Masuzawa, T., Ohba, H., Yokoi, Y., 1995. Is Photosynthesis Suppressed at Higher Elevations Due to Low CO2 Pressure? Ecology 76, 2663-2668. doi:10.2307/2265838
+Terashima, I., Masuzawa, T., Ohba, H., Yokoi, Y., 1995. Is photosynthesis suppressed at higher elevations due to low CO2 pressure? Ecology 76, 2663-2668. doi:10.2307/2265838
 }
 \seealso{
 \code{\link{FARAO}}, \code{\link{fitaci}}, \code{\link{AciC4}}
