@@ -30,6 +30,7 @@ p7 <- Photosyn(Ci=200, Tleaf=c(20,25))  # Used to be 'Jena bug'
 p8_1 <- Photosyn(Ci=800, Ca=1200, TPU=8)
 p8_2 <- Photosyn(Ci=800, Ca=1200, TPU=5)
 
+p9 <- Photosyn(EdVC = 1)  # for a subclause test
 
 test_that("Photosyn outputs", {
   expect_lte(max(diff(p1$GS)), 0)  # GS should always decrease with VPD
