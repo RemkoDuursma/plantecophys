@@ -1,12 +1,18 @@
 #' Conversions between relative humidity, vapour pressure deficit and dewpoint
 #' 
-#' @description A collection of functions to convert between relative humidity (RH) (\%), vapour pressure deficit (VPD) (kPa), 
-#' dew point temperature, and leaf- or air temperature-based VPD or RH. To convert from relative humidity to VPD, 
-#' use the \code{RHtoVPD} function,  use \code{VPDtoRH} for the other way around. The water vapor saturation pressure is 
+#' @description A collection of functions to convert between relative humidity (RH) (\%), 
+#' vapour pressure deficit (VPD) (kPa), 
+#' dew point temperature, and leaf- or air temperature-based VPD or RH. To convert from 
+#' relative humidity to VPD, 
+#' use the \code{RHtoVPD} function,  use \code{VPDtoRH} for the other way around. The water 
+#' vapor saturation pressure is 
 #' calculated with \code{esat}. Use \code{DewtoVPD} to 
 #' convert from dewpoint temperature to VPD. The functions \code{VPDleafToAir} and \code{VPDairToLeaf}
-#' convert VPD from a leaf temperature to an air-temperature basis and vice versa. The functions \code{RHleafToAir} a \code{RHairToLeaf} do the same for relative humidity.
-#' @details The function describing saturated vapor pressure with temperature is taken from Jones (1992). All other calculations follow directly from the standard definitions, for which Jones (1992) may also be consulted.
+#' convert VPD from a leaf temperature to an air-temperature basis and vice versa. The 
+#' functions \code{RHleafToAir} a \code{RHairToLeaf} do the same for relative humidity.
+#' @details The function describing saturated vapor pressure with temperature is taken from 
+#' Jones (1992). All other calculations follow directly from the standard definitions, for
+#'  which Jones (1992) may also be consulted.
 #' @param RH Relative humidity (\%)
 #' @param TdegC Temperature (degrees C) (either leaf or air)
 #' @param Tair Air temperature (degrees C)
@@ -16,7 +22,8 @@
 #' @param Tdew Dewpoint temperature (degrees C)
 #' @export RHtoVPD VPDtoRH esat DewtoVPD VPDtoDew VPDleafToAir VPDairToLeaf
 #' @rdname Conversions
-#' @references Jones, H.G. 1992. Plants and microclimate: a quantitative approach to environmental plant physiology. 2nd Edition., 2nd Edn. Cambridge University Press, Cambridge. 428 p.
+#' @references Jones, H.G. 1992. Plants and microclimate: a quantitative approach to 
+#' environmental plant physiology. 2nd Edition., 2nd Edn. Cambridge University Press, Cambridge. 428 p.
 #' @author Remko Duursma
 RHtoVPD <- function(RH, TdegC, Pa=101){
 	esatval <- esat(TdegC, Pa)
@@ -87,6 +94,7 @@ VPDairToLeaf <- function(VPD, Tair, Tleaf, Pa=101){
   return(vpd/1000)
 }
 #' @rdname Conversions
+#' @export
 RHleafToAir <- function(RH, Tleaf, Tair, Pa=101){
   
   e <- (RH/100)*esat(Tleaf, Pa)
@@ -95,6 +103,7 @@ RHleafToAir <- function(RH, Tleaf, Tair, Pa=101){
   return(rh*100)
 }
 #' @rdname Conversions
+#' @export
 RHairToLeaf <- function(RH, Tair, Tleaf, Pa=101){
   
   e <- (RH/100)*esat(Tair, Pa)

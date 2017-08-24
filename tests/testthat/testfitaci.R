@@ -55,8 +55,12 @@ plot(fit1)
 plot(fit1, xlim=c(100,200), ylim=c(0,30), linecols="blue")
 plot(fit3.5)
 
+plot(fits1)
+plot(fits1, how="oneplot")
+
 
 test_that("Aci curve fit output format", {
+  expect_error(fitaci(data.frame()))
   expect_length(fitted(fit1), nrow(acidatone))
   expect_equal(names(coef(fit1)), c("Vcmax","Jmax","Rd"))
   expect_equal(names(coef(fit2)), c("Vcmax","Jmax","Rd"))
