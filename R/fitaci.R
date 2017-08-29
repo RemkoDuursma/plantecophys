@@ -21,7 +21,7 @@
 #' automatically if used). See Details.
 #' @param alphag When estimating TPU limitation (with \code{fitTPU}), an additional parameter (see Details).
 #' @param useRd If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in 
-#' fit. Otherwise it is estimatied from the fit to the A-Ci curve.
+#' fit. Otherwise it is estimated from the fit to the A-Ci curve.
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
 #' @param Tleaf Leaf temperature (degrees C)
 #' @param alpha Quantum yield of electron transport (mol mol-1)
