@@ -19,7 +19,8 @@
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param fitTPU Logical (default FALSE). Attempt to fit TPU limitation (fitmethod set to 'bilinear' 
 #' automatically if used). See Details.
-#' @param alphag When estimating TPU limitation (with \code{fitTPU}), an additional parameter (see Details).
+#' @param alphag When estimating TPU limitation (with \code{fitTPU}), an 
+#' additional parameter (see Details).
 #' @param useRd If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in 
 #' fit. Otherwise it is estimated from the fit to the A-Ci curve.
 #' @param PPFD Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)
@@ -140,10 +141,15 @@
 #' chloroplastic CO2 (Cc), PPFD, atmospheric pressure (Patm), and 'original Ci, i.e. the 
 #' Ci used as input (which is different from the Ci used in fitting if Patm was not set to 100kPa)}
 #' \item{pars}{Contains the parameter estimates and their approximate standard errors}
-#' \item{nlsfit}{The object returned by \code{\link{nls}}, and contains more detail on the quality of the fit}
+#' \item{nlsfit}{The object returned by \code{\link{nls}}, and contains more detail on 
+#' the quality of the fit}
 #' \item{Tcorrect}{whether the temperature correction was applied (logical)}
-#' \item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and PPFD are set to the mean value in the dataset. All other parameters that were set in fitaci are also used (e.g. temperature dependency parameters, TPU, etc.).}
-#' \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax to Jmax limited photosynthesis.}
+#' \item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for 
+#' the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and 
+#' PPFD are set to the mean value in the dataset. All other parameters that were set in fitaci are 
+#' also used (e.g. temperature dependency parameters, TPU, etc.).}
+#' \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax 
+#' to Jmax limited photosynthesis.}
 #' \item{Rd_measured}{Logical - was Rd provided as measured input?}
 #' \item{GammaStar}{The value for GammaStar, either calculated or provided to the fit.}
 #' \item{Km}{he value for Km, either calculated or provided to the fit.}
@@ -155,7 +161,8 @@
 #' \item{fitTPU}{Was TPU fit?}
 #' \item{alphag}{The value of alphag used in estimating TPU.}
 #' \item{RMSE}{The Root-mean squared error, calculated as \code{sqrt(sum((Ameas-Amodel)^2))}.}
-#' \item{runorder}{The data returned in the 'df' slot are ordered by Ci, but in rare cases the original order of the data contains information; 'runorder' is the order in which the data were provided.}
+#' \item{runorder}{The data returned in the 'df' slot are ordered by Ci, but in rare cases the 
+#' original order of the data contains information; 'runorder' is the order in which the data were provided.}
 #' 
 #' }
 #' @examples
@@ -277,7 +284,6 @@ fitaci <- function(data,
   # Set measured Rd if provided (or warn when provided but not used)
   Rd_meas <- set_Rdmeas(varnames, data, useRd, citransition, quiet)
   haveRd <- !is.na(Rd_meas)
-  #if(haveRd & useRd & fitmethod == "bilinear")Warning("Measured Rd not yet used with bilinear fitmethod.")
   
   # Extract Ci and apply pressure correction
   data$Ci_original <- data[,varnames$Ci]
@@ -287,9 +293,14 @@ fitaci <- function(data,
   data$ALEAF <- data[,varnames$ALEAF]
   
   # Calculate Km and GammaStar, if not input 
-  # (Photosyn does this as well, but have to repeat it here since we cannot have NULL in call to nls)
+  # (Photosyn does this as well, but have to repeat it here 
+  # since we cannot have NULL in call to nls)
   Km_v <- if(!kminput) TKm(data$Tleaf, Patm) else rep(Km, nrow(data))
-  GammaStar_v <- if(!gstarinput)TGammaStar(data$Tleaf, Patm) else rep(GammaStar, nrow(data))
+  GammaStar_v <- if(!gstarinput){
+    TGammaStar(data$Tleaf, Patm)
+  } else {
+    rep(GammaStar, nrow(data))
+  }
   
   # Citransition not defined:
   # default method = full non-linear model
@@ -303,8 +314,10 @@ fitaci <- function(data,
     } 
     if(fitmethod == "bilinear"){
       
-      f <- do_fit_method_bilinear_bestcitrans(data, haveRd, fitTPU, alphag, Rd_meas, Patm, Tcorrect, algorithm,
-                                              alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+      f <- do_fit_method_bilinear_bestcitrans(data, haveRd, fitTPU, alphag, Rd_meas, 
+                                              Patm, Tcorrect, algorithm,
+                                              alpha,theta,gmeso,EaV,EdVC,delsC,
+                                              EaJ,EdVJ,delsJ,
                                               GammaStar_v, Km_v)
     }
   }
@@ -322,7 +335,8 @@ fitaci <- function(data,
                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
     }
     if(fitmethod == "bilinear"){
-      f <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, citransition, NULL, Tcorrect, algorithm,
+      f <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, citransition, 
+                                  NULL, Tcorrect, algorithm,
                                 alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
                                 GammaStar_v, Km_v)
     }
@@ -522,10 +536,12 @@ set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
       Rd_meas <- abs(Rd_meas)
       haveRd <- TRUE
       
-      if(!is.null(citransition))Stop("At the moment cannot provide citransition as well as measured Rd.")
+      if(!is.null(citransition))
+        Stop("At the moment cannot provide citransition as well as measured Rd.")
     }
     if(varnames$Rd %in% names(data) && !useRd){
-      if(!quiet)message("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
+      if(!quiet)
+        message("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
     }
   }
   return(Rd_meas)
@@ -705,8 +721,18 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
   }
   
   p <- c(p1[1],p2,p1[2])
-  pars1 <- if(!is.null(nlsfit_vcmax))summary(nlsfit_vcmax)$coefficients[,1:2] else matrix(rep(NA,4),ncol=2)
-  pars2 <- if(!is.null(nlsfit_jmax))summary(nlsfit_jmax)$coefficients[,1:2] else matrix(rep(NA,2),ncol=2)
+  pars1 <- if(!is.null(nlsfit_vcmax)){
+    summary(nlsfit_vcmax)$coefficients[,1:2] 
+  } else {
+    matrix(rep(NA,4),ncol=2)
+  }
+  
+  pars2 <- if(!is.null(nlsfit_jmax)){
+    summary(nlsfit_jmax)$coefficients[,1:2] 
+  } else {
+    matrix(rep(NA,2),ncol=2)
+  }
+  
   pars <- rbind(pars1[1,],pars2,pars1[2,])
   rownames(pars) <- c("Vcmax","Jmax","Rd")
   nlsfit <- list(nlsfit_vcmax=nlsfit_vcmax,nlsfit_jmax=nlsfit_jmax)
@@ -716,9 +742,11 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
 
 
 
-do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransition, citransition2=NULL,
+do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, 
+                                   Patm, citransition, citransition2=NULL,
                                    Tcorrect, algorithm,
-                                   alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                                   alpha,theta,gmeso,EaV,EdVC,delsC,
+                                   EaJ,EdVJ,delsJ,
                                    GammaStar, Km){
   
   # Calculate T-dependent parameters
@@ -792,7 +820,8 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransi
     Jmax_fit <- inverseJfun(mean(data$PPFD), alpha, J_fit, theta)
     
   } else {
-    Jmax_fit <- 10^6  # not elegant but will do for now (avoids trouble elsewhere)
+    Jmax_fit <- 10^6  # not elegant but will do for now 
+                      # (avoids trouble elsewhere)
   }
   
   # TPU
@@ -830,8 +859,10 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas, Patm, citransi
   return(list(pars=pars, fit=fitv, TPU=TPU, success=TRUE))
 }
 
-do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, alphag, Rd_meas, Patm, Tcorrect,
-                                               algorithm,alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,
+do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, alphag, 
+                                               Rd_meas, Patm, Tcorrect,
+                                               algorithm,alpha,theta,gmeso,EaV,
+                                               EdVC,delsC,EaJ,EdVJ,
                                                delsJ,GammaStar, Km){
   
   # Possible Ci transitions
@@ -857,10 +888,13 @@ do_fit_method_bilinear_bestcitrans <- function(data, haveRd, fitTPU, alphag, Rd_
   # after the loop finishes (avoids a bug).
   for(i in seq_len(nrow(citransdf))){
     
-    fit <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, citransdf$ci1[i], citransdf$ci2[i], 
+    fit <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, 
+                                  citransdf$ci1[i], citransdf$ci2[i], 
                                   Tcorrect=FALSE, algorithm,
-                                  alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                                  alpha,theta,gmeso,EaV,EdVC,delsC,
+                                  EaJ,EdVJ,delsJ,
                                   GammaStar, Km)
+    
     if(fit$success && !any(is.na(fit$pars[,"Estimate"]))){
         run <- do_acirun(data,fit,Patm,Tcorrect=FALSE,
                          alpha=alpha,theta=theta,
