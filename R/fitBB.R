@@ -83,16 +83,16 @@ fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO
   }
   if(gsmodel == "BBLeuning"){
     if(!fitg0){
-      fit <- try(nls(gs ~ 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
+      fit <- try(nls(gs ~ aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
     } else {
-      fit <- try(nls(gs ~ g0 + 1.6*aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
+      fit <- try(nls(gs ~ g0 + aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
     }
   }
   if(gsmodel == "BallBerry"){
     if(!fitg0){
-      fit <- try(nls(gs ~ 1.6*g1*aleaf*rh/ca, start=list(g1=4)))
+      fit <- try(nls(gs ~ g1*aleaf*rh/ca, start=list(g1=4)))
     } else {
-      fit <- try(nls(gs ~ g0 + 1.6*g1*aleaf*rh/ca, start=list(g1=4, g0=0.005)))
+      fit <- try(nls(gs ~ g0 + g1*aleaf*rh/ca, start=list(g1=4, g0=0.005)))
     }
   }
 

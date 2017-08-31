@@ -101,7 +101,7 @@ Returns a dataframe.
 }
 \description{
 A coupled photosynthesis - stomatal conductance model, based on the 
-Farquhar model of photosynthesis, and a Ball-Berry type model of stomatatal conductance. 
+Farquhar model of photosynthesis, and a Ball-Berry type model of stomatal conductance. 
 Includes options for temperature sensitivity of photosynthetic parameters, day respiration 
 (optionally calculated from leaf temperature), and mesophyll conductance.
 }
@@ -253,29 +253,51 @@ legend("topleft", c(expression("Demand:"~~A==f(C[i])),
        bty='n', cex=0.9)
 }
 \references{
-Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural and Forest Meteorology 168 : 168 - 176.
+Duursma, R.A., Payton, P., Bange, M.P., Broughton, K.J., Smith, R.A., Medlyn, B.E., Tissue, 
+D. T., 2013,  Near-optimal response of instantaneous transpiration efficiency to vapour 
+pressure deficit, temperature and [CO2] in cotton (Gossypium hirsutum L.). Agricultural 
+and Forest Meteorology 168 : 168 - 176.
 
-Duursma, R.A., Barton, C.V.M., Lin, Y.-S., Medlyn, B.E., Eamus, D., Tissue, D.T., Ellsworth, D.S., McMurtrie, R.E., 2014. The peaked response of transpiration rate to vapour pressure deficit in field conditions can be explained by the temperature optimum of photosynthesis. Agricultural and Forest Meteorology 189 - 190, 2-10. doi:10.1016/j.agrformet.2013.12.007
+Duursma, R.A., Barton, C.V.M., Lin, Y.-S., Medlyn, B.E., Eamus, D., Tissue, D.T., Ellsworth, 
+D.S., McMurtrie, R.E., 2014. The peaked response of transpiration rate to vapour pressure 
+deficit in field conditions can be explained by the temperature optimum of photosynthesis.
+Agricultural and Forest Meteorology 189 - 190, 2-10. doi:10.1016/j.agrformet.2013.12.007
 
-Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
+Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
+Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 
-Ellsworth, D.S., Crous, K.Y., Lambers, H., Cooke, J., 2015. Phosphorus recycling in photorespiration maintains high photosynthetic capacity in woody species. Plant Cell Environ 38, 1142-1156. doi:10.1111/pce.12468
+Ellsworth, D.S., Crous, K.Y., Lambers, H., Cooke, J., 2015. Phosphorus recycling in 
+photorespiration maintains high photosynthetic capacity in woody species. Plant Cell 
+Environ 38, 1142-1156. doi:10.1111/pce.12468
 
-Ethier, G. and N. Livingston. 2004. On the need to incorporate sensitivity to CO2 transfer conductance into the Farquhar von Caemmerer Berry leaf photosynthesis model. Plant, Cell & Environment. 27:137-153.
+Ethier, G. and N. Livingston. 2004. On the need to incorporate sensitivity to CO2 
+transfer conductance into the Farquhar von Caemmerer Berry leaf photosynthesis model. 
+Plant, Cell & Environment. 27:137-153.
 
-Farquhar, G.D., S. Caemmerer and J.A. Berry. 1980. A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta. 149:78-90.
+Farquhar, G.D., S. Caemmerer and J.A. Berry. 1980. A biochemical model of photosynthetic 
+CO2 assimilation in leaves of C3 species. Planta. 149:78-90.
 
-Farquhar, G. D., & Sharkey, T. D. (1982). Stomatal conductance and photosynthesis. Annual review of plant physiology, 33(1), 317-345.
+Farquhar, G. D., & Sharkey, T. D. (1982). Stomatal conductance and photosynthesis. 
+Annual review of plant physiology, 33(1), 317-345.
 
-Gale, J., 1972. Availability of Carbon Dioxide for Photosynthesis at High Altitudes: Theoretical Considerations. Ecology 53, 494-497. doi:10.2307/1934239
+Gale, J., 1972. Availability of Carbon Dioxide for Photosynthesis at High Altitudes: 
+Theoretical Considerations. Ecology 53, 494-497. doi:10.2307/1934239
 
-Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for C-3 plants. Plant Cell and Environment. 18:339-355.
+Leuning, R. 1995. A critical-appraisal of a combined stomatal-photosynthesis model for 
+C-3 plants. Plant Cell and Environment. 18:339-355.
 
-Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter, P.C. Harley, M.U.F. Kirschbaum, X. Le Roux, P. Montpied, J. Strassemeyer, A. Walcroft, K. Wang and D. Loustau. 2002. Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. Plant Cell and Environment. 25:1167-1179.
+Medlyn, B.E., E. Dreyer, D. Ellsworth, M. Forstreuter, P.C. Harley, M.U.F. Kirschbaum, 
+X. Le Roux, P. Montpied, J. Strassemeyer, A. Walcroft, K. Wang and D. Loustau. 2002. 
+Temperature response of parameters of a biochemically based model of photosynthesis. 
+II. A review of experimental data. Plant Cell and Environment. 25:1167-1179.
 
-Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.
+Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, 
+K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal 
+and empirical approaches to modelling stomatal conductance. Global Change Biology. 
+17:2134-2144.
 
-Terashima, I., Masuzawa, T., Ohba, H., Yokoi, Y., 1995. Is photosynthesis suppressed at higher elevations due to low CO2 pressure? Ecology 76, 2663-2668. doi:10.2307/2265838
+Terashima, I., Masuzawa, T., Ohba, H., Yokoi, Y., 1995. Is photosynthesis suppressed at 
+higher elevations due to low CO2 pressure? Ecology 76, 2663-2668. doi:10.2307/2265838
 }
 \seealso{
 \code{\link{FARAO}}, \code{\link{fitaci}}, \code{\link{AciC4}}

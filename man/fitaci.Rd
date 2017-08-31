@@ -45,10 +45,11 @@ the chance of finding a solution.}
 \item{fitTPU}{Logical (default FALSE). Attempt to fit TPU limitation (fitmethod set to 'bilinear' 
 automatically if used). See Details.}
 
-\item{alphag}{When estimating TPU limitation (with \code{fitTPU}), an additional parameter (see Details).}
+\item{alphag}{When estimating TPU limitation (with \code{fitTPU}), an 
+additional parameter (see Details).}
 
 \item{useRd}{If Rd provided in data, and useRd=TRUE (default is FALSE), uses measured Rd in 
-fit. Otherwise it is estimatied from the fit to the A-Ci curve.}
+fit. Otherwise it is estimated from the fit to the A-Ci curve.}
 
 \item{PPFD}{Photosynthetic photon flux density ('PAR') (mu mol m-2 s-1)}
 
@@ -108,10 +109,15 @@ rates (Aj, Ac), TPU-limited rate (Ap), dark respiration (Rd), leaf temperature (
 chloroplastic CO2 (Cc), PPFD, atmospheric pressure (Patm), and 'original Ci, i.e. the 
 Ci used as input (which is different from the Ci used in fitting if Patm was not set to 100kPa)}
 \item{pars}{Contains the parameter estimates and their approximate standard errors}
-\item{nlsfit}{The object returned by \code{\link{nls}}, and contains more detail on the quality of the fit}
+\item{nlsfit}{The object returned by \code{\link{nls}}, and contains more detail on 
+the quality of the fit}
 \item{Tcorrect}{whether the temperature correction was applied (logical)}
-\item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and PPFD are set to the mean value in the dataset. All other parameters that were set in fitaci are also used (e.g. temperature dependency parameters, TPU, etc.).}
-\item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax to Jmax limited photosynthesis.}
+\item{Photosyn}{A copy of the \code{\link{Photosyn}} function with the arguments adjusted for 
+the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and 
+PPFD are set to the mean value in the dataset. All other parameters that were set in fitaci are 
+also used (e.g. temperature dependency parameters, TPU, etc.).}
+\item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax 
+to Jmax limited photosynthesis.}
 \item{Rd_measured}{Logical - was Rd provided as measured input?}
 \item{GammaStar}{The value for GammaStar, either calculated or provided to the fit.}
 \item{Km}{he value for Km, either calculated or provided to the fit.}
@@ -123,7 +129,8 @@ Ci used as input (which is different from the Ci used in fitting if Patm was not
 \item{fitTPU}{Was TPU fit?}
 \item{alphag}{The value of alphag used in estimating TPU.}
 \item{RMSE}{The Root-mean squared error, calculated as \code{sqrt(sum((Ameas-Amodel)^2))}.}
-\item{runorder}{The data returned in the 'df' slot are ordered by Ci, but in rare cases the original order of the data contains information; 'runorder' is the order in which the data were provided.}
+\item{runorder}{The data returned in the 'df' slot are ordered by Ci, but in rare cases the 
+original order of the data contains information; 'runorder' is the order in which the data were provided.}
 
 }
 }
