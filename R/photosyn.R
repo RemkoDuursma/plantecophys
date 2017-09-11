@@ -496,7 +496,7 @@ Photosyn <- function(VPD=1.5,
       # When below light-compensation points, assume Ci=Ca.
       if(!inputCi){
         lesslcp <- vector("logical", length(Aj))
-        lesslcp <- Aj-Rd < 0
+        lesslcp <- Aj <= Rd + 1E-09
         
         if(length(Ca) == 1)Ca <- rep(Ca, length(CIJ))
         if(length(GammaStar) == 1)GammaStar <- rep(GammaStar, length(CIJ))
@@ -507,6 +507,7 @@ Photosyn <- function(VPD=1.5,
           (CIJ[lesslcp] + 2*GammaStar[lesslcp])
   
         Ci <- ifelse(Aj < Ac, CIJ, CIC)
+        
       }
   }
 
