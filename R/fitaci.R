@@ -15,7 +15,7 @@
 #' @param quiet If TRUE, no messages are written to the screen.
 #' @param startValgrid If TRUE (the default), uses a fine grid of starting values to increase 
 #' the chance of finding a solution.
-#' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.
+#' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), 'bilinear' (See Details), or 'onepoint' (De Kauwe et al. 2016).
 #' @param algorithm Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.
 #' @param fitTPU Logical (default FALSE). Attempt to fit TPU limitation (fitmethod set to 'bilinear' 
 #' automatically if used). See Details.
@@ -50,7 +50,7 @@
 #' the Vcmax and Jmax-limited regions, and applies linear regression twice to estimate first 
 #' Vcmax and Rd, and then Jmax (using Rd estimated from the Vcmax-limited region). The transition 
 #' point is found as the one which gives the best overall fit to the data (i.e. all possible 
-#' transitions are tried out, similar to Gu et al. 2010). The advantage of this method is that 
+#' transitions are tried out, similar to Gu et al. 2010, PCE). The advantage of this method is that 
 #' it \emph{always} returns parameter estimates, so it should be used in cases where the default 
 #' method fails. Be aware, though, that the default method fails mostly when the curve contains 
 #' bad data (so check your data before believing the fitted parameters).
@@ -64,6 +64,17 @@
 #' See the example below. If \code{fitmethod="default"}, it applies non-linear regression to 
 #' both parts of the data, and when fitmethod="bilinear", it uses linear regression on the 
 #' linearized photosynthesis rate. Results will differ between the two methods (slightly).}
+#' 
+#' The 'onepoint' fitting method is a very simple estimation of Vcmax and Jmax for every point 
+#' in the dataset, simply by inverting the photosynthesis equation. See De Kauwe et al. (2016) 
+#' for details. The output will give the original data with Vcmax and Jmax added (note you can 
+#' set \code{Tcorrect} as usual!). For increased reliability, this method only works if 
+#' dark respiration (Rd) is included in the data (\code{useRd} is set automatically when 
+#' setting \code{fitmethod='one-point'}). This method is not recommended for full A-Ci curves, 
+#' but rather for spot gas exchange measurements, when a simple estimate of Vcmax or Jmax 
+#' is needed, for example when separating stomatal and non-stomatal drought effects on 
+#' photosynthesis (Zhou et al. 2013, AgForMet). The user will have to decide whether the Vcmax 
+#' or Jmax rates are used in further analyses. This fitting method can not be used in \code{fitacis}, because Vcmax and Jmax are already estimated for each point in the dataset.
 #' 
 #' \subsection{TPU limitation}{Optionally, the \code{fitaci} function estimates the triose-phosphate 
 #' utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be 
@@ -133,6 +144,8 @@
 #' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
 #' Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 #' 
+#' De Kauwe, M. G. et al. 2016. A test of the ‘one-point method’ for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytol 210, 1130–1144.
+#' 
 #' @return A list of class 'acifit', with the following components:
 #' \describe{
 #' \item{df}{A dataframe with the original data, including the measured photosynthetic 
@@ -162,7 +175,8 @@
 #' \item{alphag}{The value of alphag used in estimating TPU.}
 #' \item{RMSE}{The Root-mean squared error, calculated as \code{sqrt(sum((Ameas-Amodel)^2))}.}
 #' \item{runorder}{The data returned in the 'df' slot are ordered by Ci, but in rare cases the 
-#' original order of the data contains information; 'runorder' is the order in which the data were provided.}
+#' original order of the data contains information; 'runorder' is 
+#' the order in which the data were provided.}
 #' 
 #' }
 #' @examples
@@ -202,8 +216,8 @@
 #' overview(f$nlsfit)
 #'  
 #' # The curve generator is stored as f$Photosyn:
-#' # Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, 
-#' # PPFD for the dataset.
+#' # Calculate photosynthesis at some value for Ci, using estimated 
+#' parameters and mean Tleaf, PPFD for the dataset.
 #' f$Photosyn(Ci=820)
 #' 
 #' # Photosynthetic rate at the transition point:
@@ -232,12 +246,13 @@
 #' @rdname fitaci
 #' @importFrom stats lm
 fitaci <- function(data, 
-                   varnames=list(ALEAF="Photo", Tleaf="Tleaf", Ci="Ci", PPFD="PARi", Rd="Rd"),
+                   varnames=list(ALEAF="Photo", Tleaf="Tleaf", 
+                                 Ci="Ci", PPFD="PARi", Rd="Rd"),
                    Tcorrect=TRUE, 
                    Patm=100,
                    citransition=NULL,
                    quiet=FALSE, startValgrid=TRUE, 
-                   fitmethod=c("default","bilinear"),
+                   fitmethod=c("default","bilinear","onepoint"),
                    algorithm="default", 
                    fitTPU=FALSE,
                    alphag=0,
@@ -264,12 +279,20 @@ fitaci <- function(data,
   fitmethod <- match.arg(fitmethod)
   if(fitTPU & fitmethod == "default")fitmethod <- "bilinear"
   
+  if(fitTPU & fitmethod == "onepoint"){
+    Stop("TPU limitation not implemented with one-point method.")
+  }
+  
+  if(fitmethod == "onepoint")useRd <- TRUE
+  
   gstarinput <- !is.null(GammaStar)
   kminput <- !is.null(Km)
   if(is.null(gmeso))gmeso <- -999  # cannot pass NULL value to nls
   
   # Check data 
-  if(nrow(data) == 0)Stop("No rows in data - check observations.")
+  if(nrow(data) == 0){
+    Stop("No rows in data - check observations.")
+  }
   
   # Make sure data is a proper dataframe, not some tibble or other nonsense.
   data <- as.data.frame(data)
@@ -284,6 +307,11 @@ fitaci <- function(data,
   # Set measured Rd if provided (or warn when provided but not used)
   Rd_meas <- set_Rdmeas(varnames, data, useRd, citransition, quiet)
   haveRd <- !is.na(Rd_meas)
+  
+  # Must have Rd with one-point method.
+  if(!haveRd && fitmethod == "onepoint"){
+    Stop("Must add Rd to the dataset (and check that varnames is set correctly).")
+  }
   
   # Extract Ci and apply pressure correction
   data$Ci_original <- data[,varnames$Ci]
@@ -309,8 +337,9 @@ fitaci <- function(data,
     
     if(fitmethod == "default"){
     
-      f <- do_fit_method1(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, algorithm,
-                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
+      f <- do_fit_method1(data, haveRd, Rd_meas, Patm, startValgrid, 
+                          Tcorrect, algorithm,alpha,theta,gmeso,EaV,
+                          EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
     } 
     if(fitmethod == "bilinear"){
       
@@ -319,6 +348,15 @@ fitaci <- function(data,
                                               alpha,theta,gmeso,EaV,EdVC,delsC,
                                               EaJ,EdVJ,delsJ,
                                               GammaStar_v, Km_v)
+    }
+    if(fitmethod == "onepoint"){
+      f <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, 
+                                  NA,NA,  # don't matter
+                                  Tcorrect=Tcorrect, algorithm,
+                                  alpha,theta,gmeso,EaV,EdVC,delsC,
+                                  EaJ,EdVJ,delsJ,
+                                  GammaStar, Km, onepoint=TRUE)
+      return(f)
     }
   }
   
@@ -331,8 +369,9 @@ fitaci <- function(data,
     fitmethod <- "bilinear"
     
     if(fitmethod == "default"){
-      f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
-                          alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
+      f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
+                          algorithm,alpha,theta,gmeso,EaV,EdVC,
+                          delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
     }
     if(fitmethod == "bilinear"){
       f <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, citransition, 
@@ -383,7 +422,8 @@ fitaci <- function(data,
   l$nlsfit <- f$fit
   l$Tcorrect <- Tcorrect
   
-  # Save function itself, the formals contain the parameters used to fit the A-Ci curve.
+  # Save function itself, the formals contain the parameters 
+  # used to fit the A-Ci curve.
   # First save Tleaf, PPFD in the formals (as the mean of the dataset)
   formals(Photosyn)$Tleaf <- mean(data$Tleaf)
   formals(Photosyn)$Patm <- Patm
@@ -409,11 +449,13 @@ fitaci <- function(data,
   
   l$Photosyn <- Photosyn
   
-  # Store Ci at which photosynthesis transitions from Jmax to Vcmax limitation
+  # Store Ci at which photosynthesis transitions from 
+  # Jmax to Vcmax limitation
   l$Ci_transition <- findCiTransition(l$Photosyn)
   l$Rd_measured <- haveRd
   
-  # Save GammaStar and Km (either evaluated at mean temperature, or input if provided)
+  # Save GammaStar and Km (either evaluated at mean temperature, 
+  # or input if provided)
   l$GammaStar <- mean(GammaStar_v)
   l$Km <- mean(Km_v)
   l$kminput <- kminput
@@ -523,14 +565,16 @@ return(data)
 set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
   
   Rd_meas <- NA
-  if(!is.null(varnames$Rd)){ # to avoid breakage with older versions when varnames provided.
+  if(!is.null(varnames$Rd)){ 
     if(varnames$Rd %in% names(data) && useRd){
       
       # Has to be a single unique value for this dataset
       Rd_meas <- data[,varnames$Rd]
       Rd_meas <- unique(Rd_meas)
-      if(length(Rd_meas) > 1)
-        Stop("If Rd provided as measured, it must be a single unique value for an A-Ci curve.")
+      if(length(Rd_meas) > 1){
+        Stop(paste("If Rd provided as measured, it must be a single",
+                   "unique value for an A-Ci curve."))
+      }
       
       # Use positive value throughout.
       Rd_meas <- abs(Rd_meas)
@@ -541,7 +585,8 @@ set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
     }
     if(varnames$Rd %in% names(data) && !useRd){
       if(!quiet)
-        message("Rd found in dataset but useRd set to FALSE. Set to TRUE to use measured Rd.")
+        message(paste("Rd found in dataset but useRd set to FALSE.",
+                      "Set to TRUE to use measured Rd."))
     }
   }
   return(Rd_meas)
@@ -551,8 +596,10 @@ set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
 
 
 
-do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, algorithm,
-                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar,Km){
+do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, 
+                           Tcorrect, algorithm,
+                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,
+                           GammaStar,Km){
   
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
@@ -649,7 +696,8 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
                   start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess)), silent=TRUE)
     
     if(inherits(nlsfit, "try-error")){
-      Stop("Could not fit curve - check quality of data or fit using fitmethod='bilinear'.")
+      Stop(paste("Could not fit curve -",
+                 "check quality of data or fit using fitmethod='bilinear'."))
     }
     
     p <- coef(nlsfit)
@@ -667,8 +715,9 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid, Tcorrect, 
 
 
 
-do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, algorithm,
-                           alpha,theta,gmeso,EaV,EdVC,delsC,EaJ,EdVJ,delsJ,GammaStar,Km){
+do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, 
+                           Tcorrect,algorithm,alpha,theta,gmeso,EaV,EdVC,
+                           delsC,EaJ,EdVJ,delsJ,GammaStar,Km){
   
   # Guess Rd (starting value)
   Rd_guess <- guess_Rd(haveRd, Rd_meas)
@@ -690,7 +739,8 @@ do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
                                             EaJ=EaJ,EdVJ=EdVJ,
                                             delsJ=delsJ,Km=Km,GammaStar=GammaStar),
                         algorithm=algorithm,
-                        data=dat_vcmax, control=nls.control(maxiter=500, minFactor=1/10000),
+                        data=dat_vcmax, 
+                        control=nls.control(maxiter=500, minFactor=1/10000),
                         start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
     p1 <- coef(nlsfit_vcmax)
   } else {
@@ -747,7 +797,7 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas,
                                    Tcorrect, algorithm,
                                    alpha,theta,gmeso,EaV,EdVC,delsC,
                                    EaJ,EdVJ,delsJ,
-                                   GammaStar, Km){
+                                   GammaStar, Km, onepoint=FALSE){
   
   # Calculate T-dependent parameters
   ppar <- Photosyn(Tleaf=data$Tleaf, Patm=Patm, Tcorrect=Tcorrect,
@@ -773,6 +823,21 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas,
   data$Jmax_pred <- (Conc - ppar$GammaStar)/(Conc + 2*ppar$GammaStar)
   data$TPU_part <- (Conc - ppar$GammaStar)/(Conc - (1+3*alphag)*ppar$GammaStar)
     
+  if(onepoint){
+    
+    orig_dat <- data[, 1:(match("Ci_original", names(data))-1)]
+    
+    orig_dat$Vcmax <- (data$ALEAF + Rd_meas)  / data$vcmax_pred
+    orig_dat$Jmax <- (data$ALEAF + Rd_meas)  / data$Jmax_pred
+    
+    if(Tcorrect){
+      orig_dat$Jmax <- orig_dat$Jmax / TJmax(mean(data$Tleaf), EaJ, delsJ, EdVJ)
+      orig_dat$Vcmax <- orig_dat$Vcmax / TVcmax(mean(data$Tleaf),EaV, delsC, EdVC)
+    }
+    
+    return(orig_dat)
+  }
+  
   # Fit Vcmax and Rd from linearized portion
   datv <- data[data$Ci < citransition & data$Ci < citransition2,]
   if(nrow(datv) == 0){
@@ -784,7 +849,7 @@ do_fit_method_bilinear <- function(data, haveRd, alphag, Rd_meas,
     Rd_fit <- coef(fitv)[[1]]
     Vcmax_fit <- coef(fitv)[[2]]
   } else {
-    # IF using measured Rd, add to Anet, and remove intercept from fit.
+    # If using measured Rd, add to Anet, and remove intercept from fit.
     datv$ALEAFg <- datv$ALEAF + Rd_meas
     fitv <- lm(ALEAFg ~ vcmax_pred-1, data=datv)
     Rd_fit <- -Rd_meas

@@ -7,8 +7,8 @@
 \usage{
 fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
   = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100, citransition = NULL,
-  quiet = FALSE, startValgrid = TRUE, fitmethod = c("default",
-  "bilinear"), algorithm = "default", fitTPU = FALSE, alphag = 0,
+  quiet = FALSE, startValgrid = TRUE, fitmethod = c("default", "bilinear",
+  "onepoint"), algorithm = "default", fitTPU = FALSE, alphag = 0,
   useRd = FALSE, PPFD = NULL, Tleaf = NULL, alpha = 0.24,
   theta = 0.85, gmeso = NULL, EaV = 82620.87, EdVC = 0,
   delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615,
@@ -38,7 +38,7 @@ are estimated at measurement temperature.}
 \item{startValgrid}{If TRUE (the default), uses a fine grid of starting values to increase 
 the chance of finding a solution.}
 
-\item{fitmethod}{Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.}
+\item{fitmethod}{Method to fit the A-Ci curve. Either 'default' (Duursma 2015), 'bilinear' (See Details), or 'onepoint' (De Kauwe et al. 2016).}
 
 \item{algorithm}{Passed to \code{\link{nls}}, sets the algorithm for finding parameter values.}
 
@@ -130,7 +130,8 @@ to Jmax limited photosynthesis.}
 \item{alphag}{The value of alphag used in estimating TPU.}
 \item{RMSE}{The Root-mean squared error, calculated as \code{sqrt(sum((Ameas-Amodel)^2))}.}
 \item{runorder}{The data returned in the 'df' slot are ordered by Ci, but in rare cases the 
-original order of the data contains information; 'runorder' is the order in which the data were provided.}
+original order of the data contains information; 'runorder' is 
+the order in which the data were provided.}
 
 }
 }
@@ -153,7 +154,7 @@ The 'bilinear' method to fit A-Ci curves (set by \code{fitmethod="bilinear"}) li
 the Vcmax and Jmax-limited regions, and applies linear regression twice to estimate first 
 Vcmax and Rd, and then Jmax (using Rd estimated from the Vcmax-limited region). The transition 
 point is found as the one which gives the best overall fit to the data (i.e. all possible 
-transitions are tried out, similar to Gu et al. 2010). The advantage of this method is that 
+transitions are tried out, similar to Gu et al. 2010, PCE). The advantage of this method is that 
 it \emph{always} returns parameter estimates, so it should be used in cases where the default 
 method fails. Be aware, though, that the default method fails mostly when the curve contains 
 bad data (so check your data before believing the fitted parameters).
@@ -167,6 +168,17 @@ for which limitation, it does not constrain the actual estimated transition poin
 See the example below. If \code{fitmethod="default"}, it applies non-linear regression to 
 both parts of the data, and when fitmethod="bilinear", it uses linear regression on the 
 linearized photosynthesis rate. Results will differ between the two methods (slightly).}
+
+The 'onepoint' fitting method is a very simple estimation of Vcmax and Jmax for every point 
+in the dataset, simply by inverting the photosynthesis equation. See De Kauwe et al. (2016) 
+for details. The output will give the original data with Vcmax and Jmax added (note you can 
+set \code{Tcorrect} as usual!). For increased reliability, this method only works if 
+dark respiration (Rd) is included in the data (\code{useRd} is set automatically when 
+setting \code{fitmethod='one-point'}). This method is not recommended for full A-Ci curves, 
+but rather for spot gas exchange measurements, when a simple estimate of Vcmax or Jmax 
+is needed, for example when separating stomatal and non-stomatal drought effects on 
+photosynthesis (Zhou et al. 2013, AgForMet). The user will have to decide whether the Vcmax 
+or Jmax rates are used in further analyses. This fitting method can not be used in \code{fitacis}, because Vcmax and Jmax are already estimated for each point in the dataset.
 
 \subsection{TPU limitation}{Optionally, the \code{fitaci} function estimates the triose-phosphate 
 utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be 
@@ -260,8 +272,8 @@ library(nlstools)
 overview(f$nlsfit)
  
 # The curve generator is stored as f$Photosyn:
-# Calculate photosynthesis at some value for Ci, using estimated parameters and mean Tleaf, 
-# PPFD for the dataset.
+# Calculate photosynthesis at some value for Ci, using estimated 
+parameters and mean Tleaf, PPFD for the dataset.
 f$Photosyn(Ci=820)
 
 # Photosynthetic rate at the transition point:
@@ -290,4 +302,6 @@ plot(ftpu)
 \references{
 Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
 Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
+
+De Kauwe, M. G. et al. 2016. A test of the ‘one-point method’ for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytol 210, 1130–1144.
 }

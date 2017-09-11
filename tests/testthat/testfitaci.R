@@ -39,6 +39,10 @@ fits2 <- fitacis(acidat, "Curve",  fitmethod="bilinear", progressbar=FALSE)
 fits3 <- fitacis(acidat, "Curve",  fitTPU=TRUE, progressbar=FALSE)
 fits4 <- fitacis(acidat, "Curve",  fitmethod="bilinear", progressbar=FALSE, id="treatment")
 
+# one-point
+fit10.1 <- fitaci(acidatone, fitmethod = "onepoint")
+fit10.2 <- fitaci(acidatone, fitmethod = "onepoint", Tcorrect=FALSE)
+
 print(fits4)
 print(fits3)
 print(fits2)
