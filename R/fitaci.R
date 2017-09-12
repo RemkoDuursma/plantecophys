@@ -144,7 +144,7 @@
 #' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
 #' Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 #' 
-#' De Kauwe, M. G. et al. 2016. A test of the ‘one-point method’ for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytol 210, 1130–1144.
+#' De Kauwe, M. G. et al. 2016. A test of the 'one-point method' for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytol 210, 1130-1144.
 #' 
 #' @return A list of class 'acifit', with the following components:
 #' \describe{
@@ -217,7 +217,7 @@
 #'  
 #' # The curve generator is stored as f$Photosyn:
 #' # Calculate photosynthesis at some value for Ci, using estimated 
-#' parameters and mean Tleaf, PPFD for the dataset.
+#' # parameters and mean Tleaf, PPFD for the dataset.
 #' f$Photosyn(Ci=820)
 #' 
 #' # Photosynthetic rate at the transition point:
