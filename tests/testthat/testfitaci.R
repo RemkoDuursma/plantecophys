@@ -4,9 +4,10 @@ context("Fit ACi curves")
 
 # Load example dataset
 acidat <- droplevels(manyacidat[manyacidat$Curve %in% levels(manyacidat$Curve)[1:10],])
+acidatone <- droplevels(subset(acidat, Curve == "1000_2_3"))
+
 
 # Fit one A-Ci curve
-acidatone <- droplevels(subset(acidat, Curve == "1000_2_3"))
 fit1 <- fitaci(acidatone,  fitmethod="default")
 fit2 <- fitaci(acidatone,  fitmethod="bilinear")
 
@@ -42,6 +43,23 @@ fits4 <- fitacis(acidat, "Curve",  fitmethod="bilinear", progressbar=FALSE, id="
 # one-point
 fit10.1 <- fitaci(acidatone, fitmethod = "onepoint")
 fit10.2 <- fitaci(acidatone, fitmethod = "onepoint", Tcorrect=FALSE)
+
+# Make some not fit
+acidat$Photo[c(2,50,100)] <- 50
+fits1_re <- fitacis(acidat, "Curve",  fitmethod="default", progressbar=FALSE)
+
+# Pass GammaStar, Km
+fit11 <- fitaci(acidatone, fitmethod="bilinear", GammaStar=60, Km=800)
+
+# Fit without PPFD, Tleaf
+# Set Rd but don't actually use
+acidatone$Tleaf <- acidatone$PARi <- NULL
+acidatone$Rd <- 2
+fit12 <- fitaci(acidatone, fitmethod="bilinear")
+
+
+fitaci(acidatone, citransition=400, fitmethod="default")
+
 
 print(fits4)
 print(fits3)

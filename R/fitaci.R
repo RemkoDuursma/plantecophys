@@ -368,11 +368,11 @@ fitaci <- function(data,
     # NOTE-- bug in default method when citransition specified. Switch off for now.
     fitmethod <- "bilinear"
     
-    if(fitmethod == "default"){
-      f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
-                          algorithm,alpha,theta,gmeso,EaV,EdVC,
-                          delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
-    }
+    # if(fitmethod == "default"){
+    #   f <- do_fit_method2(data, haveRd, Rd_meas, Patm, citransition, Tcorrect, 
+    #                       algorithm,alpha,theta,gmeso,EaV,EdVC,
+    #                       delsC,EaJ,EdVJ,delsJ,GammaStar_v,Km_v)
+    # }
     if(fitmethod == "bilinear"){
       f <- do_fit_method_bilinear(data, haveRd, alphag, Rd_meas, Patm, citransition, 
                                   NULL, Tcorrect, algorithm,
@@ -715,80 +715,80 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid,
 
 
 
-do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, 
-                           Tcorrect,algorithm,alpha,theta,gmeso,EaV,EdVC,
-                           delsC,EaJ,EdVJ,delsJ,GammaStar,Km){
-  
-  # Guess Rd (starting value)
-  Rd_guess <- guess_Rd(haveRd, Rd_meas)
-  Jmax_guess <- guess_Jmax(data, Rd_guess, Patm, Tcorrect)
-  Vcmax_guess <- guess_Vcmax(data, Jmax_guess, Rd_guess, Patm, Tcorrect)
-  
-  # If citransition provided, fit twice.
-  dat_vcmax <- data[data$Ci < citransition,]
-  dat_jmax <- data[data$Ci >= citransition,]
-  
-  if(nrow(dat_vcmax) > 0){
-    nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
-                                            Jmax=10^6, Rd=Rd, Tleaf=mean(Tleaf), 
-                                            Patm=Patm, returnwhat="Ac",
-                                            TcorrectVJ=Tcorrect,
-                                            alpha=alpha,theta=theta,
-                                            gmeso=gmeso,EaV=EaV,
-                                            EdVC=EdVC,delsC=delsC,
-                                            EaJ=EaJ,EdVJ=EdVJ,
-                                            delsJ=delsJ,Km=Km,GammaStar=GammaStar),
-                        algorithm=algorithm,
-                        data=dat_vcmax, 
-                        control=nls.control(maxiter=500, minFactor=1/10000),
-                        start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
-    p1 <- coef(nlsfit_vcmax)
-  } else {
-    nlsfit_vcmax <- NULL
-    p1 <- c(Vcmax=NA, Rd=NA)
-  }
-  
-  # Don't re-estimate Rd; it is better estimated from the Vcmax-limited region.
-  Rd_vcmaxguess <- if(!is.null(nlsfit_vcmax))coef(nlsfit_vcmax)[["Rd"]] else 1.5
-  
-  if(nrow(dat_jmax) > 0){
-    nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
-                                           Jmax=Jmax, Rd=Rd_vcmaxguess, 
-                                           Tleaf=mean(Tleaf), Patm=Patm, returnwhat="Aj",
-                                           TcorrectVJ=Tcorrect,
-                                           alpha=alpha,theta=theta,
-                                           gmeso=gmeso,EaV=EaV,
-                                           EdVC=EdVC,delsC=delsC,
-                                           EaJ=EaJ,EdVJ=EdVJ,
-                                           delsJ=delsJ,Km=Km,GammaStar=GammaStar),
-                       algorithm=algorithm,
-                       data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
-                       start=list(Jmax=Jmax_guess))
-    p2 <- coef(nlsfit_jmax)
-  } else { 
-    nlsfit_jmax <- NULL
-    p2 <- c(Jmax=NA)
-  }
-  
-  p <- c(p1[1],p2,p1[2])
-  pars1 <- if(!is.null(nlsfit_vcmax)){
-    summary(nlsfit_vcmax)$coefficients[,1:2] 
-  } else {
-    matrix(rep(NA,4),ncol=2)
-  }
-  
-  pars2 <- if(!is.null(nlsfit_jmax)){
-    summary(nlsfit_jmax)$coefficients[,1:2] 
-  } else {
-    matrix(rep(NA,2),ncol=2)
-  }
-  
-  pars <- rbind(pars1[1,],pars2,pars1[2,])
-  rownames(pars) <- c("Vcmax","Jmax","Rd")
-  nlsfit <- list(nlsfit_vcmax=nlsfit_vcmax,nlsfit_jmax=nlsfit_jmax)
-  
-  return(list(pars=pars, fit=nlsfit))      
-}
+# do_fit_method2 <- function(data, haveRd, Rd_meas, Patm, citransition, 
+#                            Tcorrect,algorithm,alpha,theta,gmeso,EaV,EdVC,
+#                            delsC,EaJ,EdVJ,delsJ,GammaStar,Km){
+#   
+#   # Guess Rd (starting value)
+#   Rd_guess <- guess_Rd(haveRd, Rd_meas)
+#   Jmax_guess <- guess_Jmax(data, Rd_guess, Patm, Tcorrect)
+#   Vcmax_guess <- guess_Vcmax(data, Jmax_guess, Rd_guess, Patm, Tcorrect)
+#   
+#   # If citransition provided, fit twice.
+#   dat_vcmax <- data[data$Ci < citransition,]
+#   dat_jmax <- data[data$Ci >= citransition,]
+#   
+#   if(nrow(dat_vcmax) > 0){
+#     nlsfit_vcmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=Vcmax, 
+#                                             Jmax=10^6, Rd=Rd, Tleaf=mean(Tleaf), 
+#                                             Patm=Patm, returnwhat="Ac",
+#                                             TcorrectVJ=Tcorrect,
+#                                             alpha=alpha,theta=theta,
+#                                             gmeso=gmeso,EaV=EaV,
+#                                             EdVC=EdVC,delsC=delsC,
+#                                             EaJ=EaJ,EdVJ=EdVJ,
+#                                             delsJ=delsJ,Km=Km,GammaStar=GammaStar),
+#                         algorithm=algorithm,
+#                         data=dat_vcmax, 
+#                         control=nls.control(maxiter=500, minFactor=1/10000),
+#                         start=list(Vcmax=Vcmax_guess, Rd=Rd_guess))
+#     p1 <- coef(nlsfit_vcmax)
+#   } else {
+#     nlsfit_vcmax <- NULL
+#     p1 <- c(Vcmax=NA, Rd=NA)
+#   }
+#   
+#   # Don't re-estimate Rd; it is better estimated from the Vcmax-limited region.
+#   Rd_vcmaxguess <- if(!is.null(nlsfit_vcmax))coef(nlsfit_vcmax)[["Rd"]] else 1.5
+#   
+#   if(nrow(dat_jmax) > 0){
+#     nlsfit_jmax <- nls(ALEAF ~ acifun_wrap(Ci, PPFD=PPFD, Vcmax=10000, 
+#                                            Jmax=Jmax, Rd=Rd_vcmaxguess, 
+#                                            Tleaf=mean(Tleaf), Patm=Patm, returnwhat="Aj",
+#                                            TcorrectVJ=Tcorrect,
+#                                            alpha=alpha,theta=theta,
+#                                            gmeso=gmeso,EaV=EaV,
+#                                            EdVC=EdVC,delsC=delsC,
+#                                            EaJ=EaJ,EdVJ=EdVJ,
+#                                            delsJ=delsJ,Km=Km,GammaStar=GammaStar),
+#                        algorithm=algorithm,
+#                        data=dat_jmax, control=nls.control(maxiter=500, minFactor=1/10000),
+#                        start=list(Jmax=Jmax_guess))
+#     p2 <- coef(nlsfit_jmax)
+#   } else { 
+#     nlsfit_jmax <- NULL
+#     p2 <- c(Jmax=NA)
+#   }
+#   
+#   p <- c(p1[1],p2,p1[2])
+#   pars1 <- if(!is.null(nlsfit_vcmax)){
+#     summary(nlsfit_vcmax)$coefficients[,1:2] 
+#   } else {
+#     matrix(rep(NA,4),ncol=2)
+#   }
+#   
+#   pars2 <- if(!is.null(nlsfit_jmax)){
+#     summary(nlsfit_jmax)$coefficients[,1:2] 
+#   } else {
+#     matrix(rep(NA,2),ncol=2)
+#   }
+#   
+#   pars <- rbind(pars1[1,],pars2,pars1[2,])
+#   rownames(pars) <- c("Vcmax","Jmax","Rd")
+#   nlsfit <- list(nlsfit_vcmax=nlsfit_vcmax,nlsfit_jmax=nlsfit_jmax)
+#   
+#   return(list(pars=pars, fit=nlsfit))      
+# }
 
 
 

@@ -12,10 +12,15 @@ dfr$gs <-  p$GS + rnorm(n, 0, 0.03)
 dfr$aleaf <- p$ALEAF
 dfr$Ca <- 400
 dfr$RH <- VPDtoRH(dfr$VPD, dfr$Tleaf)/100
+dfr$RHperc <- VPDtoRH(dfr$VPD, dfr$Tleaf)
 
 fit1 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", VPD="VPD", Ca="Ca"))
 fit2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", VPD="VPD", Ca="Ca"), fitg0=TRUE)
 fit3 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", RH="RH", Ca="Ca", VPD="VPD"), 
+              gsmodel="BallBerry",
+              fitg0=TRUE)
+
+fit3.2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", RH="RHperc", Ca="Ca", VPD="VPD"), 
               gsmodel="BallBerry",
               fitg0=TRUE)
 
@@ -26,6 +31,27 @@ fit5 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", Ca="Ca", VPD="VPD"),
               gsmodel="BBOptiFull",
               fitg0=TRUE)
 
+fit2_2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", VPD="VPD", Ca="Ca"), fitg0=FALSE)
+fit3_2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", RH="RH", Ca="Ca", VPD="VPD"), 
+              gsmodel="BallBerry",
+              fitg0=FALSE)
+
+fit3.2_2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", RH="RHperc", Ca="Ca", VPD="VPD"), 
+                gsmodel="BallBerry",
+                fitg0=FALSE)
+
+fit4_2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", Ca="Ca", VPD="VPD"), 
+              gsmodel="BBLeuning",
+              fitg0=FALSE)
+fit5_2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", Ca="Ca", VPD="VPD"), 
+              gsmodel="BBOptiFull",
+              fitg0=FALSE)
+
+print(fit2)
+print(fit2_2)
+print(fit5_2)
+
+
 test_that("Fit BB output", {
   expect_named(fit1)
   expect_named(fit2)
@@ -33,6 +59,7 @@ test_that("Fit BB output", {
   expect_length(coef(fit2),2)
   expect_equal(coef(fit1)[[1]], 0)
   expect_gt(coef(fit2)[[1]],0)
+  expect_equal(coef(fit3), coef(fit3.2))
 })
 
 test_that("fitBB errors expected", {
