@@ -28,6 +28,7 @@
 #' 
 #' @examples
 #' 
+#' \dontrun{
 #' # Fit many curves (using an example dataset)
 #' # The bilinear method is much faster, but compare using 'default'!
 #' fits <- fitacis(manyacidat, "Curve", fitmethod="bilinear")
@@ -61,6 +62,7 @@
 #' 
 #' # And now use this to plot Vcmax by treatment.
 #' boxplot(Vcmax ~ treatment, data=coef(fits), ylim=c(0,130))
+#' }
 #' 
 #' @export
 #' @importFrom utils setTxtProgressBar

@@ -180,6 +180,7 @@
 #' 
 #' }
 #' @examples
+#' \dontrun{
 #' # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. 
 #' # Here, we use the built-in example dataset 'acidata1'.
 #' f <- fitaci(acidata1)
@@ -241,7 +242,7 @@
 #' # Fit TPU limitation
 #' ftpu <- fitaci(acidata1, fitTPU=TRUE, PPFD=1800, Tcorrect=TRUE)
 #' plot(ftpu)
-#' 
+#' }
 #' @export
 #' @rdname fitaci
 #' @importFrom stats lm
