@@ -79,7 +79,7 @@ plot(fit3.5)
 
 plot(fits1)
 plot(fits1, how="oneplot")
-
+plot(fits2, highlight="1000_1_5", how="oneplot")
 
 test_that("Aci curve fit output format", {
   expect_error(fitaci(data.frame()))
@@ -129,4 +129,11 @@ test_that("Aci curve RMSE", {
   expect_lt(fit8.2$RMSE, 5)
   expect_lt(fit8.3$RMSE, 5)
   expect_lt(fit8.4$RMSE, 5)
+})
+
+
+# Imaginary roots
+test_that("QUADP", {
+  expect_warning(plantecophys:::QUADP(1,2,3))
+  expect_warning(plantecophys:::QUADM(1,2,3))
 })
