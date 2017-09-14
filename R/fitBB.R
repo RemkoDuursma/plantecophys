@@ -6,10 +6,10 @@
 #' 
 #' Note that all models use atmospheric CO2 concentration (Ca) instead of, as sometimes argued, intercellular CO2 concentration (Ci). Using the latter makes these models far more difficult to use in practice, and we have found no benefit of using Ci instead of Ca (and Ca arises from an optimization argument, see Medlyn et al. 2011). The idea that we should use Ci because 'stomata sense Ci, not Ca' is probably not valid (or at least, not sufficient), and note that Ci plays a central role in the steady-state solution to stomatal conductance anyway (see \code{\link{Photosyn}}). 
 #' 
-#' At the moment no batch utility is includes (like \code{\link{fitacis}}), but this will likely appear in a future version of this package.
+#' To fit the Ball-Berry models for each group in a dataframe, for example species, see the \code{\link{fitBBs}} function. 
 #' @return A list with several components, most notably \code{fit}, the object returned by \code{nls}. If the user needs more information on the goodness of fit etc, please further analyze this object. For example, use the \pkg{broom} package for quick summaries. Or use \code{\link{confint}} to calculate confidence intervals on the fitted parameters.
 #' 
-#' @param df Input dataframe, containing all variables needed to fit the model.
+#' @param data Input dataframe, containing all variables needed to fit the model.
 #' @param varnames List of names of variables in the input dataframe. Relative humidity (RH) is only 
 #' needed when the original Ball-Berry model is to be fit.
 #' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), BallBerry (Ball et al. 1987), or BBOptiFull (Medlyn et al. 2011 but with an extra parameter gk, see Duursma et al. 2013)
@@ -41,26 +41,37 @@
 #' 
 #' # Coefficients only
 #' coef(myfit)
+#' 
+#' # If you have a species variable, and would like to fit the model for each species,
+#' # use fitBBs (see its help page ?fitBBs)
+#' myfits <- fitBBs(mydfr, "species")
 #' }
-fitBB <- function(df, varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO2S",RH="RH"),
+fitBB <- function(data, 
+                  varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO2S",RH="RH"),
                   gsmodel=c("BBOpti","BBLeuning","BallBerry","BBOptiFull"),
                   fitg0=FALSE){
   
   gsmodel <- match.arg(gsmodel)
   
-  gs <- df[,varnames$GS]  
+  gs <- data[,varnames$GS]  
   if(is.null(gs))stop("GS data missing - check varnames.")
-  vpd <- df[,varnames$VPD]
+  
+  vpd <- data[,varnames$VPD]
   if(is.null(vpd))stop("VPD data missing - check varnames.")
-  aleaf <- df[,varnames$ALEAF]  
+  
+  aleaf <- data[,varnames$ALEAF]  
   if(is.null(aleaf))stop("ALEAF data missing - check varnames.")
-  ca <- df[,varnames$Ca]
+  
+  ca <- data[,varnames$Ca]
   if(is.null(ca))stop("Ca data missing - check varnames.")
+  
   if(gsmodel == "BallBerry"){
     
-    if(!("RH" %in% names(varnames)))stop("To fit Ball-Berry you must include RH and specify it in varnames.")
-    
-    rh <- df[,varnames$RH]
+    if(!("RH" %in% names(varnames))){
+      Stop("To fit Ball-Berry you must include RH and specify it in varnames.")
+    }
+      
+    rh <- data[,varnames$RH]
     if(max(rh, na.rm=TRUE) > 1){
       message("RH provided in % converted to relative units.")
       rh <- rh / 100
@@ -100,7 +111,7 @@ l <- list()
 l$gsmodel <- gsmodel
 l$varnames <- varnames
 l$fitg0 <- fitg0
-l$data <- df
+l$data <- data
 l$success <- !inherits(fit, "try-error")
 l$coef <- if(l$success){
   if(fitg0){

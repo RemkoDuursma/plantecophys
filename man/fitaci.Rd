@@ -236,6 +236,7 @@ for the effects of Patm on the partial pressure of oxygen. When plotting the fit
   measured photosynthesis rate.}
 }
 \examples{
+\dontrun{
 # Fit an A-Ci curve on a dataframe that contains Ci, Photo and optionally Tleaf and PPFD. 
 # Here, we use the built-in example dataset 'acidata1'.
 f <- fitaci(acidata1)
@@ -297,7 +298,7 @@ f2
 # Fit TPU limitation
 ftpu <- fitaci(acidata1, fitTPU=TRUE, PPFD=1800, Tcorrect=TRUE)
 plot(ftpu)
-
+}
 }
 \references{
 Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas 

@@ -3,10 +3,11 @@ library(plantecophys)
 context("Fit BB")
 
 set.seed(1)
-n <- 50
+n <- 500
 dfr <- data.frame(PPFD=runif(n, 100, 1000), 
                   VPD=runif(n,1,4),
-                  Tleaf=runif(n,20,28))
+                  Tleaf=runif(n,20,28),
+                  ID=rep(letters[1:(n/50)], each=50))
 p <- Photosyn(PPFD=dfr$PPFD, VPD=dfr$VPD, Tleaf=dfr$Tleaf)
 dfr$gs <-  p$GS + rnorm(n, 0, 0.03)
 dfr$aleaf <- p$ALEAF
@@ -47,10 +48,14 @@ fit5_2 <- fitBB(dfr, varnames=list(ALEAF="aleaf", GS="gs", Ca="Ca", VPD="VPD"),
               gsmodel="BBOptiFull",
               fitg0=FALSE)
 
+fits1 <- fitBBs(dfr, "ID",varnames=list(ALEAF="aleaf", GS="gs", Ca="Ca", VPD="VPD"))
+print(fits1)
+print(coef(fits1))
+
 print(fit2)
 print(fit2_2)
 print(fit5_2)
-
+print(fits1)
 
 test_that("Fit BB output", {
   expect_named(fit1)
@@ -58,7 +63,7 @@ test_that("Fit BB output", {
   expect_length(coef(fit1),2)
   expect_length(coef(fit2),2)
   expect_equal(coef(fit1)[[1]], 0)
-  expect_gt(coef(fit2)[[1]],0)
+  expect_lt(coef(fit2)[[1]],0)
   expect_equal(coef(fit3), coef(fit3.2))
 })
 

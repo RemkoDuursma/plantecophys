@@ -51,6 +51,7 @@ A convenient function to fit many curves at once, by calling \code{\link{fitaci}
 }
 \examples{
 
+\dontrun{
 # Fit many curves (using an example dataset)
 # The bilinear method is much faster, but compare using 'default'!
 fits <- fitacis(manyacidat, "Curve", fitmethod="bilinear")
@@ -84,6 +85,7 @@ fits <- fitacis(manyacidat, "Curve", fitmethod="bilinear", id="treatment")
 
 # And now use this to plot Vcmax by treatment.
 boxplot(Vcmax ~ treatment, data=coef(fits), ylim=c(0,130))
+}
 
 }
 \references{

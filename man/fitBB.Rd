@@ -4,12 +4,12 @@
 \alias{fitBB}
 \title{Fit Ball-Berry type models of stomatal conductance}
 \usage{
-fitBB(df, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL", Ca =
+fitBB(data, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL", Ca =
   "CO2S", RH = "RH"), gsmodel = c("BBOpti", "BBLeuning", "BallBerry",
   "BBOptiFull"), fitg0 = FALSE)
 }
 \arguments{
-\item{df}{Input dataframe, containing all variables needed to fit the model.}
+\item{data}{Input dataframe, containing all variables needed to fit the model.}
 
 \item{varnames}{List of names of variables in the input dataframe. Relative humidity (RH) is only 
 needed when the original Ball-Berry model is to be fit.}
@@ -31,7 +31,7 @@ Note that unlike in some publications (e.g. Leuning et al. 1995), the models fit
 
 Note that all models use atmospheric CO2 concentration (Ca) instead of, as sometimes argued, intercellular CO2 concentration (Ci). Using the latter makes these models far more difficult to use in practice, and we have found no benefit of using Ci instead of Ca (and Ca arises from an optimization argument, see Medlyn et al. 2011). The idea that we should use Ci because 'stomata sense Ci, not Ca' is probably not valid (or at least, not sufficient), and note that Ci plays a central role in the steady-state solution to stomatal conductance anyway (see \code{\link{Photosyn}}). 
 
-At the moment no batch utility is includes (like \code{\link{fitacis}}), but this will likely appear in a future version of this package.
+To fit the Ball-Berry models for each group in a dataframe, for example species, see the \code{\link{fitBBs}} function.
 }
 \examples{
 
@@ -44,6 +44,10 @@ myfit
 
 # Coefficients only
 coef(myfit)
+
+# If you have a species variable, and would like to fit the model for each species,
+# use fitBBs (see its help page ?fitBBs)
+myfits <- fitBBs(mydfr, "species")
 }
 }
 \references{
