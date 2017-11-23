@@ -355,11 +355,13 @@ Photosyn <- function(VPD=1.5,
     vpduse[vpduse < vpdmin] <- vpdmin
     GSDIVA <- (1 + g1/(vpduse^(1-gk)))/Ca
   }
+  
   # Leuning 1995 model, without gamma (CO2 compensation point)
   if(gsmodel == "BBLeuning"){
     GSDIVA <- g1 / Ca / (1 + VPD/D0)
     GSDIVA <- GSDIVA / GCtoGW   # convert to conductance to CO2
   }
+  
   # Original Ball&Berry 1987 model.
   if(gsmodel == "BallBerry"){
     if(is.null(RH))RH <- VPDtoRH(VPD, Tleaf)
@@ -367,6 +369,7 @@ Photosyn <- function(VPD=1.5,
     GSDIVA <- g1 * RH / Ca
     GSDIVA <- GSDIVA / GCtoGW   # convert to conductance to CO2
   } 
+  
   # Multiplier is user-defined.
   if(gsmodel == "BBdefine"){
     GSDIVA <- BBmult / GCtoGW
@@ -513,11 +516,13 @@ Photosyn <- function(VPD=1.5,
 
     # Limitation by triose-phosphate utilization
     if(!is.null(Ci)){
-      Ap <- 3 * TPU * (Ci - GammaStar)/(Ci - (1 + 3*alphag)*GammaStar)   
+      
+      Ap <- 3 * TPU * (Ci - GammaStar)/(Ci - (1 + 3*alphag)*GammaStar)
       Ap[Ci < 400] <- 1000  # avoid nonsense
     } else {
       Ap <- 1000  # This is when inputGS = TRUE; 
     }  
+  
   
     # Hyperbolic minimum.
     Am <- -mapply(QUADP, A = 1 - 1E-04, B = Ac+Aj, C = Ac*Aj)
