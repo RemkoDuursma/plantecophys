@@ -29,9 +29,9 @@ Please read the built-in help files carefully if you have any questions. The exa
 
 The package includes two vignettes at the moment, which can be accessed from these links:
 
-[Frequently asked questions (FAQ) on fitting A-Ci curves](http://www.remkoduursma.com/plantecophys/articles/fitaci-FAQ.html).
+[Frequently asked questions (FAQ) on fitting A-Ci curves](http://remkoduursma.github.io/plantecophys/articles/fitaci-FAQ.html).
 
-[A quick introduction to fitaci](http://www.remkoduursma.com/plantecophys/articles/Introduction_to_fitaci.html).
+[A quick introduction to fitaci](http://remkoduursma.github.io/plantecophys/articles/Introduction_to_fitaci.html).
 
 
 ### Installation
