@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette explains how to fit A-Ci curves with the `plantecophys` package in R. It is written to be usable for  beginners in R. 
+This vignette explains how to fit A-Ci curves with the `plantecophys` package in R. It is written to be usable for beginners in R. 
 
 After installing the package from CRAN with `install.packages("plantecophys")`, load the package the usual way:
 

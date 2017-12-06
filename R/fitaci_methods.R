@@ -77,9 +77,21 @@ coef.acifit <- function(object, ...){
 #' @export
 coef.acifits <- function(object,...){
   
-  f <- lapply(object, function(x)c(x$pars))
+  get_pars <- function(object){
+    if(all(is.na(object))) NA else c(object$pars)
+  }
+  
+  f <- lapply(object, get_pars)
+  
+  # Find objects without result (could not be fitted, even with bilinear),
+  # and replace with contents of another fit, but all set to NA.
+  # (This way, names and structure of coefficients is the same).
+  ok <- sapply(f, function(x)!all(is.na(x)))
+  f[[which(!ok)]] <- f[[which(ok)[1]]]
+  f[[which(!ok)]][] <- NA
+  
   pars <- as.data.frame(do.call(rbind,f))
-  rn <- rownames(object[[1]]$pars)
+  rn <- rownames(object[[which(ok)[1]]]$pars)
   nm <- c(rn, paste0(rn,"_SE"))
   names(pars) <- nm
   
