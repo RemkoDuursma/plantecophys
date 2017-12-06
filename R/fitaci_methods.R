@@ -87,8 +87,10 @@ coef.acifits <- function(object,...){
   # and replace with contents of another fit, but all set to NA.
   # (This way, names and structure of coefficients is the same).
   ok <- sapply(f, function(x)!all(is.na(x)))
-  f[[which(!ok)]] <- f[[which(ok)[1]]]
-  f[[which(!ok)]][] <- NA
+  if(any(!ok)){
+    f[[which(!ok)]] <- f[[which(ok)[1]]]
+    f[[which(!ok)]][] <- NA
+  }
   
   pars <- as.data.frame(do.call(rbind,f))
   rn <- rownames(object[[which(ok)[1]]]$pars)
