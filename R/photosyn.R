@@ -516,7 +516,6 @@ Photosyn <- function(VPD=1.5,
 
     # Limitation by triose-phosphate utilization
     if(!is.null(Ci)){
-      
       Ap <- 3 * TPU * (Ci - GammaStar)/(Ci - (1 + 3*alphag)*GammaStar)
       Ap[Ci < 400] <- 1000  # avoid nonsense
     } else {

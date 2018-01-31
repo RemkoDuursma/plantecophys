@@ -80,6 +80,8 @@ plot(fit3.5)
 plot(fits1)
 plot(fits1, how="oneplot")
 plot(fits2, highlight="1000_1_5", how="oneplot")
+plot(fits3)
+plot(fits4)
 
 test_that("Aci curve fit output format", {
   expect_error(fitaci(data.frame()))

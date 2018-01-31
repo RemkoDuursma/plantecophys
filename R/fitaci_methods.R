@@ -169,6 +169,9 @@ plot.acifit <- function(x, what=c("data","model","none"), xlim=NULL, ylim=NULL,
   pred <- x$Photosyn(Ci=Ci * pcor)
   pred$Ci_original <- pred$Ci / pcor
   
+  # If TPU could not be estimated, Ap will be NA for Ci > 400.
+  pred$Ap[is.na(pred$Ap)] <- 1000 
+  
   # Is there a TPU limitation?
   TPUlimit <- any(pred$Ap < pred$Aj)
   
