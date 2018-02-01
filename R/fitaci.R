@@ -9,7 +9,7 @@
 #' also requires a grouping variable.
 #' @param varnames List of names of variables in the dataset (see Details).
 #' @param Tcorrect If TRUE, Vcmax and Jmax are corrected to 25C. Otherwise, Vcmax and Jmax 
-#' are estimated at measurement temperature.
+#' are estimated at measurement temperature. \strong{Warning} : since package version 1.4, the default parameters have been adjusted (see Details).
 #' @param Patm Atmospheric pressure (kPa)
 #' @param citransition If provided, fits the Vcmax and Jmax limited regions separately (see Details).
 #' @param quiet If TRUE, no messages are written to the screen.
@@ -91,7 +91,10 @@
 #' at measurement temperature). When \code{Tcorrect=FALSE}, estimates of all parameters are at 
 #' measurement temperature. If TPU is fit, it is never corrected for temperature. Important 
 #' parameters to the fit are GammaStar and Km, both of which are calculated from leaf temperature 
-#' using standard formulations. Alternatively, they can be provided as known inputs.}
+#' using standard formulations. Alternatively, they can be provided as known inputs. \strong{Warning} : 
+#' since package version 1.4, the default parameters have been adjusted. The new parameter values 
+#' (EaV, EdVJ, delSJ, etc.) were based on a comprehensive literature review. See 
+#' \code{vignette("new_T_responses")} or the article on remkoduursma.github.io/plantecophys.}
 #' 
 #' \subsection{Mesophyll conductance}{It is possible to provide an estimate of the mesophyll 
 #' conductance as input (\code{gmeso}), in which case the fitted Vcmax and Jmax are to be interpreted 

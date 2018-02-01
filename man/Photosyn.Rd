@@ -11,8 +11,8 @@ Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25, Patm = 100,
   g1 = 4, g0 = 0, gk = 0.5, vpdmin = 0.5, D0 = 5, GS = NULL,
   BBmult = NULL, alpha = 0.24, theta = 0.85, Jmax = 100, Vcmax = 50,
   gmeso = NULL, TPU = 1000, alphag = 0, Rd0 = 0.92, Q10 = 1.92,
-  Rd = NULL, TrefR = 25, Rdayfrac = 1, EaV = 82620.87, EdVC = 0,
-  delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615,
+  Rd = NULL, TrefR = 25, Rdayfrac = 1, EaV = 58550, EdVC = 2e+05,
+  delsC = 629.26, EaJ = 29680, EdVJ = 2e+05, delsJ = 631.88,
   GammaStar = NULL, Km = NULL, Ci = NULL, Tcorrect = TRUE,
   returnParsOnly = FALSE, whichA = c("Ah", "Amin", "Ac", "Aj"))
 
@@ -87,7 +87,7 @@ of leaf temperature.}
 calculated via gs model.}
 
 \item{Tcorrect}{If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, 
-assumes the provided Vcmax and Jmax are at the Tleaf provided)}
+assumes the provided Vcmax and Jmax are at the Tleaf provided). \strong{Warning} : since package version 1.4, the default parameters have been adjusted (see Details).}
 
 \item{returnParsOnly}{If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on 
 leaf temperature.}
@@ -119,7 +119,10 @@ three limitations (electron transport, carboxylation, and TPU limitation). The e
 for the temperature response of photosynthetic parameters, including Vcmax, Jmax, 
 Gammastar, and Km follow Medlyn et al. (2002). However, \strong{note that the default 
 temperature response parameter values are not taken from Medlyn, and likely will have to 
-be adjusted for your situation}.
+be adjusted for your situation}. \strong{Warning} : since package version 1.4, the default 
+parameters have been adjusted. The new parameter values (EaV, EdVJ, delSJ, etc.) were based 
+on a comprehensive literature review. See vignette("new_T_responses") or the article on 
+remkoduursma.github.io/plantecophys.
 
 #'  By default, the \code{Photosyn} function returns the hyperbolic minimum of Vcmax and 
 Jmax-limited photosynthetic rates, as well as the hyperbolic minimum of Jmax-limited and 

@@ -63,7 +63,7 @@ test_that("Fit BB output", {
   expect_length(coef(fit1),2)
   expect_length(coef(fit2),2)
   expect_equal(coef(fit1)[[1]], 0)
-  expect_lt(coef(fit2)[[1]],0)
+  expect_gt(coef(fit2)[[1]],0)
   expect_equal(coef(fit3), coef(fit3.2))
 })
 
