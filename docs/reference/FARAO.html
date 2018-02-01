@@ -73,6 +73,9 @@
     <li>
       <a href="../articles/Introduction_to_fitaci.html">Introduction to fitaci</a>
     </li>
+    <li>
+      <a href="../articles/new_T_responses.html">New temperature responses of Vcmax and Jmax</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -94,7 +97,9 @@
     </div>
 
     
-    <p>The numerical solution of the optimal stomatal conductance model, coupled with the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation to this full numeric solution.</p>
+    <p>The numerical solution of the optimal stomatal conductance model, coupled with 
+the Farquhar model of photosynthesis. The model of Medlyn et al. (2011) is an approximation 
+to this full numeric solution.</p>
     
 
     <pre class="usage"><span class='fu'>FARAO</span>(<span class='kw'>lambda</span> <span class='kw'>=</span> <span class='fl'>0.002</span>, <span class='kw'>Ca</span> <span class='kw'>=</span> <span class='fl'>400</span>, <span class='kw'>VPD</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>photo</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"BOTH"</span>, <span class='st'>"VCMAX"</span>,
@@ -120,11 +125,13 @@
     </tr>
     <tr>
       <th>photo</th>
-      <td><p>Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. the minimum of Vcmax and Jmax limited rates.</p></td>
+      <td><p>Which photosynthesis rate should stomata respond to? Defaults to 'BOTH', i.e. 
+the minimum of Vcmax and Jmax limited rates.</p></td>
     </tr>
     <tr>
       <th>energybalance</th>
-      <td><p>If TRUE (Default = FALSE), calculates leaf temperature from energy balance (and its effects on photosynthesis as well as leaf transpiration), using <code><a href='PhotosynEB.html'>PhotosynEB</a></code>.</p></td>
+      <td><p>If TRUE (Default = FALSE), calculates leaf temperature from energy balance 
+(and its effects on photosynthesis as well as leaf transpiration), using <code><a href='PhotosynEB.html'>PhotosynEB</a></code>.</p></td>
     </tr>
     <tr>
       <th>C4</th>
@@ -144,11 +151,13 @@
     </tr>
     <tr>
       <th>StomatalRatio</th>
-      <td><p>The stomatal ratio (see <code><a href='PhotosynEB.html'>PhotosynEB</a></code>) (only used if energybalance=TRUE)</p></td>
+      <td><p>The stomatal ratio (see <code><a href='PhotosynEB.html'>PhotosynEB</a></code>) (only used if 
+energybalance=TRUE)</p></td>
     </tr>
     <tr>
       <th>LeafAbs</th>
-      <td><p>Leaf absorptance (see <code><a href='PhotosynEB.html'>PhotosynEB</a></code>) (only used if energybalance=TRUE)</p></td>
+      <td><p>Leaf absorptance (see <code><a href='PhotosynEB.html'>PhotosynEB</a></code>) (only used if 
+energybalance=TRUE)</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -158,13 +167,21 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This model finds the Ci that maximizes A - lambda*E (Cowan &amp; Farquhar 1977, see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably more stable) implementation, based on Buckley et al. 2014 (P,C&amp;E). Both functions are provided, as FARAO has a few more options than FARAO2, at the moment.</p>
+    <p>This model finds the Ci that maximizes A - lambda*E (Cowan &amp; Farquhar 1977,
+ see also Medlyn et al. 2011). The new function FARAO2 is a much simpler (and probably 
+ more stable) implementation, based on Buckley et al. 2014 (P,C&amp;E). Both functions 
+ are provided, as FARAO has a few more options than FARAO2, at the moment.</p>
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>Buckley, T.N., Martorell, S., Diaz-Espejo, A., Tomas, M., Medrano, H., 2014. Is stomatal conductance optimized over both time and space in plant crowns? A field test in grapevine (Vitis vinifera). Plant Cell Environ doi:10.1111/pce.12343</p>
-<p>Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabolism and environment. Symposia of the Society for Experimental Biology. 31:471-505.</p>
-<p>Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.</p>
+    <p>Buckley, T.N., Martorell, S., Diaz-Espejo, A., Tomas, M., Medrano, H., 2014. Is stomatal 
+conductance optimized over both time and space in plant crowns? A field test in 
+grapevine (Vitis vinifera). Plant Cell Environ doi:10.1111/pce.12343</p>
+<p>Cowan, I. and G.D. Farquhar. 1977. Stomatal function in relation to leaf metabolism 
+and environment. Symposia of the Society for Experimental Biology. 31:471-505.</p>
+<p>Medlyn, B.E., R.A. Duursma, D. Eamus, D.S. Ellsworth, I.C. Prentice, C.V.M. Barton, 
+K.Y. Crous, P. De Angelis, M. Freeman and L. Wingate. 2011. Reconciling the optimal 
+and empirical approaches to modelling stomatal conductance. Global Change Biology. 17:2134-2144.</p>
     
 
   </div>

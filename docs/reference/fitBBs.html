@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>plantecophys — plantecophys-package â€¢ plantecophys</title>
+<title>Fit Ball-Berry type models of stomatal conductance to many groups at once — fitBBs â€¢ plantecophys</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -93,52 +93,51 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>plantecophys</h1>
+    <h1>Fit Ball-Berry type models of stomatal conductance to many groups at once</h1>
     </div>
 
     
-    <p>plantecophys</p>
+    <p>A batch utility for the <code><a href='fitBB.html'>fitBB</a></code> function, to fit the model for each group in a dataframe.</p>
     
 
-        
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
+    <pre class="usage"><span class='fu'>fitBBs</span>(<span class='no'>data</span>, <span class='no'>group</span>, <span class='no'>...</span>)</pre>
     
-    <p>The DESCRIPTION file:
-plantecophys
-plantecophys</p>
-<p>The following functions are the main tools in <span class="pkg">plantecophys</span>:</p><ol>
-<li><p><code><a href='fitaci.html'>fitaci</a></code> (and <code><a href='fitaci.html'>fitaci</a></code>) fits A-Ci curves to data.</p></li>
-<li><p><code><a href='Photosyn.html'>Photosyn</a></code> can be used to simulate A-Ci curves (or <code>Aci</code>), and simulate from a coupled leaf gas exchange model.</p></li>
-<li><p><code><a href='fitBB.html'>fitBB</a></code> fits Ball-Berry-type stomatal conductance models to data.</p></li>
-<li><p><code><a href='FARAO.html'>FARAO</a></code> is an implementation of a numeric solution to Cowan-Farquhar optimization of stomatal conductance.</p></li>
-<li><p><code><a href='Conversions.html'>RHtoVPD</a></code> converts relative humidity to vapour pressure deficit (and more similar functions on that help page).</p></li>
-</ol>
-    <p>The package also includes the following example datasets:</p><ol>
-<li><p><code><a href='acidata1.html'>acidata1</a></code> A dataset with a single A-Ci curve.</p></li>
-<li><p><code><a href='manyacidat.html'>manyacidat</a></code> A dataset with many A-Ci curves.</p></li>
-</ol>
-    
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p>Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346</p>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>data</th>
+      <td><p>Input dataframe, containing all variables needed to fit the model.</p></td>
+    </tr>
+    <tr>
+      <th>group</th>
+      <td><p>Name of the grouping variable in the dataframe (quoted), the model will be fit for each group defined by this variable.</p></td>
+    </tr>
+    <tr>
+      <th>&#8230;</th>
+      <td><p>Further parameters passed to <code><a href='fitBB.html'>fitBB</a></code>, see there for a full description.</p></td>
+    </tr>
+    </table>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='co'># If you have a factor variable in your dataset called 'species', and you</span>
+<span class='co'># want to fit the Ball-Berry model for each of the species:</span>
+<span class='no'>myfits</span> <span class='kw'>&lt;-</span> <span class='fu'>fitBBs</span>(<span class='no'>mydata</span>, <span class='st'>"species"</span>, <span class='kw'>model</span><span class='kw'>=</span><span class='st'>"BallBerry"</span>)
+
+<span class='co'># A dataframe with coefficients is returned by coef()</span>
+<span class='fu'>coef</span>(<span class='no'>myfits</span>)
+
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      
-      <li><a href="#details">Details</a></li>
-
-      <li><a href="#references">References</a></li>
-          </ul>
-
-    <h2>Author</h2>
-    
-Remko Duursma
-
-Maintainer: Remko Duursma
+      <li><a href="#arguments">Arguments</a></li>
+            
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

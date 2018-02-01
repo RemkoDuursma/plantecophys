@@ -50,6 +50,9 @@
     <li>
       <a href="../articles/Introduction_to_fitaci.html">Introduction to fitaci</a>
     </li>
+    <li>
+      <a href="../articles/new_T_responses.html">New temperature responses of Vcmax and Jmax</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -68,7 +71,7 @@
       <h1>Introduction to fitaci</h1>
                         <h4 class="author">Remko Duursma</h4>
             
-            <h4 class="date">2017-08-14</h4>
+            <h4 class="date">2018-02-01</h4>
           </div>
 
     
@@ -232,7 +235,7 @@
 <h2 class="hasAnchor">
 <a href="#using-measured-dark-respiration" class="anchor"></a>Using measured dark respiration</h2>
 <p>The <code>fitaci</code> function also estimates dark respiration (Rd) in the fit, but be aware that those estimates are very imprecise. Also, a higher precision of Vcmax and Jmax can be obtained if you measure Rd independently, and use that value in the fit. To do this, add Rd to the dataframe (default column name is ‘Rd’), and set the <code>useRd=TRUE</code> argument, like so:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">acidata2<span class="op">$</span>Rd &lt;-<span class="st"> </span><span class="dv">2</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">acidata2$Rd &lt;-<span class="st"> </span><span class="dv">2</span>
 fit3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/fitaci.html">fitaci</a></span>(acidata2, <span class="dt">useRd=</span><span class="ot">TRUE</span>)
 <span class="kw">coef</span>(fit3)</code></pre></div>
 <pre><code>##     Vcmax      Jmax        Rd 

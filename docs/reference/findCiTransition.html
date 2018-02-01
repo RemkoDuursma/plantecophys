@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>plantecophys — plantecophys-package â€¢ plantecophys</title>
+<title>Calculate transition points for fitted A-Ci curves — findCiTransition â€¢ plantecophys</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -93,52 +93,41 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>plantecophys</h1>
+    <h1>Calculate transition points for fitted A-Ci curves</h1>
     </div>
 
     
-    <p>plantecophys</p>
+    <p>Calculates the Ci at the transition points between Ac &amp; Aj (point 1), and Aj and Ap (point 2). The latter is not NA only when TPU was estimated (and estimable), see <code><a href='fitaci.html'>fitaci</a></code>, argument <code>fitTPU</code>.</p>
     
 
-        
+    <pre class="usage"><span class='fu'>findCiTransition</span>(<span class='no'>object</span>, <span class='no'>...</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>object</th>
+      <td><p>Either an object returned by <code>fitaci</code>, or a copy of the <code>Photosyn</code> function.</p></td>
+    </tr>
+    <tr>
+      <th>&#8230;</th>
+      <td><p>Further arguments passed to the <code>Photosyn</code> function.</p></td>
+    </tr>
+    </table>
+    
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    
-    <p>The DESCRIPTION file:
-plantecophys
-plantecophys</p>
-<p>The following functions are the main tools in <span class="pkg">plantecophys</span>:</p><ol>
-<li><p><code><a href='fitaci.html'>fitaci</a></code> (and <code><a href='fitaci.html'>fitaci</a></code>) fits A-Ci curves to data.</p></li>
-<li><p><code><a href='Photosyn.html'>Photosyn</a></code> can be used to simulate A-Ci curves (or <code>Aci</code>), and simulate from a coupled leaf gas exchange model.</p></li>
-<li><p><code><a href='fitBB.html'>fitBB</a></code> fits Ball-Berry-type stomatal conductance models to data.</p></li>
-<li><p><code><a href='FARAO.html'>FARAO</a></code> is an implementation of a numeric solution to Cowan-Farquhar optimization of stomatal conductance.</p></li>
-<li><p><code><a href='Conversions.html'>RHtoVPD</a></code> converts relative humidity to vapour pressure deficit (and more similar functions on that help page).</p></li>
-</ol>
-    <p>The package also includes the following example datasets:</p><ol>
-<li><p><code><a href='acidata1.html'>acidata1</a></code> A dataset with a single A-Ci curve.</p></li>
-<li><p><code><a href='manyacidat.html'>manyacidat</a></code> A dataset with many A-Ci curves.</p></li>
-</ol>
-    
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p>Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346</p>
+    <p>This function is also used by <code>fitaci</code>, the results are stored in elements <code>Ci_transition</code> and <code>Ci_transition2</code>.</p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#details">Details</a></li>
-
-      <li><a href="#references">References</a></li>
           </ul>
-
-    <h2>Author</h2>
-    
-Remko Duursma
-
-Maintainer: Remko Duursma
 
   </div>
 </div>

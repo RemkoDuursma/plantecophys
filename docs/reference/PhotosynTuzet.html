@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>plantecophys — plantecophys-package â€¢ plantecophys</title>
+<title>Coupled leaf gas exchange model with Tuzet stomatal conductance — PhotosynTuzet â€¢ plantecophys</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -93,52 +93,56 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>plantecophys</h1>
+    <h1>Coupled leaf gas exchange model with Tuzet stomatal conductance</h1>
     </div>
 
     
-    <p>plantecophys</p>
+    <p>An implementation of the coupled photosynthesis - stomatal conductance model, using the Tuzet et al. (2003) model of stomatal conductance. Accepts all arguments of <code><a href='Photosyn.html'>Photosyn</a></code> (except <code>gsmodel</code>, of course).</p>
     
 
-        
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
+    <pre class="usage"><span class='fu'>PhotosynTuzet</span>(<span class='kw'>g1</span> <span class='kw'>=</span> <span class='fl'>8</span>, <span class='kw'>Ca</span> <span class='kw'>=</span> <span class='fl'>400</span>, <span class='kw'>psis</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>kl</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>sf</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>psif</span> <span class='kw'>=</span> -<span class='fl'>2</span>,
+  <span class='no'>...</span>)</pre>
     
-    <p>The DESCRIPTION file:
-plantecophys
-plantecophys</p>
-<p>The following functions are the main tools in <span class="pkg">plantecophys</span>:</p><ol>
-<li><p><code><a href='fitaci.html'>fitaci</a></code> (and <code><a href='fitaci.html'>fitaci</a></code>) fits A-Ci curves to data.</p></li>
-<li><p><code><a href='Photosyn.html'>Photosyn</a></code> can be used to simulate A-Ci curves (or <code>Aci</code>), and simulate from a coupled leaf gas exchange model.</p></li>
-<li><p><code><a href='fitBB.html'>fitBB</a></code> fits Ball-Berry-type stomatal conductance models to data.</p></li>
-<li><p><code><a href='FARAO.html'>FARAO</a></code> is an implementation of a numeric solution to Cowan-Farquhar optimization of stomatal conductance.</p></li>
-<li><p><code><a href='Conversions.html'>RHtoVPD</a></code> converts relative humidity to vapour pressure deficit (and more similar functions on that help page).</p></li>
-</ol>
-    <p>The package also includes the following example datasets:</p><ol>
-<li><p><code><a href='acidata1.html'>acidata1</a></code> A dataset with a single A-Ci curve.</p></li>
-<li><p><code><a href='manyacidat.html'>manyacidat</a></code> A dataset with many A-Ci curves.</p></li>
-</ol>
-    
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p>Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346</p>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>g1</th>
+      <td><p>The slope parameter. Note that the default value should be much higher than that used in the Medlyn et al. (2011) model to give comparable predictions.</p></td>
+    </tr>
+    <tr>
+      <th>Ca</th>
+      <td><p>Atmospheric CO2 concentration.</p></td>
+    </tr>
+    <tr>
+      <th>psis</th>
+      <td><p>Soil water potential (MPa). Note that soil-to-root hydraulic conductance is not implemented.</p></td>
+    </tr>
+    <tr>
+      <th>kl</th>
+      <td><p>Leaf-specific hydraulic conductance (mmol m-2 s-1 MPa-1)</p></td>
+    </tr>
+    <tr>
+      <th>sf</th>
+      <td><p>Shape parameter (-) of sigmoidal function of leaf water potential (see Tuzet et al. 2003)</p></td>
+    </tr>
+    <tr>
+      <th>psif</th>
+      <td><p>Leaf water potential at which stomatal conductance is 50% of maximum (MPa).</p></td>
+    </tr>
+    <tr>
+      <th>&#8230;</th>
+      <td><p>All other arguments in <code><a href='Photosyn.html'>Photosyn</a></code></p></td>
+    </tr>
+    </table>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      
-      <li><a href="#details">Details</a></li>
-
-      <li><a href="#references">References</a></li>
-          </ul>
-
-    <h2>Author</h2>
-    
-Remko Duursma
-
-Maintainer: Remko Duursma
+      <li><a href="#arguments">Arguments</a></li>
+                </ul>
 
   </div>
 </div>

@@ -50,6 +50,9 @@
     <li>
       <a href="../articles/Introduction_to_fitaci.html">Introduction to fitaci</a>
     </li>
+    <li>
+      <a href="../articles/new_T_responses.html">New temperature responses of Vcmax and Jmax</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -68,7 +71,7 @@
       <h1>Fitting A-Ci curves - FAQ</h1>
                         <h4 class="author">Remko Duursma</h4>
             
-            <h4 class="date">2017-08-14</h4>
+            <h4 class="date">2018-02-01</h4>
           </div>
 
     
@@ -109,7 +112,7 @@
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">citation</span>(<span class="st">"plantecophys"</span>)</code></pre></div>
 <p>and report the version of the package used in the work, which you can view with:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">packageVersion</span>(<span class="st">"plantecophys"</span>)</code></pre></div>
-<pre><code>## [1] '1.2.9'</code></pre>
+<pre><code>## [1] '1.4'</code></pre>
 </div>
 <div id="which-fitting-method-should-i-use" class="section level2">
 <h2 class="hasAnchor">
@@ -136,7 +139,7 @@ f &lt;-<span class="st"> </span><span class="kw"><a href="../reference/fitaci.ht
 <li>Calculate the chloroplastic CO<sub>2</sub> concentration, and fit normally, like this:</li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Assume a mesophyll conductance of 0.2 mol m-2 s-1 bar-1</span>
-acidata1<span class="op">$</span>Cc &lt;-<span class="st"> </span><span class="kw">with</span>(acidata1, Ci <span class="op">-</span><span class="st"> </span>Photo<span class="op">/</span><span class="fl">0.2</span>)
+acidata1$Cc &lt;-<span class="st"> </span><span class="kw">with</span>(acidata1, Ci -<span class="st"> </span>Photo/<span class="fl">0.2</span>)
 
 <span class="co"># Fit normally, but make sure to use Cc!</span>
 f &lt;-<span class="st"> </span><span class="kw"><a href="../reference/fitaci.html">fitaci</a></span>(acidata1, <span class="dt">varnames=</span><span class="kw">list</span>(<span class="dt">ALEAF=</span><span class="st">"Photo"</span>, <span class="dt">Ci=</span><span class="st">"Cc"</span>, <span class="dt">Tleaf=</span><span class="st">"Tleaf"</span>, <span class="dt">PPFD=</span><span class="st">"PARi"</span>))</code></pre></div>

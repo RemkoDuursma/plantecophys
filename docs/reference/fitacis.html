@@ -73,6 +73,9 @@
     <li>
       <a href="../articles/Introduction_to_fitaci.html">Introduction to fitaci</a>
     </li>
+    <li>
+      <a href="../articles/new_T_responses.html">New temperature responses of Vcmax and Jmax</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -175,87 +178,41 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
+</div><span class='co'># NOT RUN {</span>
 <span class='co'># Fit many curves (using an example dataset)</span>
 <span class='co'># The bilinear method is much faster, but compare using 'default'!</span>
-<span class='no'>fits</span> <span class='kw'>&lt;-</span> <span class='fu'>fitacis</span>(<span class='no'>manyacidat</span>, <span class='st'>"Curve"</span>, <span class='kw'>fitmethod</span><span class='kw'>=</span><span class='st'>"bilinear"</span>)</div><div class='output co'>#&gt;   |                                                          |                                                  |   0%  |                                                          |==                                                |   4%  |                                                          |====                                              |   7%  |                                                          |=====                                             |  11%  |                                                          |=======                                           |  14%  |                                                          |=========                                         |  18%  |                                                          |===========                                       |  21%  |                                                          |============                                      |  25%  |                                                          |==============                                    |  29%  |                                                          |================                                  |  32%  |                                                          |==================                                |  36%  |                                                          |====================                              |  39%  |                                                          |=====================                             |  43%  |                                                          |=======================                           |  46%  |                                                          |=========================                         |  50%  |                                                          |===========================                       |  54%  |                                                          |=============================                     |  57%  |                                                          |==============================                    |  61%  |                                                          |================================                  |  64%  |                                                          |==================================                |  68%  |                                                          |====================================              |  71%  |                                                          |======================================            |  75%  |                                                          |=======================================           |  79%  |                                                          |=========================================         |  82%  |                                                          |===========================================       |  86%  |                                                          |=============================================     |  89%  |                                                          |==============================================    |  93%  |                                                          |================================================  |  96%  |                                                          |==================================================| 100%</div><div class='input'><span class='fu'>with</span>(<span class='fu'>coef</span>(<span class='no'>fits</span>), <span class='fu'>plot</span>(<span class='no'>Vcmax</span>, <span class='no'>Jmax</span>))</div><div class='img'><img src='fitacis-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='no'>fits</span> <span class='kw'>&lt;-</span> <span class='fu'>fitacis</span>(<span class='no'>manyacidat</span>, <span class='st'>"Curve"</span>, <span class='kw'>fitmethod</span><span class='kw'>=</span><span class='st'>"bilinear"</span>)
+<span class='fu'>with</span>(<span class='fu'>coef</span>(<span class='no'>fits</span>), <span class='fu'>plot</span>(<span class='no'>Vcmax</span>, <span class='no'>Jmax</span>))
+
 <span class='co'># The resulting object is a list, with each component an object as returned by fitaci</span>
 <span class='co'># So, we can extract one curve:</span>
-<span class='no'>fits</span><span class='kw'>[[</span><span class='fl'>1</span>]]</div><div class='output co'>#&gt; Result of fitaci.
-#&gt; 
-#&gt; Data and predictions:
-#&gt;            Ci      Ameas     Amodel         Ac        Aj   Ap        Rd VPD
-#&gt; 2    53.23129 -0.4401082  0.1014381  0.9601119  2.548123 1000 0.8586158 1.5
-#&gt; 3    79.47367  2.4824630  2.1937702  3.0526198  7.036734 1000 0.8586158 1.5
-#&gt; 4   116.74688  5.4531712  4.9419337  5.8011511 11.392394 1000 0.8586158 1.5
-#&gt; 5   188.00801  9.7099879  9.5705964 10.4310194 16.447715 1000 0.8586158 1.5
-#&gt; 6   278.44662 14.8225766 14.4261545 15.2897486 19.977583 1000 0.8586158 1.5
-#&gt; 7   343.03259 17.7982155 17.4602014 18.3289218 21.639847 1000 0.8586158 1.5
-#&gt; 1   344.72152 17.9244012 17.3165146 18.1849643 21.534276 1000 0.8586158 1.5
-#&gt; 14  344.74839 16.7933747 17.6853306 18.5545917 21.774261 1000 0.8586158 1.5
-#&gt; 8   588.08078 23.8925326 24.1309683 27.0327638 25.020148 3000 0.8586158 1.5
-#&gt; 9   833.25547 26.5674409 25.7783026 33.0856065 26.647921 3000 0.8586158 1.5
-#&gt; 10 1136.99222 25.9787890 26.8108335 38.1296944 27.676768 3000 0.8586158 1.5
-#&gt; 11 1436.86370 26.6110657 27.5409345 42.0628463 28.405453 3000 0.8586158 1.5
-#&gt; 12 1536.46772 27.4018784 27.7965881 43.3773689 28.660781 3000 0.8586158 1.5
-#&gt; 13 1731.76400 28.6752069 28.0952804 45.2475932 28.959041 3000 0.8586158 1.5
-#&gt;       Tleaf         Cc     PPFD Patm Ci_original
-#&gt; 2  24.55873   53.23139 1799.959  100    53.23129
-#&gt; 3  24.58292   79.47586 1799.590  100    79.47367
-#&gt; 4  24.71278  116.75183 1799.819  100   116.74688
-#&gt; 5  24.73687  188.01759 1800.371  100   188.00801
-#&gt; 6  24.67508  278.46106 1800.233  100   278.44662
-#&gt; 7  24.76596  343.05006 1799.575  100   343.03259
-#&gt; 1  24.51593  344.73886 1800.356  100   344.72152
-#&gt; 14 24.94098  344.76609 1799.964  100   344.74839
-#&gt; 8  24.83785  588.10494 1799.477  100   588.08078
-#&gt; 9  24.91185  833.28127 1799.969  100   833.25547
-#&gt; 10 24.87314 1137.01906 1799.525  100  1136.99222
-#&gt; 11 24.95914 1436.89126 1799.615  100  1436.86370
-#&gt; 12 25.04542 1536.49554 1799.784  100  1536.46772
-#&gt; 13 25.07566 1731.79212 1799.160  100  1731.76400
-#&gt; 
-#&gt; Root mean squared error:  2.196037 
-#&gt; 
-#&gt; Estimated parameters:
-#&gt;          Estimate Std. Error
-#&gt; Vcmax  65.0009909  1.3720635
-#&gt; Jmax  131.7980133         NA
-#&gt; Rd      0.8586158  0.2876248
-#&gt; Note: Vcmax, Jmax are at 25C, Rd is at measurement T.
-#&gt; 
-#&gt; Curve was fit using method:  bilinear 
-#&gt; 
-#&gt; Parameter settings:
-#&gt; Patm = 100
-#&gt;  alpha = 0.24
-#&gt;  theta = 0.85
-#&gt;  EaV = 82620.87
-#&gt;  EdVC = 0
-#&gt;  delsC = 645.1013
-#&gt;  EaJ = 39676.89
-#&gt;  EdVJ = 2e+05
-#&gt;  delsJ = 641.3615
-#&gt; 
-#&gt; Estimated from Tleaf (shown at mean Tleaf):
-#&gt; GammaStar =  42.31453 
-#&gt; Km =  698.2084 </div><div class='input'><span class='fu'>plot</span>(<span class='no'>fits</span><span class='kw'>[[</span><span class='fl'>1</span>]])</div><div class='img'><img src='fitacis-2.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='no'>fits</span><span class='kw'>[[</span><span class='fl'>1</span>]]
+<span class='fu'>plot</span>(<span class='no'>fits</span><span class='kw'>[[</span><span class='fl'>1</span>]])
+
 <span class='co'># Plot all curves in separate figures with plot(fits)</span>
 <span class='co'># Or, in one plot:</span>
-<span class='fu'>plot</span>(<span class='no'>fits</span>, <span class='kw'>how</span><span class='kw'>=</span><span class='st'>"oneplot"</span>)</div><div class='img'><img src='fitacis-3.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>fits</span>, <span class='kw'>how</span><span class='kw'>=</span><span class='st'>"oneplot"</span>)
+
 <span class='co'># Note that parameters can be passed to plot.acifit. For example,</span>
-<span class='fu'>plot</span>(<span class='no'>fits</span>, <span class='kw'>how</span><span class='kw'>=</span><span class='st'>"oneplot"</span>, <span class='kw'>what</span><span class='kw'>=</span><span class='st'>"data"</span>, <span class='kw'>col</span><span class='kw'>=</span><span class='st'>"blue"</span>)</div><div class='input'><span class='fu'>plot</span>(<span class='no'>fits</span>, <span class='kw'>how</span><span class='kw'>=</span><span class='st'>"oneplot"</span>, <span class='kw'>add</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>what</span><span class='kw'>=</span><span class='st'>"model"</span>, <span class='kw'>lwd</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>1</span>))</div><div class='img'><img src='fitacis-4.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>fits</span>, <span class='kw'>how</span><span class='kw'>=</span><span class='st'>"oneplot"</span>, <span class='kw'>what</span><span class='kw'>=</span><span class='st'>"data"</span>, <span class='kw'>col</span><span class='kw'>=</span><span class='st'>"blue"</span>)
+<span class='fu'>plot</span>(<span class='no'>fits</span>, <span class='kw'>how</span><span class='kw'>=</span><span class='st'>"oneplot"</span>, <span class='kw'>add</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>what</span><span class='kw'>=</span><span class='st'>"model"</span>, <span class='kw'>lwd</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>1</span>))
+
 <span class='co'># Other elements can be summarized with sapply. For example, look at the RMSE:</span>
 <span class='no'>rmses</span> <span class='kw'>&lt;-</span> <span class='fu'>sapply</span>(<span class='no'>fits</span>, <span class='st'>"[["</span>, <span class='st'>"RMSE"</span>)
-<span class='fu'>plot</span>(<span class='no'>rmses</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>'h'</span>, <span class='kw'>ylab</span><span class='kw'>=</span><span class='st'>"RMSE"</span>, <span class='kw'>xlab</span><span class='kw'>=</span><span class='st'>"Curve nr"</span>)</div><div class='img'><img src='fitacis-5.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>rmses</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>'h'</span>, <span class='kw'>ylab</span><span class='kw'>=</span><span class='st'>"RMSE"</span>, <span class='kw'>xlab</span><span class='kw'>=</span><span class='st'>"Curve nr"</span>)
+
 <span class='co'># And plot the worst-fitting curve:</span>
-<span class='fu'>plot</span>(<span class='no'>fits</span><span class='kw'>[[</span><span class='fu'>which.max</span>(<span class='no'>rmses</span>)]])</div><div class='img'><img src='fitacis-6.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>plot</span>(<span class='no'>fits</span><span class='kw'>[[</span><span class='fu'>which.max</span>(<span class='no'>rmses</span>)]])
+
 <span class='co'># It is very straightforward to summarize the coefficients by a factor variable</span>
 <span class='co'># that was contained in the original data. In manyacidat, there is a factor variable</span>
 <span class='co'># 'treatment'.</span>
 <span class='co'># We first have to refit the curves, using the 'id' argument:</span>
-<span class='no'>fits</span> <span class='kw'>&lt;-</span> <span class='fu'>fitacis</span>(<span class='no'>manyacidat</span>, <span class='st'>"Curve"</span>, <span class='kw'>fitmethod</span><span class='kw'>=</span><span class='st'>"bilinear"</span>, <span class='kw'>id</span><span class='kw'>=</span><span class='st'>"treatment"</span>)</div><div class='output co'>#&gt;   |                                                          |                                                  |   0%  |                                                          |==                                                |   4%  |                                                          |====                                              |   7%  |                                                          |=====                                             |  11%  |                                                          |=======                                           |  14%  |                                                          |=========                                         |  18%  |                                                          |===========                                       |  21%  |                                                          |============                                      |  25%  |                                                          |==============                                    |  29%  |                                                          |================                                  |  32%  |                                                          |==================                                |  36%  |                                                          |====================                              |  39%  |                                                          |=====================                             |  43%  |                                                          |=======================                           |  46%  |                                                          |=========================                         |  50%  |                                                          |===========================                       |  54%  |                                                          |=============================                     |  57%  |                                                          |==============================                    |  61%  |                                                          |================================                  |  64%  |                                                          |==================================                |  68%  |                                                          |====================================              |  71%  |                                                          |======================================            |  75%  |                                                          |=======================================           |  79%  |                                                          |=========================================         |  82%  |                                                          |===========================================       |  86%  |                                                          |=============================================     |  89%  |                                                          |==============================================    |  93%  |                                                          |================================================  |  96%  |                                                          |==================================================| 100%</div><div class='input'>
+<span class='no'>fits</span> <span class='kw'>&lt;-</span> <span class='fu'>fitacis</span>(<span class='no'>manyacidat</span>, <span class='st'>"Curve"</span>, <span class='kw'>fitmethod</span><span class='kw'>=</span><span class='st'>"bilinear"</span>, <span class='kw'>id</span><span class='kw'>=</span><span class='st'>"treatment"</span>)
+
 <span class='co'># And now use this to plot Vcmax by treatment.</span>
-<span class='fu'>boxplot</span>(<span class='no'>Vcmax</span> ~ <span class='no'>treatment</span>, <span class='kw'>data</span><span class='kw'>=</span><span class='fu'>coef</span>(<span class='no'>fits</span>), <span class='kw'>ylim</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='fl'>0</span>,<span class='fl'>130</span>))</div><div class='img'><img src='fitacis-7.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
+<span class='fu'>boxplot</span>(<span class='no'>Vcmax</span> ~ <span class='no'>treatment</span>, <span class='kw'>data</span><span class='kw'>=</span><span class='fu'>coef</span>(<span class='no'>fits</span>), <span class='kw'>ylim</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='fl'>0</span>,<span class='fl'>130</span>))
+<span class='co'># }</span><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
