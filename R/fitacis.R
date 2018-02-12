@@ -1,30 +1,51 @@
 #' Fit multiple A-Ci curves at once
 #' 
-#' @description A convenient function to fit many curves at once, by calling \code{\link{fitaci}} for every group in the dataset. The data provided must include a variable that uniquely identifies each A-Ci curve.
+#' @description A convenient function to fit many curves at once, by calling \code{\link{fitaci}} for 
+#' every group in the dataset. The data provided must include a variable that uniquely identifies each A-Ci curve.
 #' 
-#' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, also requires a grouping variable.
+#' @param data Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, 
+#' also requires a grouping variable.
 #' @param group The name of the grouping variable in the dataframe (an A-Ci curve will be fit for each group separately).
 #' @param fitmethod Method to fit the A-Ci curve. Either 'default' (Duursma 2015), or 'bilinear'. See Details.
 #' @param progressbar Display a progress bar (default is TRUE).
 #' @param quiet If TRUE, no messages are written to the screen.
-#' @param id Names of variables (quoted, can be a vector) in the original dataset to return as part of the coef() statement. Useful for keeping track of species names, treatment levels, etc. See Details and Examples.
+#' @param id Names of variables (quoted, can be a vector) in the original dataset to return as part of 
+#' the coef() statement. Useful for keeping track of species names, treatment levels, etc. See Details and Examples.
 #' @param x For \code{plot.acifits}, an object returned from \code{fitacis}
 #' @param xlim,ylim The X and Y axis limits.
 #' @param add If TRUE, adds the plots to a current plot.
 #' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
-#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), all curves are plotted in grey, with the highlighted one on top.
+#' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), 
+#' all curves are plotted in grey, with the highlighted one on top.
+#' @param linecol_highlight Colour to use for the 'highlighted' curve.
+#' @param colour_by_id If TRUE, uses the 'id' argument to colour the curves in the standard plot (only works when \code{how = 'oneplot'}, see Examples)
+#' @param id_legend If \code{colour_by_id} is set, place a legend (topleft) or not.
 #' @param what What to plot, either 'model' (the fitted curve), 'data' or 'none'. See examples.
-#' @param \dots Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).
+#' @param \dots Further arguments passed to \code{\link{fitaci}} (in the case of \code{fitacis}), or 
+#' \code{\link{plot.acifit}} (in the case of \code{plot.acifits}).
 #' 
 #' @details 
-#' \strong{Troubleshooting - } When using the default fitting method (see \code{\link{fitaci}}), it is common that some curves cannot be fit. Usually this indicates that the curve is poor quality and should not be used to estimate photosynthetic capacity, but there are exceptions. The \code{fitacis} function now refits the non-fitting curves with the 'bilinear' method (see \code{fitaci}), which will always return parameter estimates (for better or worse).
+#' \strong{Troubleshooting - } When using the default fitting method (see \code{\link{fitaci}}), it is common that 
+#' some curves cannot be fit. Usually this indicates that the curve is poor quality and should not be used to 
+#' estimate photosynthetic capacity, but there are exceptions. The \code{fitacis} function now refits the 
+#' non-fitting curves with the 'bilinear' method (see \code{fitaci}), which will always return parameter estimates 
+#' (for better or worse).
 #' 
-#' \strong{Summarizing and plotting - } Like \code{fitaci}, the batch utility \code{fitacis} also has a standard plotting method. By default, it will make a single plot for every curve that you fit (thus generating many plots). Alternatively, use the setting \code{how="oneplot"} (see Examples below) for a single plot. The fitted \strong{coefficients} are extracted with \code{coef}, which gives a dataframe where each row represents a fitted curve (the grouping label is also included).
+#' \strong{Summarizing and plotting - } Like \code{fitaci}, the batch utility \code{fitacis} also has a standard 
+#' plotting method. By default, it will make a single plot for every curve that you fit (thus generating many plots). 
+#' Alternatively, use the setting \code{how="oneplot"} (see Examples below) for a single plot. The fitted 
+#' \strong{coefficients} are extracted with \code{coef}, which gives a dataframe where each row represents 
+#' a fitted curve (the grouping label is also included).
 #' 
-#' \strong{Adding identifying variables - } after fitting multiple curves, the most logical next step is to analyze the coefficient by some categorical variable (species, treatment, location). You can use the \code{id} argument to store variables from the original dataset in the output. It is important that the 'id' variables take only one value per fitted curve, if this is not the case only the first value of the curve will be stored (this will be rarely useful). See examples.
+#' \strong{Adding identifying variables - } after fitting multiple curves, the most logical next step is to 
+#' analyze the coefficient by some categorical variable (species, treatment, location). You can use the 
+#' \code{id} argument to store variables from the original dataset in the output. It is important that the 
+#' 'id' variables take only one value per fitted curve, if this is not the case only the first value of the 
+#' curve will be stored (this will be rarely useful). See examples.
 #' 
 #' @references 
-#' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
+#' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas Exchange Data. 
+#' PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 #' 
 #' @examples
 #' 
@@ -62,6 +83,17 @@
 #' 
 #' # And now use this to plot Vcmax by treatment.
 #' boxplot(Vcmax ~ treatment, data=coef(fits), ylim=c(0,130))
+#' 
+#' # As of package version 1.4-2, you can also use the id variable for colouring curves,
+#' # when plotting all fitted curves in one plot.
+#' # Set colours to be used. Also note that the 'id' variable has to be a factor,
+#' # colours will be set in order of the levels of the factor.
+#' # Set palette of colours:
+#' palette(rainbow(8))
+#' 
+#' # Use colours, add legend.
+#' plot(fits, how="oneplot", colour_by_id = TRUE, id_legend=TRUE)
+#'
 #' }
 #' 
 #' @export
@@ -73,14 +105,17 @@ fitacis <- function(data, group, fitmethod=c("default","bilinear"),
   fitmethod <- match.arg(fitmethod)
   
   if(!group %in% names(data))
-    stop("group variable must be in the dataframe.")
+    Stop("group variable must be in the dataframe.")
   
   if(quiet)progressbar <- FALSE
   
   data$group <- data[,group]
   tb <- table(data$group)
-  if(any(tb == 0))
-    stop("Some levels of your group variable have zero observations.\nUse droplevels() or fix data otherwise!")
+  
+  if(any(tb == 0)){
+    Stop("Some levels of your group variable have zero observations.",
+         "\nUse droplevels() or fix data otherwise!")
+  }
   
   d <- split(data, data[,"group"])  
   ng <- length(d)
@@ -139,80 +174,5 @@ do_fit_bygroup <- function(d, which=NULL, progressbar, fitmethod, ...){
 
 
  
-#' @method plot acifits
-#' @export
-#' @rdname fitacis
-plot.acifits <- function(x, how=c("manyplots","oneplot"),
-                         highlight=NULL, ylim=NULL,xlim=NULL,
-                         add=FALSE, what=c("model","data","none"),
-                         ...){
-  
-  how <- match.arg(how)
-  what <- match.arg(what)
-  
-  if(is.null(ylim)){
-    amax <- max(sapply(x, function(x)max(x$df$Amodel)))
-    amin <- max(sapply(x, function(x)min(x$df$Amodel)))
-    ylim <- c(amin,amax)
-  }
-  if(is.null(xlim)){
-    cimax <- max(sapply(x, function(x)max(x$df$Ci)))
-    cimin <- min(sapply(x, function(x)min(x$df$Ci)))
-    xlim <- c(cimin,cimax)
-  }
-  
-  if(how == "manyplots"){
-    if(add)Warning("Argument 'add' ignored when making multiple plots.")  
-    
-    for(i in seq_along(x)){
-      plot.acifit(x[[i]],main=names(x)[i],xlim=xlim,ylim=ylim,...)
-    }
-  }
-  
-  if(how == "oneplot"){
-    
-    if(!is.null(highlight)){
-      if(!highlight %in% names(x))
-          stop("Curve ID not found.")
-      
-      hi <- which(names(x) == highlight)
-      
-      if(!add){
-        plot.acifit(x[[1]], what="none", ylim=ylim, xlim=xlim, whichA="Amin", ...)
-      }
-      
-      for(i in seq_along(x)){
-        plot.acifit(x[[i]], what=what, whichA="Amin", add=TRUE,
-                    linecols="grey",...)  
-      }
-      plot.acifit(x[[hi]], what=what, whichA="Amin", add=TRUE,
-                  linecols="black",...)  
-      
-    } else {
-      if(!add)plot.acifit(x[[1]], what="none",ylim=ylim, xlim=xlim, whichA="Amin", ...)
-      for(i in seq_along(x))
-        plot.acifit(x[[i]], what=what, whichA="Amin", add=TRUE,...)  
-    }
-    
-    
-    
-  }
-}
-
-#'@export
-#'@method print acifits
-print.acifits <- function(x, ...){
-  
-  cat("Result of fitacis.\n\n")
-  p <- coef(x)
-  
-  cat("Fitted", nrow(p), "curves by", attr(x, "groupname"), "grouping variable.")
-  
-  cat("\nRange in estimated Vcmax:", round(min(p$Vcmax, na.rm=TRUE),2), "-", round(max(p$Vcmax),2))
-  cat("\nRange in estimated Jmax:", round(min(p$Jmax, na.rm=TRUE),2), "-", round(max(p$Jmax),2))
-  cat("\nUse coef() on the object to see all fitted coefficients.")
-  
-}
-
 
 

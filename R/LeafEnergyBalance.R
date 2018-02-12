@@ -41,7 +41,7 @@ PhotosynEB <- function(Tair=25,
     
     m <- match.call(expand.dots=TRUE)
     if("Tleaf" %in% names(m))
-      stop("Cannot pass Tleaf to PhotosynEB - it is calculated from energy balance.")
+      Stop("Cannot pass Tleaf to PhotosynEB - it is calculated from energy balance.")
     
     # Wrapper for Photosyn to find gs only  
     gsfun <- function(...)Photosyn(...)$GS

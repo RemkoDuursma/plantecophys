@@ -42,7 +42,8 @@
 #' @param Ci Optional, intercellular CO2 concentration (ppm). If not provided, 
 #' calculated via gs model.
 #' @param Tcorrect If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, 
-#' assumes the provided Vcmax and Jmax are at the Tleaf provided). \strong{Warning} : since package version 1.4, the default parameters have been adjusted (see Details).
+#' assumes the provided Vcmax and Jmax are at the Tleaf provided). \strong{Warning} : since package 
+#' version 1.4, the default parameters have been adjusted (see Details).
 #' @param returnParsOnly If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on 
 #' leaf temperature.
 #' @param whichA Which assimilation rate does gs respond to? 
@@ -299,12 +300,12 @@ Photosyn <- function(VPD=1.5,
   whichA <- match.arg(whichA)
   gsmodel <- match.arg(gsmodel)
   if(gsmodel == "BBdefine" && is.null(BBmult)){
-    stop("When defining your own BB multiplier, set BBmult.")
+    Stop("When defining your own BB multiplier, set BBmult.")
   }
   inputCi <- !is.null(Ci)
   inputGS <- !is.null(GS)
   
-  if(inputCi & inputGS)stop("Cannot provide both Ci and GS.")
+  if(inputCi & inputGS)Stop("Cannot provide both Ci and GS.")
   
   if(is.null(TPU))TPU <- 1000
   
@@ -312,7 +313,7 @@ Photosyn <- function(VPD=1.5,
     VPD <- RHtoVPD(RH, Tleaf)
   } 
   if(is.null(VPD) && is.null(RH)){
-    stop("Need one of VPD, RH.")
+    Stop("Need one of VPD, RH.")
   }
 
   #---- Constants; hard-wired parameters.

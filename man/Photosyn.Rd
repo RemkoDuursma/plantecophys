@@ -87,7 +87,8 @@ of leaf temperature.}
 calculated via gs model.}
 
 \item{Tcorrect}{If TRUE, corrects input Vcmax and Jmax for actual Tleaf (if FALSE, 
-assumes the provided Vcmax and Jmax are at the Tleaf provided). \strong{Warning} : since package version 1.4, the default parameters have been adjusted (see Details).}
+assumes the provided Vcmax and Jmax are at the Tleaf provided). \strong{Warning} : since package 
+version 1.4, the default parameters have been adjusted (see Details).}
 
 \item{returnParsOnly}{If TRUE, returns calculated Vcmax,Jmax,Km and GammaStar based on 
 leaf temperature.}

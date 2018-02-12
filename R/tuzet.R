@@ -25,7 +25,7 @@ PhotosynTuzet_f <- function(g1=4,
 
   vn <- as.list(match.call())[-1]
   if("gsmodel" %in% vn){
-    stop("Cannot define gsmodel with PhotosynTuzet.", .call=FALSE)
+    Stop("Cannot define gsmodel with PhotosynTuzet.")
   }
   
   O <- function(psil, psis, kl, sf, psif, g1, Ca, ...){

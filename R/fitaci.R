@@ -577,8 +577,8 @@ set_Rdmeas <- function(varnames, data, useRd, citransition, quiet){
       Rd_meas <- data[,varnames$Rd]
       Rd_meas <- unique(Rd_meas)
       if(length(Rd_meas) > 1){
-        Stop(paste("If Rd provided as measured, it must be a single",
-                   "unique value for an A-Ci curve."))
+        Stop("If Rd provided as measured, it must be a single",
+             "\nunique value for an A-Ci curve.")
       }
       
       # Use positive value throughout.
@@ -701,8 +701,8 @@ do_fit_method1 <- function(data, haveRd, Rd_meas, Patm, startValgrid,
                   start=list(Vcmax=Vcmax_guess, Jmax=Jmax_guess)), silent=TRUE)
     
     if(inherits(nlsfit, "try-error")){
-      Stop(paste("Could not fit curve -",
-                 "check quality of data or fit using fitmethod='bilinear'."))
+      Stop("Could not fit curve -",
+           "\ncheck quality of data or fit using fitmethod='bilinear'.")
     }
     
     p <- coef(nlsfit)

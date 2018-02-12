@@ -82,6 +82,8 @@ plot(fits1, how="oneplot")
 plot(fits2, highlight="1000_1_5", how="oneplot")
 plot(fits3)
 plot(fits4)
+plot(fits4, how="oneplot", colour_by_id = TRUE, id_legend=TRUE)
+plot(fits4, how="oneplot", colour_by_id = FALSE, id_legend=TRUE)
 
 test_that("Aci curve fit output format", {
   expect_error(fitaci(data.frame()))
