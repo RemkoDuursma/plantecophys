@@ -116,6 +116,8 @@ the quality of the fit}
 the current fit. That is, Vcmax, Jmax and Rd are set to those estimated in the fit, and Tleaf and 
 PPFD are set to the mean value in the dataset. All other parameters that were set in fitaci are 
 also used (e.g. temperature dependency parameters, TPU, etc.).}
+\item{Ci}{As Photosyn, except the opposite: calculate the Ci where some rate of net photosynthesis 
+is achieved.}
 \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax 
 to Jmax limited photosynthesis.}
 \item{Rd_measured}{Logical - was Rd provided as measured input?}
@@ -228,6 +230,13 @@ the fit can be extracted with standard tools. The Examples below shows the use o
 \pkg{nlstools} to extract many details of the fit at once. The fit also includes the 
 \strong{root mean squared error} (RMSE), which can be extracted as \code{myfit$RMSE}. This 
 is a useful metric to compare the different fitting methods.}
+
+\subsection{Predicting and the CO2 compensation point}{The fitted object contains two functions 
+that reproduce the fitted curve exactly. Suppose your object is called 'myfit', then 
+\code{myfit$Photosyn(200)} will give the fitted rate of photosynthesis at a Ci of 200. 
+The inverse, calculating the Ci where some rate of photosynthesis is achieved, can be done with
+\code{myfit$Ci(10)} (find the Ci where net photosynthesis is zero). The (fitted!) CO2 
+compensation point can then be calculated with : \code{myfit$Ci(0)}}.
 
 \subsection{Atmospheric pressure correction}{Note that atmospheric pressure (Patm) is taken 
 into account, assuming the original data are in molar units (Ci in mu mol mol-1, or ppm). 
