@@ -37,6 +37,7 @@ fit8.4 <- fitaci(acidatone, useRd=TRUE, fitmethod="bilinear", Tcorrect=FALSE)
 # Fit many A-Ci curves
 fits1 <- fitacis(acidat, "Curve",  fitmethod="default", progressbar=FALSE)
 fits2 <- fitacis(acidat, "Curve",  fitmethod="bilinear", progressbar=FALSE)
+fits2_pb <- capture.output(fitacis(acidat, "Curve",  fitmethod="bilinear", progressbar=TRUE))
 fits3 <- fitacis(acidat, "Curve",  fitTPU=TRUE, progressbar=FALSE)
 fits4 <- fitacis(acidat, "Curve",  fitmethod="bilinear", progressbar=FALSE, id="treatment")
 
@@ -46,7 +47,7 @@ fit10.2 <- fitaci(acidatone, fitmethod = "onepoint", Tcorrect=FALSE)
 
 # Make some not fit
 acidat$Photo[c(2,50,100)] <- 50
-fits1_re <- fitacis(acidat, "Curve",  fitmethod="default", progressbar=FALSE)
+fits1_re <- fitacis(acidat, "Curve",  fitmethod="default", progressbar=FALSE, quiet=TRUE)
 
 # Pass GammaStar, Km
 fit11 <- fitaci(acidatone, fitmethod="bilinear", GammaStar=60, Km=800)
@@ -65,11 +66,15 @@ print(fits4)
 print(fits3)
 print(fits2)
 print(fits1)
+print(fit5)
 
 print(fit1)
 print(fit2)
 print(fit3.1)
 print(fit3.2)
+print(fit8.2)
+print(fit7.1)
+print(fit11)
 
 summary(fit1)
 
@@ -81,9 +86,11 @@ plot(fits1)
 plot(fits1, how="oneplot")
 plot(fits2, highlight="1000_1_5", how="oneplot")
 plot(fits3)
-plot(fits4)
+plot(fits4, lwd=2)
 plot(fits4, how="oneplot", colour_by_id = TRUE, id_legend=TRUE)
 plot(fits4, how="oneplot", colour_by_id = FALSE, id_legend=TRUE)
+
+
 
 test_that("Aci curve fit output format", {
   expect_error(fitaci(data.frame()))
@@ -135,9 +142,27 @@ test_that("Aci curve RMSE", {
   expect_lt(fit8.4$RMSE, 5)
 })
 
+# Create empty level
+acidat_err <- acidat
+levels(acidat_err$Curve) <- letters[1:11]
 
-# Imaginary roots
-test_that("QUADP", {
-  expect_warning(plantecophys:::QUADP(1,2,3))
-  expect_warning(plantecophys:::QUADM(1,2,3))
+palette(c("blue","red"))
+
+fits4_bad <- fits4
+fits4_bad[[1]]$pars[] <- NA
+
+
+
+test_that("fitacis exceptions", {
+  expect_error(fitacis(acidat, "XXXX"))
+  expect_error(fitacis(acidat_err, "Curve"))
+  expect_error(plot(fits3, how="oneplot", colour_by_id = TRUE, id_legend=TRUE))
+  expect_warning(plot(fits4, how="oneplot", colour_by_id = TRUE, id_legend=TRUE))
+  expect_warning(plot(fits4, how="manyplots", add=TRUE))
+  expect_error(plot(fits4, highlight="XXX", how="oneplot"))
+  expect_true(is.na(coef(fits4_bad)[1,3]))
 })
+
+
+
+

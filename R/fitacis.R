@@ -145,10 +145,9 @@ return(l)
 }
 
 
-do_fit_bygroup <- function(d, which=NULL, progressbar, fitmethod, ...){
+do_fit_bygroup <- function(d, which, progressbar, fitmethod, ...){
   
   ng <- length(d)
-  if(is.null(which))which <- 1:ng
   success <- vector("logical", length(which))
   
   if(progressbar){
