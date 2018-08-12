@@ -9,7 +9,7 @@ dfr <- data.frame(PPFD=runif(n, 100, 1000),
                   Tleaf=runif(n,20,28),
                   ID=rep(letters[1:(n/50)], each=50))
 p <- Photosyn(PPFD=dfr$PPFD, VPD=dfr$VPD, Tleaf=dfr$Tleaf)
-dfr$gs <-  p$GS + rnorm(n, 0, 0.03)
+dfr$gs <- p$GS + rnorm(n, 0, 0.03)
 dfr$aleaf <- p$ALEAF
 dfr$Ca <- 400
 dfr$RH <- VPDtoRH(dfr$VPD, dfr$Tleaf)/100
@@ -67,10 +67,6 @@ test_that("Fit BB output", {
   expect_equal(coef(fit1)[[1]], 0)
   expect_gt(coef(fit2)[[1]],0)
   expect_equal(coef(fit3), coef(fit3.2))
-})
-
-test_that("fitBB errors expected", {
-  
 })
 
 

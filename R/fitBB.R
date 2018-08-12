@@ -52,18 +52,18 @@ fitBB <- function(data,
                   fitg0=FALSE){
   
   gsmodel <- match.arg(gsmodel)
-  
+
+  check_has <- function(this, there){
+    if(!this %in% names(data)){
+      Stop(this, " column not in data provided.")
+    }
+  }
+  invisible(sapply(varnames, check_has))
+
   gs <- data[,varnames$GS]  
-  if(is.null(gs))stop("GS data missing - check varnames.")
-  
   vpd <- data[,varnames$VPD]
-  if(is.null(vpd))stop("VPD data missing - check varnames.")
-  
   aleaf <- data[,varnames$ALEAF]  
-  if(is.null(aleaf))stop("ALEAF data missing - check varnames.")
-  
   ca <- data[,varnames$Ca]
-  if(is.null(ca))stop("Ca data missing - check varnames.")
   
   if(gsmodel == "BallBerry"){
     

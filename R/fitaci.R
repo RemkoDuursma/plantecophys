@@ -74,7 +74,8 @@
 #' but rather for spot gas exchange measurements, when a simple estimate of Vcmax or Jmax 
 #' is needed, for example when separating stomatal and non-stomatal drought effects on 
 #' photosynthesis (Zhou et al. 2013, AgForMet). The user will have to decide whether the Vcmax 
-#' or Jmax rates are used in further analyses. This fitting method can not be used in \code{fitacis}, because Vcmax and Jmax are already estimated for each point in the dataset.
+#' or Jmax rates are used in further analyses. This fitting method can not be used in \code{fitacis}, 
+#' because Vcmax and Jmax are already estimated for each point in the dataset.
 #' 
 #' \subsection{TPU limitation}{Optionally, the \code{fitaci} function estimates the triose-phosphate 
 #' utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be 
@@ -154,7 +155,9 @@
 #' Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
 #' Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 #' 
-#' De Kauwe, M. G. et al. 2016. A test of the 'one-point method' for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytol 210, 1130-1144.
+#' De Kauwe, M. G. et al. 2016. A test of the 'one-point method' for estimating maximum 
+#' carboxylation capacity from field-measured, light-saturated photosynthesis. 
+#' New Phytol 210, 1130-1144.
 #' 
 #' @return A list of class 'acifit', with the following components:
 #' \describe{

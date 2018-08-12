@@ -47,7 +47,7 @@ fit10.2 <- fitaci(acidatone, fitmethod = "onepoint", Tcorrect=FALSE)
 
 # Make some not fit
 acidat$Photo[c(2,50,100)] <- 50
-fits1_re <- fitacis(acidat, "Curve",  fitmethod="default", progressbar=FALSE, quiet=TRUE)
+fits1_re <- fitacis(acidat, "Curve",  fitmethod="default", progressbar=FALSE, quiet=FALSE)
 
 # Pass GammaStar, Km
 fit11 <- fitaci(acidatone, fitmethod="bilinear", GammaStar=60, Km=800)
