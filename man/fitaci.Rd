@@ -5,20 +5,21 @@
 \alias{plot.acifit}
 \title{Fit the Farquhar-Berry-von Caemmerer model of leaf photosynthesis}
 \usage{
-fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci", PPFD
-  = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100, citransition = NULL,
-  quiet = FALSE, startValgrid = TRUE, fitmethod = c("default", "bilinear",
-  "onepoint"), algorithm = "default", fitTPU = FALSE, alphag = 0,
-  useRd = FALSE, PPFD = NULL, Tleaf = NULL, alpha = 0.24,
-  theta = 0.85, gmeso = NULL, EaV = 82620.87, EdVC = 0,
-  delsC = 645.1013, EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615,
-  GammaStar = NULL, Km = NULL, id = NULL, ...)
+fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci",
+  PPFD = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100,
+  citransition = NULL, quiet = FALSE, startValgrid = TRUE,
+  fitmethod = c("default", "bilinear", "onepoint"),
+  algorithm = "default", fitTPU = FALSE, alphag = 0, useRd = FALSE,
+  PPFD = NULL, Tleaf = NULL, alpha = 0.24, theta = 0.85,
+  gmeso = NULL, EaV = 82620.87, EdVC = 0, delsC = 645.1013,
+  EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL,
+  Km = NULL, id = NULL, ...)
 
-\method{plot}{acifit}(x, what = c("data", "model", "none"), xlim = NULL,
-  ylim = NULL, whichA = c("Ac", "Aj", "Amin", "Ap"), add = FALSE,
-  pch = 19, addzeroline = TRUE, addlegend = !add, legendbty = "o",
-  transitionpoint = TRUE, linecols = c("black", "blue", "red"), lwd = c(1,
-  2), ...)
+\method{plot}{acifit}(x, what = c("data", "model", "none"),
+  xlim = NULL, ylim = NULL, whichA = c("Ac", "Aj", "Amin", "Ap"),
+  add = FALSE, pch = 19, addzeroline = TRUE, addlegend = !add,
+  legendbty = "o", transitionpoint = TRUE, linecols = c("black",
+  "blue", "red"), lwd = c(1, 2), lty = 1, ...)
 }
 \arguments{
 \item{data}{Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, 
@@ -76,13 +77,16 @@ in the result. Most useful when using \code{\link{fitacis}}, see there for examp
 
 \item{x}{For plot.acifit, an object returned by \code{fitaci}}
 
-\item{what}{The default is to plot both the data and the model fit, or specify 'data' or 'model' to plot one of them, or 'none' for neither (only the plot region is set up)}
+\item{what}{The default is to plot both the data and the model fit, or specify 'data' or 
+'model' to plot one of them, or 'none' for neither (only the plot region is set up)}
 
 \item{xlim}{Limits for the X axis, if left blank estimated from data}
 
 \item{ylim}{Limits for the Y axis, if left blank estimated from data}
 
-\item{whichA}{By default all photosynthetic rates are plotted (Aj=Jmax-limited (blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)), TPU-limited rate (Ap, if estimated in the fit). Or, specify one or two of them.}
+\item{whichA}{By default all photosynthetic rates are plotted (Aj=Jmax-limited 
+(blue), Ac=Vcmax-limited (red), Hyperbolic minimum (black)), TPU-limited rate 
+(Ap, if estimated in the fit). Or, specify one or two of them.}
 
 \item{add}{If TRUE, adds to the current plot}
 
@@ -96,9 +100,13 @@ in the result. Most useful when using \code{\link{fitacis}}, see there for examp
 
 \item{transitionpoint}{For plot.acifit, whether to plot a symbol at the transition point.}
 
-\item{linecols}{Vector of three colours for the lines (limiting rate, Ac, Aj), if one value provided it is used for all three.}
+\item{linecols}{Vector of three colours for the lines (limiting rate, Ac, Aj), if one value 
+provided it is used for all three.}
 
-\item{lwd}{Line widths, can be a vector of length 2 (first element for Ac and Aj, second one for the limiting rate).}
+\item{lwd}{Line widths, can be a vector of length 2 (first element for Ac and Aj, second one 
+for the limiting rate).}
+
+\item{lty}{Line type (only for Amin - the limiting rate).}
 }
 \value{
 A list of class 'acifit', with the following components:
@@ -120,6 +128,9 @@ also used (e.g. temperature dependency parameters, TPU, etc.).}
 is achieved.}
 \item{Ci_transition}{The Ci at which photosynthesis transitions from Vcmax 
 to Jmax limited photosynthesis.}
+\item{Ci_transition2}{The Ci at which photosynthesis transitions from Jmax to
+TPU limitation. Set to NA is either TPU was not estimated, or it could not be 
+estimated from the data.}
 \item{Rd_measured}{Logical - was Rd provided as measured input?}
 \item{GammaStar}{The value for GammaStar, either calculated or provided to the fit.}
 \item{Km}{he value for Km, either calculated or provided to the fit.}
@@ -180,7 +191,8 @@ setting \code{fitmethod='one-point'}). This method is not recommended for full A
 but rather for spot gas exchange measurements, when a simple estimate of Vcmax or Jmax 
 is needed, for example when separating stomatal and non-stomatal drought effects on 
 photosynthesis (Zhou et al. 2013, AgForMet). The user will have to decide whether the Vcmax 
-or Jmax rates are used in further analyses. This fitting method can not be used in \code{fitacis}, because Vcmax and Jmax are already estimated for each point in the dataset.
+or Jmax rates are used in further analyses. This fitting method can not be used in \code{fitacis}, 
+because Vcmax and Jmax are already estimated for each point in the dataset.
 
 \subsection{TPU limitation}{Optionally, the \code{fitaci} function estimates the triose-phosphate 
 utilization (TPU) rate. The TPU can act as another limitation on photosynthesis, and can be 
@@ -235,7 +247,7 @@ is a useful metric to compare the different fitting methods.}
 that reproduce the fitted curve exactly. Suppose your object is called 'myfit', then 
 \code{myfit$Photosyn(200)} will give the fitted rate of photosynthesis at a Ci of 200. 
 The inverse, calculating the Ci where some rate of photosynthesis is achieved, can be done with
-\code{myfit$Ci(10)} (find the Ci where net photosynthesis is zero). The (fitted!) CO2 
+\code{myfit$Ci(10)} (find the Ci where net photosynthesis is ten). The (fitted!) CO2 
 compensation point can then be calculated with : \code{myfit$Ci(0)}}.
 
 \subsection{Atmospheric pressure correction}{Note that atmospheric pressure (Patm) is taken 
@@ -316,5 +328,7 @@ plot(ftpu)
 Duursma, R.A., 2015. Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
 Exchange Data. PLoS ONE 10, e0143346. doi:10.1371/journal.pone.0143346
 
-De Kauwe, M. G. et al. 2016. A test of the 'one-point method' for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytol 210, 1130-1144.
+De Kauwe, M. G. et al. 2016. A test of the 'one-point method' for estimating maximum 
+carboxylation capacity from field-measured, light-saturated photosynthesis. 
+New Phytol 210, 1130-1144.
 }

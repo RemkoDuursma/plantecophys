@@ -17,7 +17,9 @@
 #' @param how If 'manyplots', produces a single plot for each A-Ci curve. If 'oneplot' overlays all of them.
 #' @param highlight If a name of a curve is given (check names(object), where object is returned by acifits), 
 #' all curves are plotted in grey, with the highlighted one on top.
+#' @param linecol Colour(s) to use for the non-highlighted curves (can be a vector).
 #' @param linecol_highlight Colour to use for the 'highlighted' curve.
+#' @param lty Line type(s), can be a vector (one for each level of the factor, will be recycled).
 #' @param colour_by_id If TRUE, uses the 'id' argument to colour the curves in the standard plot (only works when \code{how = 'oneplot'}, see Examples)
 #' @param id_legend If \code{colour_by_id} is set, place a legend (topleft) or not.
 #' @param what What to plot, either 'model' (the fitted curve), 'data' or 'none'. See examples.

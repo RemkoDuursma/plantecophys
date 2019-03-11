@@ -10,7 +10,9 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
                          what=c("model","data","none"),
                          colour_by_id = FALSE,
                          id_legend=TRUE,
+                         linecol = "grey",
                          linecol_highlight = "black",
+                         lty=1,
                          ...){
   
   how <- match.arg(how)
@@ -18,9 +20,10 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
   
   if(colour_by_id){
 
-    if(is.null(x[[1]]$id))
+    if(is.null(x[[1]]$id)){
       Stop("To colour curves by id, fit with id argument (see ?fitacis).")
-
+    }
+    
     id_fac <- sapply(x, function(fit)unique(fit$df[,fit$id]))
     if(nlevels(id_fac) > length(palette())){
       pal <- rainbow(nlevels(id_fac))
@@ -33,9 +36,10 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
     }
     
   } else {
-    line_cols <- rep("grey", length(x))
+    line_cols <- recycle(linecol, length(x))
   }
   
+  # Set axis limits
   if(is.null(ylim)){
     amax <- max(sapply(x, function(x)max(x$df$Amodel)))
     amin <- max(sapply(x, function(x)min(x$df$Amodel)))
@@ -46,6 +50,9 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
     cimin <- min(sapply(x, function(x)min(x$df$Ci)))
     xlim <- c(cimin,cimax)
   }
+  
+  # Set line types
+  lty <- recycle(lty, length(x))
   
   if(how == "manyplots"){
     if(add)Warning("Argument 'add' ignored when making multiple plots.")  
@@ -70,12 +77,12 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
                     ...)
       }
       
-      for(i in seq_along(x)){
+      for(i in seq_along(x)[-hi]){
         plot.acifit(x[[i]], what=what, whichA="Amin", add=TRUE,
-                    linecols = line_cols[i], ...)  
+                    linecols = line_cols[i], lty=lty[i], ...)  
       }
       plot.acifit(x[[hi]], what=what, whichA="Amin", add=TRUE,
-                  linecols = linecol_highlight, ...)  
+                  linecols = linecol_highlight, lty=lty[hi],  ...)  
       
     } else {
       if(!add)
@@ -85,7 +92,7 @@ plot.acifits <- function(x, how=c("manyplots","oneplot"),
       
       for(i in seq_along(x))
         plot.acifit(x[[i]], what=what, whichA="Amin", add=TRUE, 
-                    linecols=line_cols[i], ...)  
+                    linecols=line_cols[i], lty=lty[i], ...)  
       
     }
     

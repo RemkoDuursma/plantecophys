@@ -4,8 +4,8 @@
 \alias{PhotosynTuzet}
 \title{Coupled leaf gas exchange model with Tuzet stomatal conductance}
 \usage{
-PhotosynTuzet(g1 = 8, Ca = 400, psis = 0, kl = 2, sf = 3, psif = -2,
-  ...)
+PhotosynTuzet(g1 = 8, Ca = 400, psis = 0, kl = 2, sf = 3,
+  psif = -2, ...)
 }
 \arguments{
 \item{g1}{The slope parameter. Note that the default value should be much higher than that used in the Medlyn et al. (2011) model to give comparable predictions.}

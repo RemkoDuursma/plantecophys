@@ -8,10 +8,11 @@
 fitacis(data, group, fitmethod = c("default", "bilinear"),
   progressbar = TRUE, quiet = FALSE, id = NULL, ...)
 
-\method{plot}{acifits}(x, how = c("manyplots", "oneplot"), highlight = NULL,
-  ylim = NULL, xlim = NULL, add = FALSE, what = c("model", "data",
-  "none"), colour_by_id = FALSE, id_legend = TRUE,
-  linecol_highlight = "black", ...)
+\method{plot}{acifits}(x, how = c("manyplots", "oneplot"),
+  highlight = NULL, ylim = NULL, xlim = NULL, add = FALSE,
+  what = c("model", "data", "none"), colour_by_id = FALSE,
+  id_legend = TRUE, linecol = "grey", linecol_highlight = "black",
+  lty = 1, ...)
 }
 \arguments{
 \item{data}{Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, 
@@ -48,7 +49,11 @@ all curves are plotted in grey, with the highlighted one on top.}
 
 \item{id_legend}{If \code{colour_by_id} is set, place a legend (topleft) or not.}
 
+\item{linecol}{Colour(s) to use for the non-highlighted curves (can be a vector).}
+
 \item{linecol_highlight}{Colour to use for the 'highlighted' curve.}
+
+\item{lty}{Line type(s), can be a vector (one for each level of the factor, will be recycled).}
 }
 \description{
 A convenient function to fit many curves at once, by calling \code{\link{fitaci}} for 

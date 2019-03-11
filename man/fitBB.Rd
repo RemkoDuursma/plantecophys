@@ -4,9 +4,9 @@
 \alias{fitBB}
 \title{Fit Ball-Berry type models of stomatal conductance}
 \usage{
-fitBB(data, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL", Ca =
-  "CO2S", RH = "RH"), gsmodel = c("BBOpti", "BBLeuning", "BallBerry",
-  "BBOptiFull"), fitg0 = FALSE)
+fitBB(data, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL",
+  Ca = "CO2S", RH = "RH"), gsmodel = c("BBOpti", "BBLeuning",
+  "BallBerry", "BBOptiFull"), fitg0 = FALSE)
 }
 \arguments{
 \item{data}{Input dataframe, containing all variables needed to fit the model.}
