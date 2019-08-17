@@ -2,53 +2,69 @@
 
 #'@export
 #'@method print acifit
-print.acifit <- function(x,...){
+print.acifit <- function(x, include = c("data","rmse","parameters","method","citransition",
+                                        "settings","gstar"), ...){
   
   cat("Result of fitaci.\n\n")
   
-  cat("Data and predictions:\n")
-  print(x$df)
-  
-  cat("\nRoot mean squared error: ", x$RMSE, "\n")
-  
-  cat("\nEstimated parameters:\n")
-  
-  print(x$pars)
-  if(x$Tcorrect)
-    cat("Note: Vcmax, Jmax are at 25C, Rd is at measurement T.\n")
-  else
-    cat("Note: Vcmax, Jmax, Rd are at measurement T.\n")
-  
-  if(!is.na(x$gmeso)){
-    cat("Note: Mesophyll conductance was input, Vcmax and Jmax are Cc-based rates.\n")
+  if("data" %in% include){
+    cat("Data and predictions:\n")
+    print(x$df)
   }
   
-  if(x$Rd_measured)
-    cat("Note: measured Rd was provided, only Vcmax and Jmax were fit.\n")
-  
-  cat("\nCurve was fit using method: ", x$fitmethod, "\n")
-  
-  if(!is.na(x$citransition)){
-    cat("\nCi transition was constrained to be: ", x$citransition, "\n")
-    cat("Actual fitted Ci transition: ", x$Ci_transition,"\n")
-  }
-
-  cat("\nParameter settings:\n")
-  fm <- formals(x$Photosyn)
-  pars <- c("Patm","alpha","theta","EaV","EdVC","delsC","EaJ","EdVJ","delsJ")
-  fm <- unlist(fm[pars])
-  cat(paste0(pars," = ", fm,"\n"))
-  
-  if(!x$gstarinput | !x$kminput){
-    cat("\nEstimated from Tleaf (shown at mean Tleaf):\n")
-    if(!x$gstarinput)cat("GammaStar = ",x$GammaStar,"\n")
-    if(!x$kminput)cat("Km = ",x$Km,"\n")
+  if("rmse" %in% include){
+    cat("\nRoot mean squared error: ", x$RMSE, "\n")
   }
   
-  if(x$gstarinput | x$kminput){
-    cat("\nSet by user:\n")
-    if(x$gstarinput)cat("GammaStar = ",x$GammaStar,"\n")
-    if(x$kminput)cat("Km = ",x$Km,"\n")
+  if("parameters" %in% include){
+    cat("\nEstimated parameters:\n")
+  
+    print(x$pars)
+    if(x$Tcorrect)
+      cat("Note: Vcmax, Jmax are at 25C, Rd is at measurement T.\n")
+    else
+      cat("Note: Vcmax, Jmax, Rd are at measurement T.\n")
+    
+    if(!is.na(x$gmeso)){
+      cat("Note: Mesophyll conductance was input, Vcmax and Jmax are Cc-based rates.\n")
+    }
+    
+    if(x$Rd_measured)
+      cat("Note: measured Rd was provided, only Vcmax and Jmax were fit.\n")
+  }
+  
+  if("method" %in% include){
+    cat("\nCurve was fit using method: ", x$fitmethod, "\n")
+  }
+  
+  
+  if("citransition" %in% include){
+    if(!is.na(x$citransition)){
+      cat("\nCi transition was constrained to be: ", x$citransition, "\n")
+      cat("Actual fitted Ci transition: ", x$Ci_transition,"\n")
+    }
+  }
+  
+  if("settings" %in% include){
+    cat("\nParameter settings:\n")
+    fm <- formals(x$Photosyn)
+    pars <- c("Patm","alpha","theta","EaV","EdVC","delsC","EaJ","EdVJ","delsJ")
+    fm <- unlist(fm[pars])
+    cat(paste0(pars," = ", fm,"\n"))
+  }
+  
+  if("gstar" %in% include){
+    if(!x$gstarinput | !x$kminput){
+      cat("\nEstimated from Tleaf (shown at mean Tleaf):\n")
+      if(!x$gstarinput)cat("GammaStar = ",x$GammaStar,"\n")
+      if(!x$kminput)cat("Km = ",x$Km,"\n")
+    }
+    
+    if(x$gstarinput | x$kminput){
+      cat("\nSet by user:\n")
+      if(x$gstarinput)cat("GammaStar = ",x$GammaStar,"\n")
+      if(x$kminput)cat("Km = ",x$Km,"\n")
+    }
   }
   
 }
