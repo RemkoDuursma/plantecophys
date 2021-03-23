@@ -14,6 +14,7 @@
 #' needed when the original Ball-Berry model is to be fit.
 #' @param gsmodel One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), BallBerry (Ball et al. 1987), or BBOptiFull (Medlyn et al. 2011 but with an extra parameter gk, see Duursma et al. 2013)
 #' @param fitg0 If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.
+#' @param D0 If provided, fixes D0 for the BBLeuning model. Otherwise is estimated by the data. 
 #' @export
 #' @references 
 #' Ball, J.T., Woodrow, I.E., Berry, J.A., 1987. A model predicting stomatal conductance and its contribution to the control of photosynthesis under different environmental conditions., in: Biggins, J. (Ed.), Progress in Photosynthesis Research. Martinus-Nijhoff Publishers, Dordrecht, the Netherlands, pp. 221-224.
@@ -49,7 +50,8 @@
 fitBB <- function(data, 
                   varnames=list(ALEAF="Photo", GS="Cond", VPD="VpdL", Ca="CO2S",RH="RH"),
                   gsmodel=c("BBOpti","BBLeuning","BallBerry","BBOptiFull"),
-                  fitg0=FALSE){
+                  fitg0=FALSE,
+                  D0=NULL){
   
   gsmodel <- match.arg(gsmodel)
 
@@ -93,10 +95,19 @@ fitBB <- function(data,
     }
   }
   if(gsmodel == "BBLeuning"){
-    if(!fitg0){
-      fit <- try(nls(gs ~ aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
-    } else {
-      fit <- try(nls(gs ~ g0 + aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
+    if(is.null(D0)){
+      if(!fitg0){
+        fit <- try(nls(gs ~ aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5)))
+      } else {
+        fit <- try(nls(gs ~ g0 + aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, D0=1.5, g0=0.005)))
+      }
+    }
+    else if(is.numeric(D0)){
+      if(!fitg0){
+        fit <- try(nls(gs ~ aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4)))
+      } else {
+        fit <- try(nls(gs ~ g0 + aleaf*g1/ca/(1 + vpd/D0), start=list(g1=4, g0=0.005)))
+      }
     }
   }
   if(gsmodel == "BallBerry"){
