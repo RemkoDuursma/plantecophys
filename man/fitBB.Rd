@@ -4,9 +4,13 @@
 \alias{fitBB}
 \title{Fit Ball-Berry type models of stomatal conductance}
 \usage{
-fitBB(data, varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL",
-  Ca = "CO2S", RH = "RH"), gsmodel = c("BBOpti", "BBLeuning",
-  "BallBerry", "BBOptiFull"), fitg0 = FALSE)
+fitBB(
+  data,
+  varnames = list(ALEAF = "Photo", GS = "Cond", VPD = "VpdL", Ca = "CO2S", RH = "RH"),
+  gsmodel = c("BBOpti", "BBLeuning", "BallBerry", "BBOptiFull"),
+  fitg0 = FALSE,
+  D0 = NULL
+)
 }
 \arguments{
 \item{data}{Input dataframe, containing all variables needed to fit the model.}
@@ -17,6 +21,8 @@ needed when the original Ball-Berry model is to be fit.}
 \item{gsmodel}{One of BBOpti (Medlyn et al. 2011), BBLeuning (Leuning 1995), BallBerry (Ball et al. 1987), or BBOptiFull (Medlyn et al. 2011 but with an extra parameter gk, see Duursma et al. 2013)}
 
 \item{fitg0}{If TRUE, also fits the intercept term (g0, the 'residual conductance'). Default is FALSE.}
+
+\item{D0}{If provided, fixes D0 for the BBLeuning model. Otherwise is estimated by the data.}
 }
 \value{
 A list with several components, most notably \code{fit}, the object returned by \code{nls}. If the user needs more information on the goodness of fit etc, please further analyze this object. For example, use the \pkg{broom} package for quick summaries. Or use \code{\link{confint}} to calculate confidence intervals on the fitted parameters.

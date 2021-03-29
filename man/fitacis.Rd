@@ -5,14 +5,31 @@
 \alias{plot.acifits}
 \title{Fit multiple A-Ci curves at once}
 \usage{
-fitacis(data, group, fitmethod = c("default", "bilinear"),
-  progressbar = TRUE, quiet = FALSE, id = NULL, ...)
+fitacis(
+  data,
+  group,
+  fitmethod = c("default", "bilinear"),
+  progressbar = TRUE,
+  quiet = FALSE,
+  id = NULL,
+  ...
+)
 
-\method{plot}{acifits}(x, how = c("manyplots", "oneplot"),
-  highlight = NULL, ylim = NULL, xlim = NULL, add = FALSE,
-  what = c("model", "data", "none"), colour_by_id = FALSE,
-  id_legend = TRUE, linecol = "grey", linecol_highlight = "black",
-  lty = 1, ...)
+\method{plot}{acifits}(
+  x,
+  how = c("manyplots", "oneplot"),
+  highlight = NULL,
+  ylim = NULL,
+  xlim = NULL,
+  add = FALSE,
+  what = c("model", "data", "none"),
+  colour_by_id = FALSE,
+  id_legend = TRUE,
+  linecol = "grey",
+  linecol_highlight = "black",
+  lty = 1,
+  ...
+)
 }
 \arguments{
 \item{data}{Dataframe with Ci, Photo, Tleaf, PPFD (the last two are optional). For \code{fitacis}, 

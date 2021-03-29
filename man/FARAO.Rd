@@ -5,9 +5,20 @@
 \alias{FARAO2}
 \title{FARquhar And Opti}
 \usage{
-FARAO(lambda = 0.002, Ca = 400, VPD = 1, photo = c("BOTH", "VCMAX",
-  "JMAX"), energybalance = FALSE, C4 = FALSE, Tair = 25, Wind = 2,
-  Wleaf = 0.02, StomatalRatio = 1, LeafAbs = 0.86, ...)
+FARAO(
+  lambda = 0.002,
+  Ca = 400,
+  VPD = 1,
+  photo = c("BOTH", "VCMAX", "JMAX"),
+  energybalance = FALSE,
+  C4 = FALSE,
+  Tair = 25,
+  Wind = 2,
+  Wleaf = 0.02,
+  StomatalRatio = 1,
+  LeafAbs = 0.86,
+  ...
+)
 
 FARAO2(lambda = 0.002, Ca = 400, energybalance = FALSE, ...)
 }

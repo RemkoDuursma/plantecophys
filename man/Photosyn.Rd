@@ -5,16 +5,46 @@
 \alias{Aci}
 \title{Coupled leaf gas exchange model}
 \usage{
-Photosyn(VPD = 1.5, Ca = 400, PPFD = 1500, Tleaf = 25,
-  Patm = 100, RH = NULL, gsmodel = c("BBOpti", "BBLeuning",
-  "BallBerry", "BBdefine"), g1 = 4, g0 = 0, gk = 0.5, vpdmin = 0.5,
-  D0 = 5, GS = NULL, BBmult = NULL, alpha = 0.24, theta = 0.85,
-  Jmax = 100, Vcmax = 50, gmeso = NULL, TPU = 1000, alphag = 0,
-  Rd0 = 0.92, Q10 = 1.92, Rd = NULL, TrefR = 25, Rdayfrac = 1,
-  EaV = 58550, EdVC = 2e+05, delsC = 629.26, EaJ = 29680,
-  EdVJ = 2e+05, delsJ = 631.88, GammaStar = NULL, Km = NULL,
-  Ci = NULL, Tcorrect = TRUE, returnParsOnly = FALSE,
-  whichA = c("Ah", "Amin", "Ac", "Aj"))
+Photosyn(
+  VPD = 1.5,
+  Ca = 400,
+  PPFD = 1500,
+  Tleaf = 25,
+  Patm = 100,
+  RH = NULL,
+  gsmodel = c("BBOpti", "BBLeuning", "BallBerry", "BBdefine"),
+  g1 = 4,
+  g0 = 0,
+  gk = 0.5,
+  vpdmin = 0.5,
+  D0 = 5,
+  GS = NULL,
+  BBmult = NULL,
+  alpha = 0.24,
+  theta = 0.85,
+  Jmax = 100,
+  Vcmax = 50,
+  gmeso = NULL,
+  TPU = 1000,
+  alphag = 0,
+  Rd0 = 0.92,
+  Q10 = 1.92,
+  Rd = NULL,
+  TrefR = 25,
+  Rdayfrac = 1,
+  EaV = 58550,
+  EdVC = 2e+05,
+  delsC = 629.26,
+  EaJ = 29680,
+  EdVJ = 2e+05,
+  delsJ = 631.88,
+  GammaStar = NULL,
+  Km = NULL,
+  Ci = NULL,
+  Tcorrect = TRUE,
+  returnParsOnly = FALSE,
+  whichA = c("Ah", "Amin", "Ac", "Aj")
+)
 
 Aci(Ci, ...)
 }
