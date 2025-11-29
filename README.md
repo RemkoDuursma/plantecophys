@@ -4,9 +4,9 @@
 
 Welcome to the home of *plantecophys*, an R package that bundles a number of tools to analyze and model leaf gas exchange data.
 
-[Please report bugs or suggest features here](https://bitbucket.org/remkoduursma/plantecophys/issues?status=new&status=open).
+[Please report bugs or suggest features here](https://github.com/RemkoDuursma/plantecophys/issues).
  
-
+## ** Now working on version 1.5 ** 
 
 ### Contents
 
@@ -45,9 +45,9 @@ install.packages("plantecophys")
 To install the development version, use the following command. Windows users must have [Rtools](http://cran.r-project.org/bin/windows/Rtools/) installed.
 
 ```
-library(devtools)
-install_bitbucket("remkoduursma/plantecophys")
+remotes::install_github("remkoduursma/plantecophys")
 ```
 
 
-For questions, comments, and suggestions, please email remkoduursma@gmail.com
+For questions, comments, and suggestions, please submit an issue on github!
+
